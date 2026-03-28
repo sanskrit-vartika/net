@@ -723,6 +723,15 @@ footer {
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-weight: 700; color: var(--brown); font-family: var(--font-skt); }
 
+/* ===== PRINT STYLES ===== */
+@media print {
+  body * { visibility: hidden; }
+  #test-results, #test-results * { visibility: visible; }
+  #test-results { position: absolute; left: 0; top: 0; width: 100%; padding: 0; box-shadow: none; background: white; }
+  .results-container { padding: 0; box-shadow: none; }
+  #test-results .btn { display: none !important; }
+}
+
 /* ===== LAMP SVG glow ===== */
 .lamp-svg { filter: drop-shadow(0 0 12px rgba(255,215,0,0.6)); }
 .lamp-flame { animation: flicker 2s ease-in-out infinite; transform-origin: center bottom; }
@@ -1339,8 +1348,10 @@ footer {
         </div>
         <div class="results-stats" id="results-stats"></div>
         <div style="text-align:center;margin-bottom:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="retakeTest()">🔄 Retake Test</button>
-          <button class="btn btn-gold" onclick="showCategories()">← Back to Tests</button>
+          <button class="btn btn-primary" onclick="retakeTest()">🔄 Retake</button>
+          <button class="btn btn-gold" onclick="showCategories()">← Back</button>
+          <button class="btn" style="background:#25D366;color:white;" onclick="shareOnWhatsApp()">📱 Share Score</button>
+          <button class="btn btn-outline" onclick="window.print()">🖨️ Save as PDF</button>
         </div>
         <div class="results-review" id="results-review"></div>
       </div>
@@ -2214,6 +2225,17 @@ function showResults() {
 
   // Save to localStorage
   saveTestResult(testState.testName, correct, qs.length);
+}
+
+function shareOnWhatsApp() {
+  const scoreText = document.getElementById('score-num').textContent;
+  const testName = testState.testName;
+  const currentUrl = window.location.href.split('#')[0]; // Grabs your GitHub URL
+  
+  const message = `I just scored ${scoreText} on the "${testName}" mock test at संस्कृत-वर्तिका! 🪔\n\nTest your Sanskrit knowledge here: ${currentUrl}`;
+  
+  const encodedMessage = encodeURIComponent(message);
+  window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
 }
 
 function retakeTest() {
