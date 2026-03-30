@@ -1911,6 +1911,18 @@ footer {
   </div>
 </div>
 
+<div id="exit-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div style="font-size: 3rem; margin-bottom: 12px;">🚪</div>
+    <h3 style="color: #b71c1c; margin-bottom: 12px; font-size: 1.2rem;">Leave Test?</h3>
+    <p style="color: var(--text-mid); margin-bottom: 24px; line-height: 1.6;">You have a mock test currently running. If you leave now, your progress and score will be lost.</p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button class="btn btn-outline" onclick="cancelExitTest()">← Stay</button>
+      <button class="btn" style="background:#F44336;color:white;" onclick="confirmExitTest()">Leave Anyway</button>
+    </div>
+  </div>
+</div>
+
 <div class="drawer-overlay" id="mobileDrawerOverlay" onclick="toggleMobileDrawer()"></div>
 <div class="more-drawer" id="mobileDrawer">
   <div class="drawer-handle"></div>
@@ -1957,8 +1969,16 @@ footer {
 // === NAVIGATION & UI ===
 let isFreeMode = false;
 let currentPage = 'home';
+let pendingNavigation = null; // NEW: Remembers where the user wanted to go
 
 function navigate(page, addToHistory = true) {
+  // --- NEW: INTERCEPT NAVIGATION IF TEST IS RUNNING ---
+  if (testState.timerInterval && !testState.finished && document.getElementById('test-interface').style.display === 'block') {
+    pendingNavigation = { page, addToHistory };
+    document.getElementById('exit-modal').style.display = 'flex';
+    return; // Stop the navigation instantly!
+  }
+
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-' + page);
   if (target) {
@@ -1966,12 +1986,12 @@ function navigate(page, addToHistory = true) {
     currentPage = page;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     
-    // --- NEW: Browser History Integration ---
+    // Browser History Integration
     if (addToHistory) {
       history.pushState({ page: page }, '', '#' + page);
     }
 
-    // Feature: Dynamic Tab Titles
+    // Dynamic Tab Titles
     const titles = { 'home': 'Home', 'study': 'Study Materials', 'mocktest': 'Mock Tests', 'courses': 'Courses', 'free': 'Free Services', 'dashboard': 'Student Dashboard', 'about': 'About Us', 'contact': 'Contact' };
     document.title = (titles[page] || 'Welcome') + ' | संस्कृत-वर्तिका';
 
@@ -1987,6 +2007,29 @@ function navigate(page, addToHistory = true) {
     if (typeof backToNotesMain === 'function') backToNotesMain();
     if (typeof backToVideosMain === 'function') backToVideosMain();
   }
+}
+
+// --- NEW: Modal Control Functions ---
+function confirmExitTest() {
+  document.getElementById('exit-modal').style.display = 'none';
+  clearInterval(testState.timerInterval); // Kill the test timer
+  testState.finished = true; // Mark test as finished so it doesn't trigger again
+  
+  // Resume the navigation they originally requested
+  if (pendingNavigation) {
+    navigate(pendingNavigation.page, pendingNavigation.addToHistory);
+    pendingNavigation = null;
+  }
+}
+
+function cancelExitTest() {
+  document.getElementById('exit-modal').style.display = 'none';
+  
+  // If they used the browser back button, we need to artificially fix the URL
+  if (pendingNavigation && pendingNavigation.addToHistory === false) {
+    history.pushState({ page: currentPage }, '', '#' + currentPage);
+  }
+  pendingNavigation = null;
 }
 
 // --- NEW: Listen for the Browser Back Button ---
