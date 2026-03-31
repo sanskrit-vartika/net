@@ -2904,7 +2904,7 @@ function saveTestResult(name, correct, total) {
     newUnlockedBadges.forEach(b => {
       // If they have it now, but didn't have it before -> FIRE TOAST!
       if (!oldUnlocked.includes(b.id)) {
-        showToast(`🏆 New Badge: ${b.icon} ${b.name}!`);
+        showToast(`🏆 New Badge: ${b.textIcon} ${b.name}!`);
       }
     });
   }, 800);
