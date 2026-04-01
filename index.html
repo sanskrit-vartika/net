@@ -817,6 +817,22 @@ footer {
   /* 5. Dashboard fixes for mobile */
   .history-table th, .history-table td { padding: 10px; font-size: 0.75rem; }
   .name-setup, .dashboard-hero { padding: 32px 16px; }
+  /* 6. Study Tabs: Force into 1 single row of equal-sized micro tabs */
+  .tabs-nav {
+    width: 100%; 
+    flex-wrap: nowrap; 
+    justify-content: space-between; 
+    padding: 4px;
+    border-radius: 12px; /* More rectangular on mobile to fit text better */
+  }
+  .tab-btn {
+    flex: 1; /* Forces all 4 buttons to be exactly the same width */
+    padding: 8px 2px; /* Removes side padding so text can fit */
+    font-size: 0.72rem; /* Slightly smaller text */
+    white-space: nowrap; /* Prevents text from breaking into two lines */
+    text-align: center;
+    border-radius: 8px;
+  }
 }
 
 /* ===== ANIMATIONS ===== */
@@ -1711,7 +1727,7 @@ footer {
     <!-- Motivational Quote -->
     <div style="background:linear-gradient(135deg,var(--saffron),var(--saffron-dark));border-radius:var(--radius);padding:28px;text-align:center;margin-top:32px;">
       <p style="font-family:var(--font-skt);font-size:1.3rem;color:var(--white);margin-bottom:8px;">उद्योगिनं पुरुषसिंहमुपैति लक्ष्मीः</p>
-      <p style="color:rgba(255,255,255,0.8);font-size:0.85rem;">Fortune favors the diligent. — Sanskrit Proverb</p>
+      <p style="color:rgba(255,255,255,0.8);font-size:0.85rem;">Fortune favors the diligent.</p>
     </div>
   </div>
 </div>
