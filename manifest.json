@@ -1,0 +1,17 @@
+{
+  "name": "संस्कृत-वर्तिका",
+  "short_name": "Sanskrit",
+  "description": "UGC NTA NET Sanskrit Preparation",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FFF8E7",
+  "theme_color": "#FF6B00",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Ccircle cx='100' cy='100' r='92' fill='%23FFFFFF' stroke='%23FF6B00' stroke-width='12'/%3E%3Ccircle cx='100' cy='100' r='34' fill='%23FFF176'/%3E%3Crect x='99' y='82' width='2' height='12' fill='%233B1F0A' /%3E%3Crect x='94' y='93' width='12' height='42' rx='2' fill='%231e3a8a' /%3E%3Cpath d='M100 62 Q112 85 100 94 Q88 85 100 62 Z' fill='%23FF6B00' /%3E%3Cpath d='M100 74 Q106 85 100 92 Q94 85 100 74 Z' fill='%23FFF176' /%3E%3C/svg%3E",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
