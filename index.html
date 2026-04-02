@@ -574,6 +574,10 @@ button { cursor: pointer; font-family: var(--font-sans); border: none; outline: 
 /* Results */
 .results-container {
   background: var(--white); border-radius: var(--radius); padding: 40px; box-shadow: var(--shadow);
+  /* Anti-Copy Protection */
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .score-circle {
   width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 24px;
@@ -862,14 +866,6 @@ footer {
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-weight: 700; color: var(--brown); font-family: var(--font-skt); }
 
-/* ===== PRINT STYLES ===== */
-@media print {
-  body * { visibility: hidden; }
-  #test-results, #test-results * { visibility: visible; }
-  #test-results { position: absolute; left: 0; top: 0; width: 100%; padding: 0; box-shadow: none; background: white; }
-  .results-container { padding: 0; box-shadow: none; }
-  #test-results .btn { display: none !important; }
-}
 
 /* ===== LAMP SVG glow ===== */
 .lamp-svg { filter: drop-shadow(0 0 12px rgba(255,215,0,0.6)); }
@@ -1355,7 +1351,9 @@ footer {
         <div id="notes-topic-view" style="display:none;">
           <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
             <h3 id="notes-topic-title" style="font-size:1.2rem;">Topic Notes</h3>
-            <input type="text" id="notes-search" class="form-input mt-16" placeholder="🔍 Search notes..." style="max-width:300px; margin: 16px auto 0;" onkeyup="filterNotes()">
+            <select id="notes-filter" class="form-input mt-16" style="max-width:300px; margin: 16px auto 0;" onchange="filterNotes()">
+              <option value="all">All Topics</option>
+            </select>
           </div>
           <div class="notes-grid" id="notes-links-grid">
             </div>
@@ -1416,7 +1414,9 @@ footer {
         <div id="videos-topic-view" style="display:none;">
           <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
             <h3 id="videos-topic-title" style="font-size:1.2rem;">Video Lectures</h3>
-            <input type="text" id="videos-search" class="form-input mt-16" placeholder="🔍 Search videos..." style="max-width:300px; margin: 16px auto 0;" onkeyup="filterVideos()">
+            <select id="videos-filter" class="form-input mt-16" style="max-width:300px; margin: 16px auto 0;" onchange="filterVideos()">
+              <option value="all">All Topics</option>
+            </select>
           </div>
           <div class="video-grid" id="videos-links-grid">
             </div>
@@ -1558,7 +1558,6 @@ footer {
           <button class="btn btn-primary" onclick="retakeTest()">🔄 Retake</button>
           <button class="btn btn-gold" onclick="showCategories()">← Back</button>
           <button class="btn" style="background:#25D366;color:white;" onclick="shareOnWhatsApp()">📱 Share Score</button>
-          <button class="btn btn-outline" onclick="window.print()">🖨️ Save as PDF</button>
         </div>
         <div class="results-review" id="results-review"></div>
       </div>
@@ -2097,13 +2096,44 @@ function cancelExitTest() {
   pendingNavigation = null;
 }
 
-// --- NEW: Listen for the Browser Back Button ---
+// --- NEW: Smart Browser Back Button Listener ---
 window.addEventListener('popstate', function(event) {
+  
+  // 1. Check if the Mobile "More" Drawer is open
+  const drawer = document.getElementById('mobileDrawer');
+  if (drawer && drawer.classList.contains('open')) {
+    toggleMobileDrawer(); // Close the drawer
+    history.pushState({ page: currentPage }, '', '#' + currentPage); // Trap the back button
+    return; // Stop here!
+  }
+
+  // 2. Check if the "Saved Questions" modal is open
+  const savedModal = document.getElementById('saved-qs-modal');
+  if (savedModal && savedModal.style.display === 'flex') {
+    savedModal.style.display = 'none';
+    history.pushState({ page: currentPage }, '', '#' + currentPage);
+    return;
+  }
+
+  // 3. Check if the "Submit Warning" modal is open
+  const submitModal = document.getElementById('submit-modal');
+  if (submitModal && submitModal.style.display === 'flex') {
+    submitModal.style.display = 'none';
+    history.pushState({ page: currentPage }, '', '#' + currentPage);
+    return;
+  }
+
+  // 4. Check if the "Leave Test" warning is already open
+  const exitModal = document.getElementById('exit-modal');
+  if (exitModal && exitModal.style.display === 'flex') {
+    cancelExitTest(); // Run your existing cancel function
+    return;
+  }
+
+  // 5. If the screen is clear, do normal navigation!
   if (event.state && event.state.page) {
-    // If we have history, navigate to it without adding a NEW history entry (false)
     navigate(event.state.page, false);
   } else {
-    // Fallback: If no state, go home
     navigate('home', false);
   }
 });
@@ -2148,6 +2178,15 @@ function switchTab(tab) {
   const content = document.getElementById('tab-' + tab);
   if (btn) btn.classList.add('active');
   if (content) content.classList.add('active');
+
+  // NEW: Lazy Load PYQs
+  if (tab === 'pyqs' && !window.pyqsLoaded) {
+    window.pyqsLoaded = true; // Mark as loaded so it doesn't fetch again
+    document.getElementById('loading-overlay').style.display = 'flex';
+    loadPYQsFromSheet().then(() => {
+      document.getElementById('loading-overlay').style.display = 'none';
+    });
+  }
 }
 let allQuestions = {}; // This saves downloaded questions so they only load once
 
@@ -2725,7 +2764,8 @@ async function loadNotesFromSheet() {
         allNotes[cat].push({
           title: row.title || row.Title || "Study Note",
           desc: row.description || row.Description || "",
-          link: row.link || row.Link || "#"
+          link: row.link || row.Link || "#",
+          topic: row.topic || row.Topic || "Other" // NEW: Grabs the Topic
         });
         noteCount++;
       }
@@ -2739,8 +2779,7 @@ async function loadNotesFromSheet() {
 }
 }
 
-// Start loading the notes in the background
-loadNotesFromSheet();
+
 
 // --- PDF NOTES UI LOGIC ---
 const notesSubjectNames = {
@@ -2748,24 +2787,40 @@ const notesSubjectNames = {
   'sahitya': 'साहित्यम्', 'purana': 'पुराणम्', 'dharma': 'धर्मशास्त्रम्', 'other': 'अन्यानि'
 };
 
-function showNotesTopic(subjectKey) {
+async function showNotesTopic(subjectKey) {
+  // NEW: Check if notes are empty. If they are, show the loader and download them!
+  if (Object.keys(allNotes).length === 0) {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    await loadNotesFromSheet();
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
+
   document.getElementById('notes-main-grid').style.display = 'none';
   document.getElementById('notes-topic-view').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
   document.getElementById('notes-topic-title').textContent = (notesSubjectNames[subjectKey] || subjectKey) + " — Study Notes";
 
   const grid = document.getElementById('notes-links-grid');
+  const filterSelect = document.getElementById('notes-filter'); 
+  
   grid.innerHTML = '';
+  filterSelect.innerHTML = '<option value="all">All Topics</option>'; 
 
   const topics = allNotes[subjectKey];
   if (!topics || topics.length === 0) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">PDF Notes for this topic are being updated. Check back soon!</p>';
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">PDF Notes for this subject are being updated. Check back soon!</p>';
     return;
   }
 
+  // Extract unique topics for the dropdown
+  const uniqueTopics = [...new Set(topics.map(item => item.topic))];
+  uniqueTopics.forEach(t => {
+    filterSelect.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+
   topics.forEach(note => {
     grid.innerHTML += `
-      <div class="note-card">
+      <div class="note-card" data-topic="${note.topic}">
         <h4>${note.title}</h4>
         <p>${note.desc}</p>
         <a href="${note.link}" target="_blank" class="btn btn-primary btn-sm" style="display:inline-flex;">📥 Download / View PDF</a>
@@ -2803,7 +2858,8 @@ async function loadVideosFromSheet() {
         allVideos[cat].push({
           title: row.title || row.Title || "Video Lecture",
           duration: row.duration || row.Duration || "YouTube Video",
-          link: row.link || row.Link || "#"
+          link: row.link || row.Link || "#",
+          topic: row.topic || row.Topic || "Other" // NEW: Grabs the Topic
         });
       }
     });
@@ -2813,7 +2869,7 @@ async function loadVideosFromSheet() {
 }
 }
 
-loadVideosFromSheet();
+
 
 // --- HELPER: Extracts the 11-character video ID from any YouTube link ---
 function getYouTubeID(url) {
@@ -2822,29 +2878,44 @@ function getYouTubeID(url) {
   return (match && match[2].length === 11) ? match[2] : null;
 }
 
-function showVideosTopic(subjectKey) {
+async function showVideosTopic(subjectKey) {
+  // NEW: Check if videos are empty. If they are, show the loader and download them!
+  if (Object.keys(allVideos).length === 0) {
+    document.getElementById('loading-overlay').style.display = 'flex';
+    await loadVideosFromSheet();
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
+
   document.getElementById('videos-main-grid').style.display = 'none';
   document.getElementById('videos-topic-view').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
   document.getElementById('videos-topic-title').textContent = (notesSubjectNames[subjectKey] || subjectKey) + " — Video Lectures";
 
   const grid = document.getElementById('videos-links-grid');
+  const filterSelect = document.getElementById('videos-filter'); 
+  
   grid.innerHTML = '';
+  filterSelect.innerHTML = '<option value="all">All Topics</option>'; 
 
   const topics = allVideos[subjectKey];
   if (!topics || topics.length === 0) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">Videos for this topic are being updated. Check back soon!</p>';
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">Videos for this subject are being updated. Check back soon!</p>';
     return;
   }
 
+  // Extract unique topics for the dropdown
+  const uniqueTopics = [...new Set(topics.map(item => item.topic))];
+  uniqueTopics.forEach(t => {
+    filterSelect.innerHTML += `<option value="${t}">${t}</option>`;
+  });
+
   topics.forEach(vid => {
-    // Automatically fetch the thumbnail!
     const videoId = getYouTubeID(vid.link);
     const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
     const bgStyle = thumbUrl ? `background-image: url('${thumbUrl}'); background-size: cover; background-position: center;` : '';
 
     grid.innerHTML += `
-      <div class="video-card">
+      <div class="video-card" data-topic="${vid.topic}">
         <div class="video-thumb" style="${bgStyle}" onclick="window.open('${vid.link}','_blank')">
           <div class="play-btn">▶</div>
         </div>
@@ -2907,7 +2978,6 @@ async function loadPYQsFromSheet() {
 }
 }
 
-loadPYQsFromSheet();
 // ==========================================
 
 // ==========================================
@@ -3160,17 +3230,26 @@ function renderGamification() {
 }
 
 
-// Feature: Search/Filter Notes & Videos
+// Feature: Dropdown Filter Notes & Videos by Topic
 function filterNotes() {
-  const query = document.getElementById('notes-search').value.toLowerCase();
+  const selected = document.getElementById('notes-filter').value;
   document.querySelectorAll('#notes-links-grid .note-card').forEach(card => {
-    card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+    if (selected === 'all' || card.getAttribute('data-topic') === selected) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
   });
 }
+
 function filterVideos() {
-  const query = document.getElementById('videos-search').value.toLowerCase();
+  const selected = document.getElementById('videos-filter').value;
   document.querySelectorAll('#videos-links-grid .video-card').forEach(card => {
-    card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+    if (selected === 'all' || card.getAttribute('data-topic') === selected) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
   });
 }
 
