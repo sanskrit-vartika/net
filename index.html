@@ -117,34 +117,10 @@
 
 <!-- Login Button -->
     <button id="nav-auth-btn" onclick="showAuthModal()" class="btn btn-outline btn-sm" style="margin-right: 12px; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; color: var(--gold); border-color: var(--gold);">🔒 Log In</button>
-
     
-    <!-- Hamburger -->
-    <button class="hamburger" id="hamburger" onclick="toggleMobileNav()">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </nav>
 
-<!-- Mobile Nav -->
-<div class="mobile-nav" id="mobileNav">
-  <button class="mnav-btn" onclick="navigate('home');closeMobileNav()">🏠 Home</button>
-  <div class="mnav-section">Study Materials</div>
-  <button class="mnav-btn" onclick="navigate('study');switchTab('notes');closeMobileNav()">📚 Notes</button>
-  <button class="mnav-btn" onclick="navigate('mocktest');closeMobileNav()">📝 Mock Tests</button>
-  <button class="mnav-btn" onclick="navigate('study');switchTab('videos');closeMobileNav()">🎥 Videos</button>
-  <button class="mnav-btn" onclick="navigate('study');switchTab('pyqs');closeMobileNav()">📅 PYQs</button>
-  <hr>
-  <button class="mnav-btn" onclick="navigate('courses');closeMobileNav()">🎓 Courses</button>
-  <div class="mnav-section">Free Services</div>
-  <button class="mnav-btn" onclick="navigate('free');closeMobileNav()">✅ Free Practice</button>
-  <button class="mnav-btn" onclick="navigate('free');closeMobileNav()">📄 Free Notes</button>
-  <button class="mnav-btn" onclick="navigate('free');closeMobileNav()">▶ Free Videos</button>
-  <hr>
-  <button class="mnav-btn" onclick="navigate('dashboard');closeMobileNav()">👤 Student Dashboard</button>
-  <button class="mnav-btn" onclick="navigate('about');closeMobileNav()">ℹ️ About Us</button>
-  <button class="mnav-btn" onclick="navigate('contact');closeMobileNav()">📞 Contact</button>
-</div>
 
 <!-- ==================== HOME PAGE ==================== -->
 <div id="page-home" class="page active">
@@ -735,15 +711,8 @@
       <div class="divider"></div>
     </div>
 
-    <!-- Name Setup -->
-    <div class="name-setup" id="name-setup-box">
-      <h3>Welcome! What should we call you?</h3>
-      <p style="color:var(--text-light);margin-bottom:16px;font-size:0.9rem;">Your name is saved locally on your device.</p>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-        <input type="text" class="name-input" id="student-name-input" placeholder="Enter your name..." maxlength="40">
-        <button class="btn btn-primary" onclick="saveName()">Save Name</button>
-      </div>
-    </div>
+    <!-- Dashboard Login/Setup Box -->
+    <div class="name-setup" id="name-setup-box" style="display: none;"></div>
 
     
     <!-- Dashboard Hero -->
@@ -1210,16 +1179,33 @@
 </div>
 
 </head>
-<!-- Firebase 02 -->
+
+<!-- ==================== AUTH MODAL ==================== -->
 <div id="auth-modal" class="modal-overlay" style="display:none; z-index: 3000;">
-    <div class="modal-content" style="max-width: 400px;">
-...
-      <button class="btn btn-outline" style="width: 100%; margin-top: 15px;" onclick="document.getElementById('auth-modal').style.display='none'">Cancel</button>
+  <div class="modal-content" style="max-width: 400px; text-align: left;">
+    <h2 id="auth-title" style="color: var(--brown); margin-bottom: 8px; text-align: center;">Welcome Back</h2>
+    <p id="auth-subtitle" style="color: var(--text-mid); margin-bottom: 24px; text-align: center; font-size: 0.9rem;">Log in to track your scores.</p>
+
+    <input type="text" id="auth-name" class="form-input mb-16" placeholder="Full Name" style="display:none;">
+    <input type="text" id="auth-whatsapp" class="form-input mb-16" placeholder="WhatsApp Number" style="display:none;">
+    <input type="email" id="auth-email" class="form-input mb-16" placeholder="Email Address">
+    <input type="password" id="auth-password" class="form-input mb-16" placeholder="Password">
+
+    <p id="auth-error" style="color: #D32F2F; font-size: 0.85rem; margin-bottom: 16px; display: none; background: #FFEBEE; padding: 10px; border-radius: 4px; text-align: center;"></p>
+
+    <button id="auth-action-btn" class="btn btn-primary" style="width: 100%; justify-content: center; margin-bottom: 16px;" onclick="handleAuthAction()">Log In</button>
+
+    <div id="forgot-password-box" style="text-align: center; margin-bottom: 16px;">
+      <a href="#" onclick="handleForgotPassword()" style="font-size: 0.8rem; color: var(--text-light);">Forgot Password?</a>
     </div>
+
+    <p id="auth-switch-text" style="font-size: 0.85rem; text-align: center; color: var(--text-mid);">
+      New here? <a href="#" onclick="toggleAuthMode()" style="color: var(--saffron); font-weight: bold;">Sign Up</a>
+    </p>
+
+    <button class="btn btn-outline" style="width: 100%; justify-content: center; margin-top: 15px;" onclick="document.getElementById('auth-modal').style.display='none'">Cancel</button>
   </div>
-
-
-<body>
+</div>
 
 
 <script src="app.js"></script>

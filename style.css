@@ -105,33 +105,6 @@ button { cursor: pointer; font-family: var(--font-sans); border: none; outline: 
 .dropdown-menu a:hover { background: rgba(255,107,0,0.2); color: var(--gold); }
 .dropdown > .nav-btn::after { content: ' ▾'; font-size: 0.65rem; }
 
-/* Hamburger */
-.hamburger {
-  display: none; flex-direction: column; gap: 5px; cursor: pointer;
-  padding: 8px; background: none;
-}
-.hamburger span { width: 24px; height: 2px; background: var(--cream); border-radius: 2px; transition: var(--transition); }
-.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity: 0; }
-.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-/* Mobile Nav */
-.mobile-nav {
-  display: none; position: fixed; top: var(--nav-h); left: 0; right: 0;
-  background: var(--brown); z-index: 999;
-  padding: 16px; border-top: 1px solid rgba(255,215,0,0.2);
-  box-shadow: var(--shadow-lg); max-height: calc(100vh - var(--nav-h)); overflow-y: auto;
-}
-.mobile-nav.open { display: block; }
-.mobile-nav a, .mobile-nav .mnav-btn {
-  display: block; color: var(--cream); padding: 12px 16px;
-  font-size: 0.9rem; border-radius: var(--radius-sm);
-  transition: var(--transition); cursor: pointer; background: none;
-  width: 100%; text-align: left;
-}
-.mobile-nav a:hover, .mobile-nav .mnav-btn:hover { background: rgba(255,215,0,0.1); color: var(--gold); }
-.mobile-nav .mnav-section { color: var(--gold); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; padding: 12px 16px 4px; }
-.mobile-nav hr { border-color: rgba(255,215,0,0.15); margin: 8px 0; }
 
 /* ===== BUTTONS ===== */
 .btn {
@@ -885,10 +858,7 @@ footer {
 .bottom-nav-material, .drawer-overlay, .more-drawer { display: none; }
 
 @media (max-width: 768px) {
-  /* 1. Hide the old Hamburger menu */
-  .hamburger { display: none !important; }
-  .mobile-nav { display: none !important; }
-  
+    
   /* 2. Add bottom padding to pages so content isn't covered by the bar */
   .page { padding-bottom: 90px; }
   footer { padding-bottom: 100px; }

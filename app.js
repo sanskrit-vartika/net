@@ -396,16 +396,6 @@ function showToast(msg) {
   }, 3000);
 }
 
-function toggleMobileNav() {
-  const nav = document.getElementById('mobileNav');
-  const btn = document.getElementById('hamburger');
-  nav.classList.toggle('open');
-  btn.classList.toggle('open');
-}
-function closeMobileNav() {
-  document.getElementById('mobileNav').classList.remove('open');
-  document.getElementById('hamburger').classList.remove('open');
-}
 
 function toggleMobileDrawer() {
   document.getElementById('mobileDrawer').classList.toggle('open');
@@ -633,7 +623,7 @@ if(document.getElementById('back-to-cat-btn')) document.getElementById('back-to-
   const grid = document.getElementById('sets-grid');
   grid.innerHTML = '';
   let hasFreeSets = false;
-  const history = JSON.parse(localStorage.getItem('sp_history') || '[]');
+  const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
 
   catsToLoad.forEach(cat => {
     if (!allQuestions[cat]) return;
@@ -698,7 +688,7 @@ if(document.getElementById('back-to-cat-btn')) document.getElementById('back-to-
     return;
   }
 
-  const history = JSON.parse(localStorage.getItem('sp_history') || '[]');
+  const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];em('sp_history') || '[]');
 
   Object.keys(categoryData).forEach(setKey => {
     const qCount = categoryData[setKey].length;
@@ -973,8 +963,8 @@ function confirmSubmit() {
       cls = userAns === q.answer ? 'correct-ans' : 'wrong-ans';
       status = userAns === q.answer ? '✅ Correct' : '❌ Wrong';
     }
-    // Check if question is already saved
-    let savedQs = JSON.parse(localStorage.getItem('sp_saved_qs') || '[]');
+    // Check if question is already saved in the Cloud
+    let savedQs = (currentUser && currentUser.dbData && currentUser.dbData.saved_qs) ? currentUser.dbData.saved_qs : [];
     const isSaved = savedQs.some(sq => sq.q === q.q);
     const btnText = isSaved ? '⭐ Saved' : '☆ Save';
     const btnStyle = isSaved ? 'color:var(--saffron);' : 'color:var(--text-light);';
