@@ -973,7 +973,10 @@ function confirmSubmit() {
       <div class="review-item ${cls}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
           <div class="review-q">Q${i+1}. ${q.q}</div>
-          <button id="save-btn-${i}" onclick="toggleSaveQuestion(${i})" style="background:var(--white); border:1px solid var(--cream-dark); border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; ${btnStyle}">${btnText}</button>
+          <div style="display:flex; gap:8px;">
+            <button onclick="openReportModal(${i})" style="background:var(--white); border:1px solid #F44336; border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; color:#F44336;" title="Report a mistake in this question">🚩 Report</button>
+            <button id="save-btn-${i}" onclick="toggleSaveQuestion(${i})" style="background:var(--white); border:1px solid var(--cream-dark); border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; ${btnStyle}">${btnText}</button>
+          </div>
         </div>
         <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${q.options[userAns]}</strong>` : ''}</div>
         <div class="review-ans">✔ Correct answer: <strong>${q.options[q.answer]}</strong></div>
@@ -1884,6 +1887,7 @@ navigate = function(page, addToHistory = true) {
   originalNavigate(page, addToHistory); 
   if (page === 'admin') {
     loadAdminDashboard(); 
+    loadAdminReports(); // <--- Triggers the new table to load!
   }
 };
 
@@ -1894,3 +1898,120 @@ if ('serviceWorker' in navigator) {
         .catch((err) => console.error('PWA Engine Failed!', err));
     });
   }
+
+// ==========================================
+// === REPORT ERROR ENGINE ===
+// ==========================================
+let reportingQuestionIndex = null; // Store which question is being reported
+
+function openReportModal(qIndex) {
+  if (!currentUser) {
+    showToast("⚠️ Please log in to report questions.");
+    return;
+  }
+  reportingQuestionIndex = qIndex; // Remember the specific question!
+  
+  // Reset the form
+  document.getElementById('report-reason').value = 'Wrong Answer';
+  document.getElementById('report-comment').value = '';
+  document.getElementById('report-modal').style.display = 'flex';
+}
+
+async function submitReport() {
+  if (!currentUser || reportingQuestionIndex === null) return;
+  const btn = document.getElementById('submit-report-btn');
+  btn.textContent = "Sending...";
+  btn.disabled = true;
+
+  const reason = document.getElementById('report-reason').value;
+  const comment = document.getElementById('report-comment').value.trim();
+  const currentQuestion = testState.questions[reportingQuestionIndex]; // Grab the right question
+
+  try {
+    await db.collection("reported_errors").add({
+      testName: testState.testName,
+      questionText: currentQuestion.q,
+      options: currentQuestion.options,
+      markedAnswer: currentQuestion.answer, 
+      reason: reason,
+      comment: comment,
+      reportedBy: currentUser.email,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      status: "Pending Review"
+    });
+    
+    showToast("🚩 Report sent! Thank you for helping us improve.");
+    document.getElementById('report-modal').style.display = 'none';
+  } catch (error) {
+    showToast("Error submitting report: " + error.message);
+  } finally {
+    btn.textContent = "Submit Report";
+    btn.disabled = false;
+    reportingQuestionIndex = null; // Clear memory after sending
+  }
+}
+
+// ==========================================
+// === ADMIN: FETCH & RESOLVE REPORTS ===
+// ==========================================
+async function loadAdminReports() {
+  const tbody = document.getElementById('admin-reports-body');
+  if (!tbody) return;
+
+  if (!currentUser || currentUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">⚠️ Access Denied.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Fetching reports...</td></tr>';
+
+  try {
+    const snapshot = await db.collection("reported_errors").orderBy("timestamp", "desc").get();
+    document.getElementById('admin-reports-count').textContent = snapshot.size;
+
+    if (snapshot.empty) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-light);">No reported errors! 🎉</td></tr>';
+      return;
+    }
+
+    let html = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const date = data.timestamp ? data.timestamp.toDate().toLocaleDateString('en-IN') : 'Just now';
+      
+      html += `
+        <tr style="border-bottom: 1px solid var(--cream-dark);">
+          <td style="padding: 14px 16px; max-width: 300px;">
+            <strong style="color: var(--brown); font-size: 0.85rem;">${data.testName}</strong><br>
+            <span style="font-family: var(--font-skt); font-size: 0.95rem;">${data.questionText}</span>
+          </td>
+          <td style="padding: 14px 16px;">
+            <span style="background: #FFEBEE; color: #D32F2F; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">${data.reason}</span><br>
+            <span style="font-size: 0.85rem; color: var(--text-mid); display: block; margin-top: 4px;">${data.comment || 'No additional comment'}</span>
+          </td>
+          <td style="padding: 14px 16px; font-size: 0.85rem; color: var(--text-light);">${data.reportedBy}</td>
+          <td style="padding: 14px 16px; font-size: 0.85rem; color: var(--text-light);">${date}</td>
+          <td style="padding: 14px 16px; text-align: right;">
+            <button class="btn btn-sm" style="background: #4CAF50; color: white; padding: 6px 12px;" onclick="resolveReport('${doc.id}')">✅ Resolve</button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+  } catch (error) {
+    console.error("Error fetching reports:", error);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Error fetching data: ${error.message}</td></tr>`;
+  }
+}
+
+async function resolveReport(reportId) {
+  if (!confirm("Are you sure you want to resolve this? Make sure you fixed the error in your Google Sheet first!")) return;
+  
+  try {
+    await db.collection("reported_errors").doc(reportId).delete();
+    showToast("✅ Report resolved and cleared.");
+    loadAdminReports(); // Automatically refresh the table
+  } catch (error) {
+    alert("Error resolving report: " + error.message);
+  }
+}

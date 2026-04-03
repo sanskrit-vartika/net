@@ -1018,6 +1018,30 @@
       </div>
       
     </div>
+    <!-- ================= ERROR REPORTS TABLE ================= -->
+    <div style="background: var(--white); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-lg); border-top: 4px solid #FF9800; margin-top: 32px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <h3 style="color: var(--brown);">🚩 Reported Questions (<span id="admin-reports-count">0</span>)</h3>
+        <button class="btn btn-sm" style="background: var(--cream-dark); color: var(--brown);" onclick="loadAdminReports()">🔄 Refresh Reports</button>
+      </div>
+
+      <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); border: 1px solid var(--cream-dark);">
+        <table class="history-table" style="min-width: 900px;">
+          <thead style="background: #FF9800; color: white;">
+            <tr>
+              <th style="padding: 14px 16px; text-align: left;">Test & Question</th>
+              <th style="padding: 14px 16px; text-align: left;">Reason & Comment</th>
+              <th style="padding: 14px 16px; text-align: left;">Reported By</th>
+              <th style="padding: 14px 16px; text-align: left;">Date</th>
+              <th style="padding: 14px 16px; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-reports-body">
+            <tr><td colspan="5" style="text-align: center; padding: 24px;">Loading reports...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1067,6 +1091,27 @@
 </footer>
 
 <div id="toast-container"></div>
+
+<div id="report-modal" class="modal-overlay">
+  <div class="modal-content" style="text-align: left;">
+    <h3 style="color: #b71c1c; margin-bottom: 8px;">🚩 Report Question</h3>
+    <p style="color: var(--text-mid); font-size: 0.85rem; margin-bottom: 16px;">Help us improve! What is wrong with this question?</p>
+    
+    <select id="report-reason" class="form-input mb-16">
+      <option value="Wrong Answer">The correct answer is marked wrong</option>
+      <option value="Typo">Spelling mistake or typo</option>
+      <option value="Out of Syllabus">Out of syllabus</option>
+      <option value="Other">Other issue</option>
+    </select>
+    
+    <textarea id="report-comment" class="form-textarea mb-16" placeholder="Additional details (optional)..." style="min-height: 80px;"></textarea>
+    
+    <div style="display: flex; gap: 12px;">
+      <button class="btn btn-outline" style="flex: 1; justify-content: center;" onclick="document.getElementById('report-modal').style.display='none'">Cancel</button>
+      <button class="btn" style="flex: 1; justify-content: center; background: #b71c1c; color: white;" id="submit-report-btn" onclick="submitReport()">Submit Report</button>
+    </div>
+  </div>
+</div>
 
 <div id="admin-edit-modal" class="modal-overlay">
   <div class="modal-content" style="text-align: left;">
