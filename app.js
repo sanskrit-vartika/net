@@ -336,10 +336,7 @@ function navigate(page, addToHistory = true) {
     const activeNavBtn = document.getElementById('bnav-' + page);
     if (activeNavBtn) activeNavBtn.classList.add('active');
   }
-  // Update Mobile Bottom Nav Active State
-    document.querySelectorAll('.mat-item').forEach(el => el.classList.remove('active'));
-    const activeNavBtn = document.getElementById('bnav-' + page);
-    if (activeNavBtn) activeNavBtn.classList.add('active');
+  
 
     // === NEW: UPDATE DESKTOP TOP NAV ACTIVE STATE ===
     document.querySelectorAll('.nav-links .nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -1052,15 +1049,15 @@ function confirmSubmit() {
     reviewHTML += `
       <div class="review-item ${cls}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
-          <div class="review-q">Q${i+1}. ${q.q}</div>
+          <div class="review-q">Q${i+1}. ${escapeHTML(q.q)}</div>
           <div style="display:flex; gap:8px;">
             <button onclick="openReportModal(${i})" style="background:var(--white); border:1px solid #F44336; border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; color:#F44336;" title="Report a mistake in this question">🚩 Report</button>
             <button id="save-btn-${i}" onclick="toggleSaveQuestion(${i})" style="background:var(--white); border:1px solid var(--cream-dark); border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; ${btnStyle}">${btnText}</button>
           </div>
         </div>
-        <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${q.options[userAns]}</strong>` : ''}</div>
-        <div class="review-ans">✔ Correct answer: <strong>${q.options[q.answer]}</strong></div>
-        ${q.explanation ? `<div class="review-exp">💡 ${q.explanation}</div>` : ''}
+        <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${escapeHTML(q.options[userAns])}</strong>` : ''}</div>
+        <div class="review-ans">✔ Correct answer: <strong>${escapeHTML(q.options[q.answer])}</strong></div>
+        ${q.explanation ? `<div class="review-exp">💡 ${escapeHTML(q.explanation)}</div>` : ''}
       </div>`;
   });
   document.getElementById('results-review').innerHTML = reviewHTML;
@@ -1156,7 +1153,6 @@ const notesSubjectNames = {
 };
 
 async function showNotesTopic(subjectKey) {
-  // NEW: Check if notes are empty. If they are, show the loader and download them!
   if (Object.keys(allNotes).length === 0) {
     document.getElementById('loading-overlay').style.display = 'flex';
     await loadNotesFromSheet();
@@ -1171,7 +1167,7 @@ async function showNotesTopic(subjectKey) {
   const grid = document.getElementById('notes-links-grid');
   const filterSelect = document.getElementById('notes-filter'); 
   
-  grid.innerHTML = '';
+  grid.innerHTML = ''; // Clear loading text
   filterSelect.innerHTML = '<option value="all">All Topics</option>'; 
 
   const topics = allNotes[subjectKey];
@@ -1180,18 +1176,17 @@ async function showNotesTopic(subjectKey) {
     return;
   }
 
-  // Extract unique topics for the dropdown
   const uniqueTopics = [...new Set(topics.map(item => item.topic))];
   uniqueTopics.forEach(t => {
-    filterSelect.innerHTML += `<option value="${t}">${t}</option>`;
+    filterSelect.innerHTML += `<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`;
   });
 
   topics.forEach(note => {
     grid.innerHTML += `
-      <div class="note-card" data-topic="${note.topic}">
-        <h4>${note.title}</h4>
-        <p>${note.desc}</p>
-        <a href="${note.link}" target="_blank" class="btn btn-primary btn-sm" style="display:inline-flex;">📥 Download / View PDF</a>
+      <div class="note-card" data-topic="${escapeHTML(note.topic)}">
+        <h4>${escapeHTML(note.title)}</h4>
+        <p>${escapeHTML(note.desc)}</p>
+        <a href="${encodeURI(note.link)}" target="_blank" class="btn btn-primary btn-sm" style="display:inline-flex;">📥 Download / View PDF</a>
       </div>
     `;
   });
@@ -1247,7 +1242,6 @@ function getYouTubeID(url) {
 }
 
 async function showVideosTopic(subjectKey) {
-  // NEW: Check if videos are empty. If they are, show the loader and download them!
   if (Object.keys(allVideos).length === 0) {
     document.getElementById('loading-overlay').style.display = 'flex';
     await loadVideosFromSheet();
@@ -1262,7 +1256,7 @@ async function showVideosTopic(subjectKey) {
   const grid = document.getElementById('videos-links-grid');
   const filterSelect = document.getElementById('videos-filter'); 
   
-  grid.innerHTML = '';
+  grid.innerHTML = ''; // Clear loading text
   filterSelect.innerHTML = '<option value="all">All Topics</option>'; 
 
   const topics = allVideos[subjectKey];
@@ -1271,10 +1265,9 @@ async function showVideosTopic(subjectKey) {
     return;
   }
 
-  // Extract unique topics for the dropdown
   const uniqueTopics = [...new Set(topics.map(item => item.topic))];
   uniqueTopics.forEach(t => {
-    filterSelect.innerHTML += `<option value="${t}">${t}</option>`;
+    filterSelect.innerHTML += `<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`;
   });
 
   topics.forEach(vid => {
@@ -1283,13 +1276,13 @@ async function showVideosTopic(subjectKey) {
     const bgStyle = thumbUrl ? `background-image: url('${thumbUrl}'); background-size: cover; background-position: center;` : '';
 
     grid.innerHTML += `
-      <div class="video-card" data-topic="${vid.topic}">
-        <div class="video-thumb" style="${bgStyle}" onclick="window.open('${vid.link}','_blank')">
+      <div class="video-card" data-topic="${escapeHTML(vid.topic)}">
+        <div class="video-thumb" style="${bgStyle}" onclick="window.open('${encodeURI(vid.link)}','_blank')">
           <div class="play-btn">▶</div>
         </div>
         <div class="video-info">
-          <h4 style="font-family:var(--font-skt); font-size:1.05rem;">${vid.title}</h4>
-          <p>${vid.duration}</p>
+          <h4 style="font-family:var(--font-skt); font-size:1.05rem;">${escapeHTML(vid.title)}</h4>
+          <p>${escapeHTML(vid.duration)}</p>
         </div>
       </div>
     `;
@@ -1317,7 +1310,7 @@ async function loadPYQsFromSheet() {
     try { data = JSON.parse(textData); } catch (e) { return; }
 
     const grid = document.getElementById('pyqs-grid');
-    grid.innerHTML = '';
+    grid.innerHTML = ''; // Clear loading text
 
     if (!data || data.length === 0) {
       grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">PYQs are being updated. Check back soon!</p>';
@@ -1332,18 +1325,18 @@ async function loadPYQsFromSheet() {
       if (year && link) {
         grid.innerHTML += `
           <div class="pyq-card">
-            <span class="year" style="font-family: var(--font-sans);">${year}</span>
-            <p>${desc}</p>
-            <a href="${link}" target="_blank" class="btn btn-primary btn-sm">📥 Download</a>
+            <span class="year" style="font-family: var(--font-sans);">${escapeHTML(year)}</span>
+            <p>${escapeHTML(desc)}</p>
+            <a href="${encodeURI(link)}" target="_blank" class="btn btn-primary btn-sm">📥 Download</a>
           </div>
         `;
       }
     });
   } catch (error) { 
-  console.error("Could not load PYQs:", error); 
-  showToast("⚠️ Could not load PYQs. Please check your internet connection.");
-  document.getElementById('pyqs-grid').innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#F44336;">Failed to load data. Please refresh the page.</p>';
-}
+    console.error("Could not load PYQs:", error); 
+    showToast("⚠️ Could not load PYQs. Please check your internet connection.");
+    document.getElementById('pyqs-grid').innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#F44336;">Failed to load data. Please refresh the page.</p>';
+  }
 }
 
 // ==========================================
