@@ -191,23 +191,45 @@ let userDocUnsubscribe = null;
 let isFirebaseReady = false; // NEW: Prevents dashboard glitches
 
 // Helper to instantly force the Nav button to update
+// Helper to instantly force the Nav button to update
 function updateNavUI(user, nameStr) {
-  const navBtn = document.getElementById('nav-auth-btn');
-  if (!navBtn) return;
-  
+  const userMenuBtn = document.getElementById('nav-user-menu');
+  const bellBtn = document.getElementById('nav-bell-btn');
+  const userNameDisplay = document.getElementById('user-name-display');
+  const loginBtn = document.getElementById('nav-auth-btn'); // The original login button
+
   if (user) {
-    const firstName = (nameStr || "Student").split(' ')[0];
-    navBtn.innerHTML = `Hi, ${firstName}`;
-    navBtn.style.background = "rgba(255,215,0,0.15)"; 
-    navBtn.style.color = "var(--gold)";
-    navBtn.style.border = "1px solid var(--gold)";
-    navBtn.onclick = () => { if(confirm("Do you want to log out?")) logoutUser(); };
+    // 1. Hide the old login button
+    if (loginBtn) loginBtn.style.display = 'none';
+    
+    // 2. Show the new Bell and Dropdown
+    if (userMenuBtn) userMenuBtn.style.display = 'inline-block';
+    if (bellBtn) bellBtn.style.display = 'inline-block';
+    
+    // 3. Truncate long names (Max 10 chars)
+    let firstName = (nameStr || "Student").split(' ')[0];
+    if (firstName.length > 10) {
+      firstName = firstName.substring(0, 10) + "...";
+    }
+    if (userNameDisplay) userNameDisplay.textContent = `Hi, ${firstName}`;
+    
+    // 4. THE FINAL WIRE-UP! Trigger the background notification fetch
+    if (typeof initializeNotifications === 'function') {
+      initializeNotifications(); 
+    }
+
   } else {
-    navBtn.innerHTML = `🔒 Log In`;
-    navBtn.style.background = "transparent";
-    navBtn.style.color = "var(--gold)";
-    navBtn.style.border = "1px solid var(--gold)";
-    navBtn.onclick = showAuthModal;
+    // User is logged out: Show Login button, hide Bell and Dropdown
+    if (loginBtn) {
+        loginBtn.style.display = 'inline-flex';
+        loginBtn.innerHTML = `🔒 Log In`;
+        loginBtn.style.background = "transparent";
+        loginBtn.style.color = "var(--gold)";
+        loginBtn.style.border = "1px solid var(--gold)";
+        loginBtn.onclick = showAuthModal;
+    }
+    if (userMenuBtn) userMenuBtn.style.display = 'none';
+    if (bellBtn) bellBtn.style.display = 'none';
   }
 }
 
@@ -1410,11 +1432,7 @@ function openSavedQsModal() {
 // ==========================================
 function loadDashboard() {
   if (!currentUser) return;
-  
-  // 1. Load Announcement Banner
-  fetchAndDisplayAnnouncement();
-
-  
+      
   // NEW: If Firebase is still booting up, show a loading state!
   if (!isFirebaseReady) {
     document.getElementById('name-setup-box').style.display = 'block';
@@ -2199,42 +2217,81 @@ async function resolveReport(reportId) {
 }
 
 // ==========================================
-// === GLOBAL ANNOUNCEMENT ENGINE ===
+// === LAG-FREE GOOGLE SHEETS NOTIFICATIONS ===
 // ==========================================
-async function fetchAndDisplayAnnouncement() {
-  const banner = document.getElementById('announcement-banner');
-  const textElement = document.getElementById('announcement-text');
-  if (!banner || !textElement) return;
 
-  // FAST LOAD: Check if we already fetched it this session
-  const cachedMsg = sessionStorage.getItem('sv_announcement');
-  if (cachedMsg) {
-    if (cachedMsg !== "none") {
-      textElement.textContent = cachedMsg;
-      banner.style.display = 'flex';
-    } else {
-      banner.style.display = 'none';
+// ⚠️ PASTE YOUR GOOGLE SCRIPT WEB APP URL HERE:
+const NOTIFICATION_API_URL = "https://script.google.com/macros/s/AKfycbwvyI0ArlPcqoD-WQG0Pm2O1OHf_uwYr_PQbS7rc-2q9HvwlOYFjXBl-W_3SbQ20UX3/exec"; 
+
+let globalAnnouncements = [];
+
+// 1. Run this immediately when the dashboard loads
+async function initializeNotifications() {
+  // A. Load instantly from cache (0 lag)
+  const cached = localStorage.getItem('vartika_notifications');
+  if (cached) {
+    globalAnnouncements = JSON.parse(cached);
+    checkRedDot();
+  }
+
+  // B. Silently fetch from Google Sheets in the background
+  try {
+    const response = await fetch(NOTIFICATION_API_URL);
+    const freshData = await response.json();
+    
+    if (freshData && freshData.length > 0) {
+      globalAnnouncements = freshData;
+      // Save the fresh data to cache for next time
+      localStorage.setItem('vartika_notifications', JSON.stringify(globalAnnouncements));
+      checkRedDot();
     }
+  } catch (error) {
+    console.error("Silent notification sync failed:", error);
+  }
+}
+
+// 2. Logic to show/hide the Red Dot
+function checkRedDot() {
+  if (globalAnnouncements.length === 0) return;
+  
+  // We use the Title + Date of the newest item as its unique ID
+  const latestId = globalAnnouncements[0].title + globalAnnouncements[0].date;
+  const lastReadId = localStorage.getItem('vartika_last_read_id');
+  
+  if (latestId !== lastReadId) {
+    document.getElementById('bell-dot').style.display = 'block';
+  }
+}
+
+// 3. Render the UI when the user clicks the Bell
+function openNotifications() {
+  document.getElementById('notification-modal').style.display = 'flex';
+  const feed = document.getElementById('announcement-feed');
+  feed.innerHTML = '';
+
+  if (globalAnnouncements.length === 0) {
+    feed.innerHTML = '<p style="text-align: center; color: #A1887F;">No recent announcements.</p>';
     return;
   }
 
-  // CLOUD FETCH: If not cached, get it from Google Sheets
-  try {
-    const response = await fetch(ANNOUNCEMENT_URL);
-    const data = await response.json();
+  // Hide the red dot and remember that they read the newest item
+  const latestId = globalAnnouncements[0].title + globalAnnouncements[0].date;
+  localStorage.setItem('vartika_last_read_id', latestId);
+  document.getElementById('bell-dot').style.display = 'none';
+
+  // Build the "Soft & Elegant" HTML
+  globalAnnouncements.forEach(ann => {
+    const linkHtml = ann.link ? `<a href="${escapeHTML(ann.link)}" target="_blank" class="elegant-notify-link">View Details</a>` : '';
     
-    if (data.message && data.message.trim() !== "") {
-      textElement.textContent = data.message;
-      banner.style.display = 'flex';
-      sessionStorage.setItem('sv_announcement', data.message);
-    } else {
-      // If cell A1 is empty, hide banner and cache the empty state
-      banner.style.display = 'none';
-      sessionStorage.setItem('sv_announcement', "none"); 
-    }
-  } catch (error) {
-    console.error("Failed to load announcement:", error);
-  }
+    feed.innerHTML += `
+      <div class="elegant-notify-card">
+        <h4 class="elegant-notify-title">${escapeHTML(ann.title)}</h4>
+        <p class="elegant-notify-msg">${escapeHTML(ann.message)}</p>
+        ${linkHtml}
+        <div class="elegant-notify-date">${escapeHTML(ann.date)}</div>
+      </div>
+    `;
+  });
 }
 
 // ==========================================
@@ -2271,4 +2328,53 @@ async function refreshStudentProfile() {
   } catch (error) {
     console.error("Failed to refresh profile:", error);
   }
+}
+
+
+// ==========================================
+// === PREMIUM UI INTERACTIONS ===
+// ==========================================
+
+// 1. Dropdown Toggle Logic
+function toggleUserDropdown() {
+  document.getElementById("user-dropdown").classList.toggle("show");
+}
+
+// Close dropdown if user clicks anywhere else on the screen
+window.onclick = function(event) {
+  if (!event.target.matches('#nav-user-name-btn') && !event.target.closest('#nav-user-name-btn')) {
+    const dropdown = document.getElementById("user-dropdown");
+    if (dropdown && dropdown.classList.contains('show')) {
+      dropdown.classList.remove('show');
+    }
+  }
+}
+
+// 2. Custom Logout Logic
+function openCustomLogout() {
+  document.getElementById('logout-modal').style.display = 'flex';
+  document.getElementById("user-dropdown").classList.remove("show"); // Hide dropdown
+}
+
+function executeLogout() {
+  document.getElementById('logout-modal').style.display = 'none';
+  auth.signOut().then(() => {
+    currentUser = null;
+    showToast("Logged out successfully");
+    navigate('home');
+  }).catch(error => {
+    console.error("Logout error", error);
+    showToast("Error logging out");
+  });
+}
+
+// 3. Placeholder Dropdown Actions
+function showMyProfile() {
+  document.getElementById("user-dropdown").classList.remove("show");
+  navigate('dashboard');
+}
+
+function contactSupport() {
+  document.getElementById("user-dropdown").classList.remove("show");
+  window.open("https://wa.me/918172063129?text=Hello%20Support", "_blank"); 
 }

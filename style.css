@@ -914,3 +914,158 @@ footer {
   .drawer-btn:active { background: #FFF3E0; }
   .drawer-btn svg { width: 24px; height: 24px; stroke: var(--saffron); stroke-width: 2; fill: none; }
 }
+
+/* ==========================================
+   === SOFT & ELEGANT NOTIFICATION DESIGN ===
+   ========================================== */
+.elegant-notify-card {
+  background: linear-gradient(145deg, #FFFCF5, #FFF5E6);
+  border: 1px solid #F5E6D3;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 15px rgba(139, 69, 19, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.elegant-notify-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 69, 19, 0.08);
+}
+
+/* Subtle left accent line */
+.elegant-notify-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--brown);
+  border-radius: 4px 0 0 4px;
+  opacity: 0.8;
+}
+
+.elegant-notify-title {
+  color: var(--brown);
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.elegant-notify-msg {
+  color: #5D4037;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.elegant-notify-link {
+  display: inline-block;
+  background: white;
+  border: 1px solid #E8D5C4;
+  color: #D32F2F;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.elegant-notify-link:hover {
+  background: #FFF0E6;
+  border-color: #D32F2F;
+}
+
+.elegant-notify-date {
+  font-size: 0.75rem;
+  color: #A1887F;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* ==========================================
+   === PREMIUM NAVBAR UI (BELL & DROPDOWN) ===
+   ========================================== */
+
+/* The Notification Bell */
+.nav-bell-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  position: relative;
+  padding: 8px;
+  margin-right: 12px;
+  transition: transform 0.2s;
+}
+.nav-bell-btn:hover {
+  transform: scale(1.1);
+}
+.notification-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #FF5252;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: none; 
+}
+
+/* User Dropdown Container */
+.user-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* The actual dropdown box */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 120%;
+  background-color: white;
+  min-width: 180px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--cream-dark);
+  z-index: 2000;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+/* Dropdown showing state (Triggered by JavaScript) */
+.dropdown-content.show {
+  display: flex;
+  animation: slideDown 0.2s ease forwards;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dropdown items */
+.dropdown-content a {
+  color: var(--text-dark);
+  padding: 14px 16px;
+  text-decoration: none;
+  display: block;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f5f5;
+}
+.dropdown-content a:last-child {
+  border-bottom: none;
+}
+.dropdown-content a:hover {
+  background-color: var(--cream);
+  color: var(--saffron);
+}
