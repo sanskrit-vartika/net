@@ -336,39 +336,38 @@ function navigate(page, addToHistory = true) {
     const activeNavBtn = document.getElementById('bnav-' + page);
     if (activeNavBtn) activeNavBtn.classList.add('active');
   }
-  
 
-    // === NEW: UPDATE DESKTOP TOP NAV ACTIVE STATE ===
-    document.querySelectorAll('.nav-links .nav-btn').forEach(btn => btn.classList.remove('active'));
-    
-    // Map the pages to their correct top-bar buttons
-    const topNavMap = {
-      'home': 'Home',
-      'study': 'Study Materials',
-      'mocktest': 'Study Materials', // Mock tests live under the Study Materials dropdown
-      'courses': 'Courses',
-      'free': 'Free Services',
-      'dashboard': 'Student Dashboard',
-      'about': 'About Us',
-      'contact': 'Contact',
-      'admin': '👑 Admin'
-    };
-    
-    const activeText = topNavMap[page];
-    if (activeText) {
-      document.querySelectorAll('.nav-links .nav-btn').forEach(btn => {
-        if (btn.textContent.trim() === activeText) {
-          btn.classList.add('active');
-        }
-      });
-    }
-    // ===============================================
+  // === NEW: UPDATE DESKTOP TOP NAV ACTIVE STATE ===
+  document.querySelectorAll('.nav-links .nav-btn').forEach(btn => btn.classList.remove('active'));
+  
+  // Map the pages to their correct top-bar buttons
+  const topNavMap = {
+    'home': 'Home',
+    'study': 'Study Materials',
+    'mocktest': 'Study Materials',
+    'courses': 'Courses',
+    'free': 'Free Services',
+    'dashboard': 'Student Dashboard',
+    'about': 'About Us',
+    'contact': 'Contact',
+    'admin': '👑 Admin'
+  };
+  
+  const activeText = topNavMap[page];
+  if (activeText) {
+    document.querySelectorAll('.nav-links .nav-btn').forEach(btn => {
+      if (btn.textContent.trim() === activeText) {
+        btn.classList.add('active');
+      }
+    });
+  }
+  // ===============================================
   
   if (page === 'dashboard') loadDashboard();
   if (page === 'mocktest') { 
     isFreeMode = false; 
     showCategories(); 
-    updateTestCardLocks(); // <--- NEW: Forces visual locks to render instantly for guests
+    updateTestCardLocks();
   }
   if (page === 'study') {
     if (typeof backToNotesMain === 'function') backToNotesMain();
@@ -473,6 +472,32 @@ function showToast(msg) {
   }, 3000);
 }
 
+// --- SKELETON LOADER FACTORY ---
+function getSkeletonGrid(count = 6, type = 'test') {
+  let html = '';
+  for(let i = 0; i < count; i++) {
+    if (type === 'test') {
+      html += `
+        <div class="skel-card">
+          <div class="skeleton skel-icon"></div>
+          <div class="skeleton skel-title"></div>
+          <div class="skeleton skel-text"></div>
+          <div class="skeleton skel-text-short"></div>
+        </div>
+      `;
+    } else if (type === 'note') {
+      html += `
+        <div class="skel-card" style="align-items: flex-start; text-align: left; height: 160px;">
+          <div class="skeleton skel-title" style="margin: 0 0 8px 0; width: 80%;"></div>
+          <div class="skeleton skel-text"></div>
+          <div class="skeleton skel-text-short" style="margin: 0;"></div>
+          <div class="skeleton skel-button"></div>
+        </div>
+      `;
+    }
+  }
+  return html;
+}
 
 function toggleMobileDrawer() {
   document.getElementById('mobileDrawer').classList.toggle('open');
@@ -640,7 +665,6 @@ async function showSets(cat) {
   if (!currentUser) {
     showToast("⚠️ Please create a free account to unlock practice tests!");
     
-    // Force the modal into Sign-Up mode smoothly
     isSignUpMode = true; 
     document.getElementById('auth-title').textContent = "Create Account";
     document.getElementById('auth-subtitle').textContent = `Start your ${FREE_TRIAL_DAYS}-Day Free Premium Trial!`;
@@ -651,38 +675,50 @@ async function showSets(cat) {
     document.getElementById('auth-switch-text').innerHTML = "Already have an account? <a href='#' onclick='toggleAuthMode()' style='color: var(--saffron); font-weight: bold;'>Log In</a>";
     
     showAuthModal();
-    return; // STOP the code
+    return; 
   }
 
   // 2. SCENARIO B: Logged in, but Free/Expired -> Prompt Upgrade
   if (!hasPremiumAccess()) {
     document.getElementById('premium-lock-modal').style.display = 'flex';
-    return; // STOP the code
+    return; 
   }
 
   // 3. SCENARIO C: VIP Access Granted -> Load Tests!
-  document.getElementById('loading-overlay').style.display = 'flex';
-  const success = await fetchQuestions(cat);
-  document.getElementById('loading-overlay').style.display = 'none';
+  
+  // Hide other screens and show the sets grid to make room for Skeletons
+  document.getElementById('test-categories').style.display = 'none';
+  document.getElementById('test-interface').style.display = 'none';
+  document.getElementById('test-results').style.display = 'none';
+  
+  const setsView = document.getElementById('test-sets-view');
+  setsView.style.display = 'block';
+  window.scrollTo(0, 0);
 
-  if (success) renderSetsUI(cat);
-  else showToast(`The database for ${catNames[cat]} could not be loaded.`);
+  // INJECT THE SKELETONS
+  const grid = document.getElementById('sets-grid');
+  grid.innerHTML = getSkeletonGrid(6, 'test');
+  document.getElementById('sets-category-title').textContent = "Loading Practice Sets...";
+
+  // Fetch data + smooth 400ms artificial delay for a premium feel
+  const fetchPromise = fetchQuestions(cat);
+  const delayPromise = new Promise(r => setTimeout(r, 400));
+  
+  await Promise.all([fetchPromise, delayPromise]);
+  const success = await fetchPromise;
+
+  if (success) {
+    renderSetsUI(cat);
+  } else {
+    showToast(`The database for ${catNames[cat]} could not be loaded.`);
+    showCategories(); // Go back if failed
+  }
 }
 
 // --- NEW SMART ENGINE: The Free Services Loader ---
 async function openFreeSets(mode) {
   
-  document.getElementById('loading-overlay').style.display = 'flex';
-  
-  // Determine which databases to download (Array order dictates display order!)
-  let catsToLoad = mode === 'full' ? ['full'] : ['vedic', 'grammar', 'darshan', 'sahitya', 'other'];
-  
-  // Download all needed databases simultaneously for blazing fast speed
-  await Promise.all(catsToLoad.map(cat => fetchQuestions(cat)));
-  
-  document.getElementById('loading-overlay').style.display = 'none';
-
-  // Take the user to the Mock Test interface
+  // 1. Immediately switch the view so they see the page changing
   navigate('mocktest');
   document.getElementById('test-categories').style.display = 'none';
   document.getElementById('test-interface').style.display = 'none';
@@ -692,12 +728,21 @@ async function openFreeSets(mode) {
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
 
-isFreeMode = true;
-if(document.getElementById('back-to-cat-btn')) document.getElementById('back-to-cat-btn').textContent = '← Back to Free Services';
+  // 2. Inject the Skeletons!
+  const grid = document.getElementById('sets-grid');
+  grid.innerHTML = getSkeletonGrid(6, 'test'); 
+  
+  // 3. Fetch the data in the background
+  let catsToLoad = mode === 'full' ? ['full'] : ['vedic', 'grammar', 'darshan', 'sahitya', 'other'];
+  await Promise.all(catsToLoad.map(cat => fetchQuestions(cat)));
+
+  // 4. Load the actual data into the UI
+  isFreeMode = true;
+  const backBtn = document.getElementById('back-to-cat-btn');
+  if(backBtn) backBtn.textContent = '← Back to Free Services';
 
   document.getElementById('sets-category-title').textContent = mode === 'full' ? "Free Full Mock Tests" : "Free Topic-wise Tests";
 
-  const grid = document.getElementById('sets-grid');
   grid.innerHTML = '';
   let hasFreeSets = false;
   const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
@@ -1673,14 +1718,33 @@ function filterVideos() {
 }
 
 // === CONTACT FORM ===
+// === CONTACT FORM (WhatsApp Integration) ===
 function submitContactForm() {
-  const name = document.getElementById('cf-name').value.trim();
-  const email = document.getElementById('cf-email').value.trim();
-  const subject = document.getElementById('cf-subject').value.trim();
   const msg = document.getElementById('cf-msg').value.trim();
-  if (!name || !email || !msg) { showToast('Please fill all required fields.'); return; }
-  const mailto = `mailto:enquiry.sanskritvartika@gmail.com?subject=${encodeURIComponent(subject||'Query from website')}&body=${encodeURIComponent('Name: '+name+'\nEmail: '+email+'\n\n'+msg)}`;
-  window.location.href = mailto;
+  
+  if (!msg) { 
+    showToast('⚠️ Please type a message first.'); 
+    return; 
+  }
+  
+  // 1. Dynamically grab the student's name if they are logged in
+  let studentName = "a Student";
+  if (currentUser && currentUser.dbData && currentUser.dbData.name) {
+    studentName = currentUser.dbData.name;
+  }
+
+  // 2. Format the final message exactly as requested
+  const finalMessage = `Hi, I am ${studentName},\n\n${msg}`;
+  
+  // 3. EDIT THIS: Put your actual WhatsApp business number here
+  const phone = "918172063129"; 
+  
+  // 4. Launch WhatsApp
+  const encodedMessage = encodeURIComponent(finalMessage);
+  window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+  
+  // Clear the box after sending
+  document.getElementById('cf-msg').value = '';
 }
 
 // ==========================================
@@ -2428,5 +2492,5 @@ function showMyProfile() {
 
 function contactSupport() {
   document.getElementById("user-dropdown").classList.remove("show");
-  window.open("https://wa.me/918172063129?text=Hello%20Support", "_blank"); 
+  navigate('contact'); 
 }

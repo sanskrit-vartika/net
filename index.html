@@ -977,25 +977,17 @@
       </div>
 
       <div class="contact-form-wrap">
-        <h3>Send us a Message</h3>
+        <h3 style="display: flex; align-items: center; gap: 8px; color: #25D366;">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12.031 0C5.393 0 0 5.393 0 12.031c0 2.128.552 4.195 1.6 6.024L.25 23.75l5.856-1.535a11.968 11.968 0 0 0 5.925 1.554h.005c6.635 0 12.028-5.393 12.028-12.031S18.666 0 12.031 0zm0 21.758c-1.802 0-3.568-.485-5.115-1.402l-.367-.218-3.8.995.998-3.7-.24-.38a9.972 9.972 0 0 1-1.528-5.28C1.98 6.505 6.49 2.011 12.031 2.011c2.684 0 5.205 1.045 7.102 2.943a9.984 9.984 0 0 1 2.916 7.077c-.001 5.513-4.512 10.012-10.018 10.012zm5.5-7.518c-.302-.151-1.782-.881-2.059-.982-.277-.101-.478-.151-.68.151-.201.302-.781.982-.957 1.183-.176.201-.353.226-.655.075-.302-.151-1.274-.469-2.427-1.48-1.002-.878-1.68-1.963-1.882-2.265-.201-.302-.021-.465.13-.616.136-.136.302-.352.453-.528.151-.176.201-.302.302-.503.1-.201.05-.377-.025-.528-.075-.151-.68-1.635-.932-2.239-.246-.589-.496-.508-.68-.518-.176-.008-.377-.01-.578-.01-.201 0-.528.075-.805.377-.277.302-1.057 1.031-1.057 2.515s1.082 2.917 1.233 3.118c.151.201 2.128 3.248 5.156 4.551 1.545.663 2.378.85 3.208 1.03.714.156 1.365.133 1.874.081.572-.058 1.782-.729 2.034-1.433.252-.704.252-1.308.176-1.433-.075-.126-.277-.201-.578-.352z"/></svg>
+          Send us a WhatsApp
+        </h3>
+        <p style="color: var(--text-mid); font-size: 0.85rem; margin-bottom: 16px;">We usually reply within a few minutes!</p>
+        
         <div class="form-group">
-          <label class="form-label">Your Name *</label>
-          <input type="text" class="form-input" id="cf-name" placeholder="Enter your name">
+          <textarea class="form-textarea" id="cf-msg" placeholder="Write your message here..." style="min-height: 140px; border-color: #25D366;"></textarea>
         </div>
-        <div class="form-group">
-          <label class="form-label">Email Address *</label>
-          <input type="email" class="form-input" id="cf-email" placeholder="your@email.com">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Subject</label>
-          <input type="text" class="form-input" id="cf-subject" placeholder="How can we help?">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Message *</label>
-          <textarea class="form-textarea" id="cf-msg" placeholder="Write your message here..."></textarea>
-        </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitContactForm()">
-          ✉️ Send Message
+        <button class="btn btn-primary" style="width:100%; justify-content:center; background: #25D366; font-size: 1rem;" onclick="submitContactForm()">
+          Send Message
         </button>
       </div>
     </div>
