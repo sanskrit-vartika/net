@@ -307,12 +307,19 @@ let isFreeMode = false;
 let currentPage = 'home';
 let pendingNavigation = null; // NEW: Remembers where the user wanted to go
 
-function navigate(page, addToHistory = true) {
+function navigate(page, addToHistory = true, keepFreeMode = false) {
   // --- NEW: INTERCEPT NAVIGATION IF TEST IS RUNNING ---
   if (testState.timerInterval && !testState.finished && document.getElementById('test-interface').style.display === 'block') {
-    pendingNavigation = { page, addToHistory };
+    pendingNavigation = { page, addToHistory, keepFreeMode };
     document.getElementById('exit-modal').style.display = 'flex';
     return; // Stop the navigation instantly!
+  }
+
+  // SMART STATE ROUTING: Respect the free mode flag
+  if (page === 'mocktest') {
+    isFreeMode = keepFreeMode;
+  } else {
+    isFreeMode = false;
   }
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -322,51 +329,58 @@ function navigate(page, addToHistory = true) {
     currentPage = page;
     window.scrollTo(0, 0);
     
-    // Browser History Integration
+    // Browser History Integration (Saves the Free state!)
     if (addToHistory) {
-      history.pushState({ page: page }, '', '#' + page);
+      history.pushState({ page: page, isFree: isFreeMode }, '', '#' + page);
     }
 
     // Dynamic Tab Titles
     const titles = { 'home': 'Home', 'study': 'Study Materials', 'mocktest': 'Mock Tests', 'courses': 'Courses', 'free': 'Free Services', 'dashboard': 'Student Dashboard', 'about': 'About Us', 'contact': 'Contact' };
-    document.title = (titles[page] || 'Welcome') + ' | संस्कृत-वर्तिका';
+    const pageTitle = (titles[page] || 'Welcome') + ' | संस्कृत-वर्तिका';
+    document.title = pageTitle;
 
-    // Update Mobile Bottom Nav Active State
+    // === NEW: GOOGLE ANALYTICS SPA TRACKING ===
+    if (typeof gtag === 'function') {
+      gtag('event', 'page_view', {
+        page_title: pageTitle,
+        page_location: window.location.href,
+        page_path: '/' + page
+      });
+    }
+
+    // Update Mobile Bottom Nav
     document.querySelectorAll('.mat-item').forEach(el => el.classList.remove('active'));
     const activeNavBtn = document.getElementById('bnav-' + page);
     if (activeNavBtn) activeNavBtn.classList.add('active');
   }
 
-  // === NEW: UPDATE DESKTOP TOP NAV ACTIVE STATE ===
+  // === UPDATE DESKTOP TOP NAV ACTIVE STATE ===
   document.querySelectorAll('.nav-links .nav-btn').forEach(btn => btn.classList.remove('active'));
   
-  // Map the pages to their correct top-bar buttons
   const topNavMap = {
-    'home': 'Home',
-    'study': 'Study Materials',
-    'mocktest': 'Study Materials',
-    'courses': 'Courses',
-    'free': 'Free Services',
-    'dashboard': 'Student Dashboard',
-    'about': 'About Us',
-    'contact': 'Contact',
-    'admin': '👑 Admin'
+    'home': 'Home', 'study': 'Study Materials', 'mocktest': 'Study Materials',
+    'courses': 'Courses', 'free': 'Free Services', 'dashboard': 'Student Dashboard',
+    'about': 'About Us', 'contact': 'Contact', 'admin': '👑 Admin'
   };
   
-  const activeText = topNavMap[page];
+  let activeText = topNavMap[page];
+
+  // SMART OVERRIDE: If we are on Mock Tests but it's Free Mode, trick the nav bar!
+  if (page === 'mocktest' && isFreeMode) {
+    activeText = 'Free Services';
+  }
+
   if (activeText) {
     document.querySelectorAll('.nav-links .nav-btn').forEach(btn => {
-      if (btn.textContent.trim() === activeText) {
-        btn.classList.add('active');
-      }
+      if (btn.textContent.trim() === activeText) btn.classList.add('active');
     });
   }
   // ===============================================
   
   if (page === 'dashboard') loadDashboard();
-  if (page === 'mocktest') { 
-    isFreeMode = false; 
-    showCategories(); 
+  if (page === 'mocktest') {
+    // ONLY show paid categories if we are NOT in free mode
+    if (!isFreeMode) showCategories();
     updateTestCardLocks();
   }
   if (page === 'study') {
@@ -450,7 +464,9 @@ window.addEventListener('popstate', function(event) {
 
   // 7. If the screen is clear, do normal navigation!
   if (event.state && event.state.page) {
-    navigate(event.state.page, false);
+    // Retrieve the free mode flag from the browser's history
+    const wasFree = event.state.isFree || false;
+    navigate(event.state.page, false, wasFree);
   } else {
     navigate('home', false);
   }
@@ -459,7 +475,8 @@ window.addEventListener('popstate', function(event) {
   const startTestModal = document.getElementById('start-test-modal');
   if (startTestModal && startTestModal.style.display === 'flex') {
     startTestModal.style.display = 'none';
-    history.pushState({ page: currentPage }, '', '#' + currentPage);
+    const wasFree = (event.state && event.state.isFree) || false;
+    history.pushState({ page: currentPage, isFree: wasFree }, '', '#' + currentPage);
     return;
   }
 });
@@ -550,6 +567,13 @@ const TEST_DATABASE_URLS = {
   'other': 'https://script.google.com/macros/s/AKfycbwgzQw9hZPBNOznWJUCobVyjN7LYU9-Tf93fZgm4VxWQfKo9Lo9vdYP4HnaqBEgHPU/exec'
 };
 
+// NEW: The Dedicated Free Databases
+const FREE_DATABASE_URLS = {
+  'topic': 'https://script.google.com/macros/s/AKfycbwsDVEqgnkrJNcc8BXg3roqQ7tL5p9trxC-Eu8rtD-hTtfOo64WPTwax7ql6uitgFbXJg/exec',
+  'full': 'https://script.google.com/macros/s/AKfycbyzEJOaAOHBalQESrUx3vDyvnPHijXL_6RfLTxu2iy4BAIUeLzagkE-c7_nHMKrDOf1/exec'
+};
+let freeQuestionsCache = { 'topic': {}, 'full': {} }; // Caches them so they load instantly
+
 // === MOCK TEST ENGINE ===
 let testState = {
   category: null,
@@ -566,7 +590,9 @@ let testState = {
 
 const catNames = {
   full: 'Full Mock Test', vedic: 'वैदिकसाहित्यम्', grammar: 'व्याकरणम्',
-  darshan: 'दर्शनम्', sahitya: 'साहित्यम्', other: 'अन्यानि'
+  darshan: 'दर्शनम्', sahitya: 'साहित्यम्', other: 'अन्यानि',
+  // NEW: Distinct names for the free database
+  free_topic: 'Free Topic Test', free_full: 'Free Full Mock'
 };
 
 // 2. THE CENTRAL DATA FETCHER (Upgraded with Free Filters & TIMEOUT)
@@ -731,11 +757,11 @@ async function showSets(cat) {
   }
 }
 
-// --- NEW SMART ENGINE: The Free Services Loader ---
+// --- UPGRADED SMART ENGINE: The Free Services Loader ---
 async function openFreeSets(mode) {
+  // 1. Immediately switch the view & preserve Free Mode
+  navigate('mocktest', true, true); 
   
-  // 1. Immediately switch the view so they see the page changing
-  navigate('mocktest');
   document.getElementById('test-categories').style.display = 'none';
   document.getElementById('test-interface').style.display = 'none';
   document.getElementById('test-results').style.display = 'none';
@@ -744,59 +770,100 @@ async function openFreeSets(mode) {
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
 
-  // 2. Inject the Skeletons!
+  // 2. Inject Skeletons
   const grid = document.getElementById('sets-grid');
   grid.innerHTML = getSkeletonGrid(6, 'test'); 
+  document.getElementById('sets-category-title').textContent = mode === 'full' ? "Free Full Mock Tests" : "Free Topic-wise Tests";
   
-  // 3. Fetch the data in the background
-  let catsToLoad = mode === 'full' ? ['full'] : ['vedic', 'grammar', 'darshan', 'sahitya', 'other'];
-  await Promise.all(catsToLoad.map(cat => fetchQuestions(cat)));
-
-  // 4. Load the actual data into the UI
-  isFreeMode = true;
   const backBtn = document.getElementById('back-to-cat-btn');
   if(backBtn) backBtn.textContent = '← Back to Free Services';
 
-  document.getElementById('sets-category-title').textContent = mode === 'full' ? "Free Full Mock Tests" : "Free Topic-wise Tests";
+  // 3. Fetch data from the isolated Free Sheets (if not already cached)
+  if (Object.keys(freeQuestionsCache[mode]).length === 0) {
+    try {
+      const response = await fetch(FREE_DATABASE_URLS[mode]);
+      const data = await response.json();
+      
+      // Organize the incoming data
+      data.forEach(row => {
+        let setKey = "";
+        let displayDesc = "";
 
-  grid.innerHTML = '';
-  let hasFreeSets = false;
-  const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
+        if (mode === 'topic') {
+          // E.g., "Rigveda - Set 1"
+          setKey = `${row.topic} - Set ${row.set}`;
+          displayDesc = row.category; // E.g., वैदिकसाहित्यम्
+        } else {
+          // E.g., "Free Full Mock - 1"
+          setKey = row.set;
+          displayDesc = "Complete 100-question mock test";
+        }
 
-  catsToLoad.forEach(cat => {
-    if (!allQuestions[cat]) return;
-    
-    Object.keys(allQuestions[cat]).forEach(setKey => {
-      const qs = allQuestions[cat][setKey];
-      // If ANY question in this set has type "free", display the whole set!
-      const isFreeSet = qs.some(q => q.isFree);
+        if (!freeQuestionsCache[mode][setKey]) {
+          freeQuestionsCache[mode][setKey] = { desc: displayDesc, questions: [], catName: mode === 'full' ? 'Free Full' : row.category };
+        }
 
-      if (isFreeSet) {
-        hasFreeSets = true;
-        const catTitle = catNames[cat];
-        const exactTestName = catTitle + " - " + setKey;
-        const isCompleted = history.some(h => h.name === exactTestName);
-        const checkmark = isCompleted ? '<div style="position:absolute; top:12px; right:12px; background:#4CAF50; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">✓</div>' : '';
+        // Convert answer letter to index
+        let rawAns = String(row.answer || "1").trim().toUpperCase();
+        let convertedAns = 0;
+        if (rawAns === "A" || rawAns === "1") convertedAns = 0;
+        else if (rawAns === "B" || rawAns === "2") convertedAns = 1;
+        else if (rawAns === "C" || rawAns === "3") convertedAns = 2;
+        else if (rawAns === "D" || rawAns === "4") convertedAns = 3;
+        else convertedAns = Math.max(0, Number(rawAns) - 1);
 
-        // Add subject name (e.g., वैदिकसाहित्यम्) to description for topic-wise tests
-        const desc = mode === 'topic' ? catTitle : "Complete practice set";
-
-        grid.innerHTML += `
-          <div class="test-cat-card" style="border: ${isCompleted ? '2px solid #4CAF50' : '2px solid transparent'}" onclick="promptStartTest('${cat}', '${setKey}')">
-            ${checkmark}
-            <div class="test-cat-icon">🎁</div>
-            <h3 style="font-size:1.05rem;">${setKey}</h3>
-            <p style="font-family: var(--font-skt); font-size: 0.9rem;">${desc}</p>
-            <span class="q-count">${qs.length} Questions</span>
-          </div>
-        `;
-      }
-    });
-  });
-
-  if (!hasFreeSets) {
-    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">Free sets are being updated. Check back soon!</p>';
+        freeQuestionsCache[mode][setKey].questions.push({
+          q: row.question,
+          options: [row.opt0, row.opt1, row.opt2, row.opt3],
+          answer: convertedAns,
+          explanation: row.explanation
+        });
+      });
+    } catch (error) {
+      console.error("Failed to load free sets:", error);
+      grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:red;">Failed to connect to the free database.</p>';
+      return;
+    }
   }
+
+  // 4. Render the UI
+  grid.innerHTML = '';
+  // Read any old Firebase history + the new Local Storage history
+  const cloudHistory = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
+  const localHistory = JSON.parse(localStorage.getItem('vartika_free_history') || '[]');
+  const history = [...cloudHistory, ...localHistory];
+  const availableSets = freeQuestionsCache[mode];
+
+  if (Object.keys(availableSets).length === 0) {
+    grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">Free sets are being updated. Check back soon!</p>';
+    return;
+  }
+
+  Object.keys(availableSets).forEach(setKey => {
+    const setObj = availableSets[setKey];
+    
+    // Make sure we inject these dynamically into the global 'allQuestions' 
+    // so the test engine can find them when the user clicks "Start"
+    if (!allQuestions['free_' + mode]) allQuestions['free_' + mode] = {};
+    allQuestions['free_' + mode][setKey] = setObj.questions;
+    
+    // Check if completed
+    // Check if completed (Using the unique Free names to prevent mixing with Paid tests)
+    const catTitle = mode === 'full' ? catNames['free_full'] : catNames['free_topic'];
+    const exactTestName = catTitle + " - " + setKey;
+    const isCompleted = history.some(h => h.name === exactTestName);
+    const checkmark = isCompleted ? '<div style="position:absolute; top:12px; right:12px; background:#4CAF50; color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.8rem;">✓</div>' : '';
+
+    grid.innerHTML += `
+      <div class="test-cat-card" style="border: ${isCompleted ? '2px solid #4CAF50' : '2px solid transparent'}" onclick="promptStartTest('free_${mode}', '${setKey}')">
+        ${checkmark}
+        <div class="test-cat-icon">🎁</div>
+        <h3 style="font-size:1.05rem;">${setKey}</h3>
+        <p style="font-family: var(--font-skt); font-size: 0.9rem;">${setObj.desc}</p>
+        <span class="q-count">${setObj.questions.length} Questions</span>
+      </div>
+    `;
+  });
 }
 
 // 3. THE UI RENDERER: Builds the grid of Sets after data is loaded
@@ -1091,6 +1158,15 @@ function confirmSubmit() {
   });
 
   const pct = Math.round((correct / qs.length) * 100);
+
+  // === NEW: GOOGLE ANALYTICS CUSTOM EVENT ===
+  if (typeof gtag === 'function') {
+    gtag('event', 'mock_test_completed', {
+      'test_name': testState.testName,
+      'score_percentage': pct
+    });
+  }
+  // ==========================================
   document.getElementById('score-num').textContent = correct + '/' + qs.length;
   const scoreCircle = document.getElementById('score-circle');
   scoreCircle.style.setProperty('--pct', pct + '%');
@@ -1436,6 +1512,29 @@ async function loadPYQsFromSheet() {
 // ==========================================
 
 async function saveTestResult(name, correct, total) {
+  const isFreeTest = name.startsWith('Free Topic Test') || name.startsWith('Free Full Mock');
+  const today = new Date().toLocaleDateString('en-IN');
+  const pct = Math.round((correct/total)*100);
+  const resultObj = { name, correct, total, pct, date: today };
+
+  // === NEW: OFFLINE STORAGE FOR FREE TESTS ===
+  if (isFreeTest) {
+    let localHistory = JSON.parse(localStorage.getItem('vartika_free_history') || '[]');
+    localHistory.unshift(resultObj);
+    if (localHistory.length > 50) localHistory.pop(); // Keep max 50 free tests in local storage
+    localStorage.setItem('vartika_free_history', JSON.stringify(localHistory));
+    
+    // Refresh the Free UI quietly
+    const setsView = document.getElementById('test-sets-view');
+    if (setsView && setsView.style.display === 'block') {
+      const mode = name.startsWith('Free Full Mock') ? 'full' : 'topic';
+      openFreeSets(mode); 
+    }
+    return; // 🛑 Stop here! 0 Firebase writes consumed.
+  }
+  // ===========================================
+
+  // Existing Firebase logic for Paid Tests
   if (!currentUser || !currentUser.dbData) {
     showToast("⚠️ Score not saved! Please log in to track your progress.");
     return; 
@@ -1443,12 +1542,11 @@ async function saveTestResult(name, correct, total) {
   
   let history = currentUser.dbData.history || [];
   let streak = currentUser.dbData.streak || { count: 0, lastDate: "" };
-  const today = new Date().toLocaleDateString('en-IN');
   
   const oldUnlocked = BADGE_DEFS.filter(b => b.check(history, streak.count)).map(b => b.id);
 
-  history.unshift({ name, correct, total, pct: Math.round((correct/total)*100), date: today });
-  if (history.length > 100) history.pop();
+  history.unshift(resultObj);
+  if (history.length > 100) history.pop(); // Keep max 100 paid tests in Cloud
 
   if (streak.lastDate !== today) {
     const yesterday = new Date();
@@ -1771,9 +1869,14 @@ function renderAnalytics() {
     if (subjectTests.length > 0) {
       hasData = true;
       
-      // Calculate the average percentage for this specific subject
-      const totalPct = subjectTests.reduce((sum, h) => sum + h.pct, 0);
-      const avgPct = Math.round(totalPct / subjectTests.length);
+      const totalTaken = subjectTests.length;
+      
+      // THE ROLLING AVERAGE: Take ONLY the 25 most recent tests for the math
+      const recentTests = subjectTests.slice(0, 25);
+      
+      // Calculate the average percentage based ONLY on those 25
+      const totalPct = recentTests.reduce((sum, h) => sum + h.pct, 0);
+      const avgPct = Math.round(totalPct / recentTests.length);
       
       // Determine the color based on performance
       let colorClass = 'fill-red'; // Under 50%
@@ -1783,8 +1886,8 @@ function renderAnalytics() {
       html += `
         <div class="analytics-item">
           <div class="analytics-header">
-            <span>${sub.icon} <span style="font-family: var(--font-skt);">${sub.name}</span> <span style="font-size:0.75rem; color:var(--text-light); font-weight:400; margin-left:4px;">(${subjectTests.length} tests)</span></span>
-            <span class="pct">${avgPct}%</span>
+            <span>${sub.icon} <span style="font-family: var(--font-skt);">${sub.name}</span> <span style="font-size:0.75rem; color:var(--text-light); font-weight:400; margin-left:4px;">(${totalTaken} tests)</span></span>
+            <span class="pct" title="Based on your last 25 attempts">${avgPct}%</span>
           </div>
           <div class="progress-track">
             <div class="progress-fill ${colorClass}" style="width: 0%" data-target="${avgPct}%"></div>
