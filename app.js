@@ -1159,10 +1159,28 @@ function confirmSubmit() {
 
   const pct = Math.round((correct / qs.length) * 100);
 
-  // === NEW: GOOGLE ANALYTICS CUSTOM EVENT ===
+  // === NEW: GOOGLE ANALYTICS MACRO TRACKING ===
   if (typeof gtag === 'function') {
+    const tName = testState.testName || "";
+    
+    // 1. Detect if it is a Free or Premium test
+    const testType = tName.includes("Free") ? "Free" : "Premium";
+
+    // 2. The Categorizer: Figure out the broad subject
+    let subjectGroup = "Other Topics";
+    
+    if (tName.includes("Full Mock")) subjectGroup = "Full Mocks";
+    else if (tName.includes("वैदिकसाहित्यम्")) subjectGroup = "Vedic Sahitya";
+    else if (tName.includes("व्याकरणम्")) subjectGroup = "Grammar";
+    else if (tName.includes("दर्शनम्")) subjectGroup = "Darshan";
+    else if (tName.includes("साहित्यम्")) subjectGroup = "Sahitya";
+    else if (tName.includes("अन्यानि")) subjectGroup = "Anyani"; // Fixed!
+
+    // 3. Send all data layers to GA4
     gtag('event', 'mock_test_completed', {
-      'test_name': testState.testName,
+      'test_subject': subjectGroup,      
+      'test_name': tName,                
+      'test_type': testType,             // Logs "Free" or "Premium"
       'score_percentage': pct
     });
   }

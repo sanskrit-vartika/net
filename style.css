@@ -430,7 +430,7 @@ button { cursor: pointer; font-family: var(--font-sans); border: none; outline: 
 /* Test Interface */
 #test-interface { display: none; }
 #test-interface.active { display: block; }
-#test-categories { }
+
 
 .test-header {
   background: linear-gradient(135deg, var(--brown), #5A2E10);
