@@ -542,6 +542,12 @@
     <!-- Category Selection -->
     <div id="test-categories">
       <div class="test-categories-grid">
+        <div class="test-cat-card" onclick="showSets('paper1')" data-req="general">
+          <div class="test-cat-icon">📊</div>
+          <h3>1st Paper Mocks</h3>
+          <p>General Aptitude & Reasoning</p>
+          <span class="q-count">New Addition</span>
+        </div>
         <div class="test-cat-card" onclick="showSets('full')">
           <div class="test-cat-icon">📋</div>
           <h3>Full Mock Test</h3>
@@ -754,14 +760,16 @@
     </div>
 
 
-    <!-- DEV SANDBOX (Admin Only - Hidden by default) -->
     <div id="dev-sandbox" style="display: none; background: #FFF3E0; border: 2px dashed #FF9800; border-radius: var(--radius); padding: 20px; margin-bottom: 24px; text-align: center;">
       <h3 style="color: #E65100; margin-bottom: 12px; font-size: 1rem;">🛠️ Developer Test Switch</h3>
-      <p style="font-size: 0.8rem; color: var(--text-mid); margin-bottom: 16px;">Instantly change your own account status to test the UI.</p>
+      <p style="font-size: 0.8rem; color: var(--text-mid); margin-bottom: 16px;">Instantly change your own account status to test the UI locks.</p>
       <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
         <button class="btn btn-sm" style="background: #9E9E9E; color: white;" onclick="setTestState('free')">Set Free</button>
-        <button class="btn btn-sm" style="background: #4CAF50; color: white;" onclick="setTestState('vip')">Set VIP (Active)</button>
-        <button class="btn btn-sm" style="background: #F44336; color: white;" onclick="setTestState('expired')">Set VIP (Expired)</button>
+        <button class="btn btn-sm" style="background: #9C27B0; color: white;" onclick="setTestState('combo')">Set Combo Pass</button>
+        <button class="btn btn-sm" style="background: #E65100; color: white;" onclick="setTestState('batch')">Set Batch Pass</button>
+        <button class="btn btn-sm" style="background: #1565C0; color: white;" onclick="setTestState('sanskrit')">Set Sanskrit Pass</button>
+        <button class="btn btn-sm" style="background: #2E7D32; color: white;" onclick="setTestState('general')">Set 1st Paper Pass</button>
+        <button class="btn btn-sm" style="background: #F44336; color: white;" onclick="setTestState('expired')">Set Expired</button>
       </div>
     </div>
 
@@ -1009,30 +1017,40 @@
       
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <h3 style="color: var(--brown);">Registered Students (<span id="admin-user-count">0</span>)</h3>
-        <button class="btn btn-sm" style="background: #b71c1c; color: white; border: 2px solid #8e1515;" onclick="loadAdminDashboard()">🚨 Load Student Database (Uses Cloud Quota)</button>
+        
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="admin-fetch-type" class="form-input" style="padding: 6px; font-size: 0.8rem; border-color: #b71c1c;">
+            <option value="all">Fetch All (Uses more reads)</option>
+            <option value="passes.combo">Fetch Only Combo</option>
+            <option value="passes.batch">Fetch Only Batch</option>
+            <option value="passes.sanskrit">Fetch Only Sanskrit</option>
+            <option value="passes.general">Fetch Only 1st Paper</option>
+            <option value="basic">Fetch Basic Access Users</option>
+          </select>
+          <button class="btn btn-sm" style="background: #b71c1c; color: white; border: 2px solid #8e1515;" onclick="loadAdminDashboard()">🚨 Load DB</button>
+        </div>
       </div>
 
-      <!-- NEW: Advanced Control Panel -->
       <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: var(--cream); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--cream-dark);">
-        
-        <input type="text" id="admin-search" class="form-input" style="flex: 1; min-width: 200px; border-color: var(--gold);" placeholder="🔍 Search Name, Email, or WhatsApp..." onkeyup="filterAndRenderAdminTable()">
+        <input type="text" id="admin-search" class="form-input" style="flex: 1; min-width: 200px; border-color: var(--gold);" placeholder="🔍 Search Name, Email..." onkeyup="filterAndRenderAdminTable()">
         
         <select id="admin-filter-status" class="form-input" style="width: auto; min-width: 140px;" onchange="filterAndRenderAdminTable()">
-          <option value="all">All Users</option>
-          <option value="vip">👑 Active Param Users</option>
-          <option value="free">Free Users</option>
-          <option value="expired">Expired Param</option>
+          <option value="all">All Loaded</option>
+          <option value="combo">🏆 Combo Pass</option>
+          <option value="batch">🎓 Batch Pass</option>
+          <option value="sanskrit">🪷 Sanskrit Pass</option>
+          <option value="general">📊 1st Paper Pass</option>
+          <option value="free">Basic/Free Users</option>
+          
         </select>
 
         <select id="admin-sort-by" class="form-input" style="width: auto; min-width: 150px;" onchange="filterAndRenderAdminTable()">
           <option value="newest">Sort: Newest First</option>
           <option value="oldest">Sort: Oldest First</option>
-          <option value="expiring">Sort: Expiring Soon</option>
         </select>
 
-        <button class="btn btn-primary btn-sm" style="background: #FF9800; white-space: nowrap;" onclick="document.getElementById('bulk-manage-modal').style.display='flex'">🎁 Bulk Extend Vartika Param</button>
-        <!-- NEW EXPORT BUTTON -->
-        <button class="btn btn-primary btn-sm" style="background: #4CAF50; white-space: nowrap;" onclick="exportToCSV()">📥 Export to CSV</button>
+        <button class="btn btn-primary btn-sm" style="background: #FF9800; white-space: nowrap;" onclick="document.getElementById('bulk-manage-modal').style.display='flex'">🎁 Bulk Extend</button>
+        <button class="btn btn-primary btn-sm" style="background: #4CAF50; white-space: nowrap;" onclick="exportToCSV()">📥 Export CSV</button>
       </div>
 
       <!-- NEW: Scrollable Table Container -->
@@ -1153,27 +1171,32 @@
 </div>
 
 <div id="admin-edit-modal" class="modal-overlay">
-  <div class="modal-content" style="text-align: left;">
-    <h3 style="color: var(--brown); margin-bottom: 6px;">⚙️ Manage Student</h3>
+  <div class="modal-content" style="text-align: left; max-width: 450px;">
+    <h3 style="color: var(--brown); margin-bottom: 6px;">⚙️ Manage Student Passes</h3>
     <p id="admin-edit-name" style="font-weight: 700; color: var(--saffron); margin-bottom: 20px; font-size: 0.9rem;"></p>
 
-    <div class="form-group">
-      <label class="form-label">Account Status</label>
-      <select id="admin-edit-status" class="form-input">
-        <option value="false">Free Account</option>
-        <option value="true">👑 VIP / Premium</option>
-      </select>
+    <p style="font-size: 0.8rem; color: var(--text-mid); margin-bottom: 16px;">Set an expiry date to grant a pass. Clear the date to remove it.</p>
+
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label class="form-label" style="color: #9C27B0;">🏆 Combo Mock Pass</label>
+      <input type="date" id="admin-pass-combo" class="form-input">
+    </div>
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label class="form-label" style="color: #E65100;">🎓 Complete Batch</label>
+      <input type="date" id="admin-pass-batch" class="form-input">
+    </div>
+    <div class="form-group" style="margin-bottom: 12px;">
+      <label class="form-label" style="color: #1565C0;">🪷 Sanskrit Mock Pass</label>
+      <input type="date" id="admin-pass-sanskrit" class="form-input">
+    </div>
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="form-label" style="color: #2E7D32;">📊 1st Paper Mock Pass</label>
+      <input type="date" id="admin-pass-general" class="form-input">
     </div>
 
-    <div class="form-group" style="margin-top: 16px;">
-      <label class="form-label">Premium Expiry Date (Validity)</label>
-      <input type="date" id="admin-edit-expiry" class="form-input">
-      <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 6px; line-height: 1.4;">Select a date to end their trial/premium. Leave blank for Lifetime access.</p>
-    </div>
-
-    <div style="display: flex; gap: 12px; margin-top: 28px;">
+    <div style="display: flex; gap: 12px;">
       <button class="btn btn-outline" style="flex: 1; justify-content: center;" onclick="document.getElementById('admin-edit-modal').style.display='none'">Cancel</button>
-      <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #b71c1c;" id="admin-edit-save-btn">Save Changes</button>
+      <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #b71c1c;" id="admin-edit-save-btn">Save Passes</button>
     </div>
   </div>
 </div>
@@ -1181,11 +1204,11 @@
 <div id="premium-lock-modal" class="modal-overlay">
   <div class="modal-content" style="text-align: center;">
     <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
-    <h3 style="color: var(--brown); margin-bottom: 12px; font-size: 1.2rem;">Vartika Param Required</h3>
-    <p style="color: var(--text-mid); margin-bottom: 24px; line-height: 1.6;">Your Vartika Param access has expired or you are on Basic Access. Upgrade to our Complete Batch to unlock 7,000+ premium questions, detailed explanations, and live sessions.</p>
+    <h3 style="color: var(--brown); margin-bottom: 12px; font-size: 1.2rem;">Premium Pass Required</h3>
+    <p style="color: var(--text-mid); margin-bottom: 24px; line-height: 1.6;">You need an active Mock Test Pass to access this premium content. Upgrade your account to unlock thousands of practice questions, detailed explanations, and performance analytics.</p>
     <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
       <button class="btn btn-outline" onclick="document.getElementById('premium-lock-modal').style.display='none'">Cancel</button>
-      <button class="btn btn-gold" onclick="document.getElementById('premium-lock-modal').style.display='none'; navigate('courses');">View Courses 🎓</button>
+      <button class="btn btn-gold" onclick="document.getElementById('premium-lock-modal').style.display='none'; navigate('courses');">View Passes 🎓</button>
     </div>
   </div>
 </div>
@@ -1292,28 +1315,35 @@
 <!-- ==================== BULK MANAGE MODAL ==================== -->
 <div id="bulk-manage-modal" class="modal-overlay" style="z-index: 3500;">
   <div class="modal-content" style="text-align: left; max-width: 450px;">
-    <h3 style="color: #FF9800; margin-bottom: 8px;">🎁 Bulk Extend Vartika Param</h3>
-    <p style="color: var(--text-mid); font-size: 0.85rem; margin-bottom: 20px;">Add extra Vartika Param days to a specific group of students instantly. (Lifetime Param users will not be affected).</p>
+    <h3 style="color: #FF9800; margin-bottom: 8px;">🎁 Bulk Extend Passes</h3>
+    <p style="color: var(--text-mid); font-size: 0.85rem; margin-bottom: 20px;">Add extra days to a specific pass for a group of students instantly.</p>
     
-    <div class="form-group">
-      <label class="form-label">Target Audience</label>
-      <select id="bulk-target-group" class="form-input">
-        <option value="all">All Registered Students</option>
-        <option value="vip">Only Active VIPs</option>
-        <option value="free">Only Free Users</option>
-        <option value="expired">Only Expired VIPs</option>
-      </select>
+    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+      <div class="form-group" style="flex: 1; margin: 0;">
+        <label class="form-label">Target Audience</label>
+        <select id="bulk-target-group" class="form-input">
+          <option value="all">All Students</option>
+          <option value="vip">Only Active Premium</option>
+          <option value="free">Only Free Users</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex: 1; margin: 0;">
+        <label class="form-label">Select Pass</label>
+        <select id="bulk-pass-type" class="form-input">
+          <option value="combo">Combo Pass</option>
+          <option value="batch">Complete Batch</option>
+          <option value="sanskrit">Sanskrit Mocks</option>
+          <option value="general">1st Paper Mocks</option>
+        </select>
+      </div>
     </div>
 
-    <div class="form-group" style="margin-top: 16px;">
+    <div class="form-group" style="margin-bottom: 24px;">
       <label class="form-label">Days to Add</label>
       <input type="number" id="bulk-days" class="form-input" placeholder="e.g., 2" min="1" max="365">
-      <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 6px; line-height: 1.4;">
-        For active VIPs, this adds to their existing expiry date. For free/expired users, it grants VIP starting from today.
-      </p>
     </div>
 
-    <div style="display: flex; gap: 12px; margin-top: 28px;">
+    <div style="display: flex; gap: 12px;">
       <button class="btn btn-outline" style="flex: 1; justify-content: center;" onclick="document.getElementById('bulk-manage-modal').style.display='none'">Cancel</button>
       <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #FF9800;" id="bulk-execute-btn" onclick="executeBulkUpdate()">Execute Update</button>
     </div>

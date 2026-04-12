@@ -127,14 +127,21 @@ async function handleAuthAction() {
       // We always send the email, but we won't strictly enforce clicking it if testing
       try { await user.sendEmailVerification(); } catch(e) {}
       
-      // VIP Trial Logic
-      let expiryDate = null;
-      let isPremium = false;
+      // === NEW MULTI-PASS TRIAL LOGIC ===
+      let initialPasses = {
+        batch: null,
+        sanskrit: null,
+        general: null,
+        combo: null
+      };
+
+      // Launch Promo: Give them a free Combo Pass for a few days to hook them!
+      let initialAccessLevel = "basic";
       if (new Date() < LAUNCH_PROMO_END_DATE) {
-        isPremium = true;
         let d = new Date();
         d.setDate(d.getDate() + FREE_TRIAL_DAYS);
-        expiryDate = d.toISOString();
+        initialPasses.combo = d.toISOString();
+        initialAccessLevel = "premium";
       }
 
       // Create Firestore Profile
@@ -142,8 +149,8 @@ async function handleAuthAction() {
         name: name,
         email: email,
         whatsapp: whatsapp,
-        isPremium: isPremium,
-        premiumExpiry: expiryDate,
+        passes: initialPasses, 
+        accessLevel: initialAccessLevel, // <-- NEW! Stamped at creation
         createdAt: new Date().toISOString()
       });
       
@@ -188,7 +195,7 @@ async function handleAuthAction() {
 let userDocUnsubscribe = null; 
 let isFirebaseReady = false; // NEW: Prevents dashboard glitches
 
-// Helper to instantly force the Nav button to update
+
 // Helper to instantly force the Nav button to update
 function updateNavUI(user, nameStr) {
   const userMenuBtn = document.getElementById('nav-user-menu');
@@ -249,6 +256,23 @@ auth.onAuthStateChanged(async (user) => {
     db.collection("users").doc(user.uid).get().then((doc) => {
       if (doc.exists) {
         currentUser.dbData = doc.data();
+        // === NEW: AUTO-HEALING ACCESS LEVEL ===
+        let hasActivePass = false;
+        const now = new Date();
+        const p = currentUser.dbData.passes || {};
+        
+        ['combo', 'batch', 'sanskrit', 'general'].forEach(pass => {
+          if (p[pass] && new Date(p[pass]) > now) hasActivePass = true;
+        });
+
+        const correctLevel = hasActivePass ? "premium" : "basic";
+        
+        // If the database has the wrong level (e.g., they expired yesterday), fix it silently!
+        if (currentUser.dbData.accessLevel !== correctLevel) {
+          currentUser.dbData.accessLevel = correctLevel;
+          db.collection("users").doc(user.uid).update({ accessLevel: correctLevel });
+        }
+        // ======================================
         
         // 1. Tell the app Firebase is ready!
         isFirebaseReady = true;
@@ -564,7 +588,8 @@ const TEST_DATABASE_URLS = {
   'darshan': 'https://script.google.com/macros/s/AKfycbz99sKN9db97mj3uXgERz-Tzv2bWCuwGKTSGi5WU905OgEOYXGIr4OVR5qtisK8fgCx/exec',
   'sahitya': 'https://script.google.com/macros/s/AKfycbx84ZIVDvvNG4yX9nOYBaU_GSKYIjtxflfEke5gbBWIr-Uidwa6Vt4yrSajoE13PGJiPw/exec',
   'full': 'https://script.google.com/macros/s/AKfycbyikVGeVJijVnekPuqULdIQwzLGYFWPEm-bJmGMQviqf1ehUQJp-VfYGZ03SBvnjfHt4A/exec',
-  'other': 'https://script.google.com/macros/s/AKfycbwgzQw9hZPBNOznWJUCobVyjN7LYU9-Tf93fZgm4VxWQfKo9Lo9vdYP4HnaqBEgHPU/exec'
+  'other': 'https://script.google.com/macros/s/AKfycbwgzQw9hZPBNOznWJUCobVyjN7LYU9-Tf93fZgm4VxWQfKo9Lo9vdYP4HnaqBEgHPU/exec',
+  'paper1': 'PASTE_PAPER_1_SHEET_URL_HERE'
 };
 
 // NEW: The Dedicated Free Databases
@@ -591,6 +616,7 @@ let testState = {
 const catNames = {
   full: 'Full Mock Test', vedic: 'वैदिकसाहित्यम्', grammar: 'व्याकरणम्',
   darshan: 'दर्शनम्', sahitya: 'साहित्यम्', other: 'अन्यानि',
+  paper1: '1st Paper Mocks',
   // NEW: Distinct names for the free database
   free_topic: 'Free Topic Test', free_full: 'Free Full Mock'
 };
@@ -673,27 +699,42 @@ async function fetchQuestions(cat) {
   }
 }
 
-// --- NEW: THE BOUNCER (Checks VIP Status) ---
-function hasPremiumAccess() {
-  if (!currentUser || !currentUser.dbData) return false; 
-  if (!currentUser.dbData.isPremium) return false; 
+// --- NEW: THE UNIVERSAL ACCESS ENGINE ---
+function hasAccess(requiredPass) {
+  if (!currentUser || !currentUser.dbData || !currentUser.dbData.passes) return false; 
+  
+  const passes = currentUser.dbData.passes;
+  const now = new Date();
 
-  if (currentUser.dbData.premiumExpiry) {
-    const expDate = new Date(currentUser.dbData.premiumExpiry);
-    if (new Date() > expDate) {
-      return false; // Expired
-    }
+  // Helper function to check if a specific pass date is valid
+  const isValid = (passDateStr) => {
+    if (!passDateStr) return false;
+    return new Date(passDateStr) > now;
+  };
+
+  // Logic: Check the requested pass OR the ultimate Combo Pass
+  if (requiredPass === 'sanskrit') {
+    return isValid(passes.sanskrit) || isValid(passes.combo);
   }
-  return true; // Active
+  if (requiredPass === 'general') {
+    return isValid(passes.general) || isValid(passes.combo);
+  }
+  if (requiredPass === 'batch') {
+    return isValid(passes.batch);
+  }
+  
+  return false; 
 }
 
-// Dynamically adds or removes the lock icon from the Mock Test cards
+// Dynamically adds or removes the lock icon based on the specific card's requirement
 function updateTestCardLocks() {
   const cards = document.querySelectorAll('#test-categories .test-cat-card');
-  const isPremium = hasPremiumAccess(); // Evaluates status instantly
-
+  
   cards.forEach(card => {
-    if (isPremium) {
+    // Check if the HTML tag specifically asks for 'general', otherwise assume 'sanskrit'
+    const reqPass = card.getAttribute('data-req') || 'sanskrit';
+    
+    if (hasAccess(reqPass)) {
       card.classList.remove('locked-card');
     } else {
       card.classList.add('locked-card');
@@ -720,8 +761,9 @@ async function showSets(cat) {
     return; 
   }
 
-  // 2. SCENARIO B: Logged in, but Free/Expired -> Prompt Upgrade
-  if (!hasPremiumAccess()) {
+  // 2. SCENARIO B: Logged in, but Missing the Required Pass -> Prompt Upgrade
+  const reqPass = (cat === 'paper1') ? 'general' : 'sanskrit';
+  if (!hasAccess(reqPass)) {
     document.getElementById('premium-lock-modal').style.display = 'flex';
     return; 
   }
@@ -1174,7 +1216,8 @@ function confirmSubmit() {
     else if (tName.includes("व्याकरणम्")) subjectGroup = "Grammar";
     else if (tName.includes("दर्शनम्")) subjectGroup = "Darshan";
     else if (tName.includes("साहित्यम्")) subjectGroup = "Sahitya";
-    else if (tName.includes("अन्यानि")) subjectGroup = "Anyani"; // Fixed!
+    else if (tName.includes("अन्यानि")) subjectGroup = "Anyani";
+    else if (tName.includes("1st Paper")) subjectGroup = "1st Paper";
 
     // 3. Send all data layers to GA4
     gtag('event', 'mock_test_completed', {
@@ -1722,35 +1765,66 @@ function loadDashboard() {
     }
   }
 
-  // --- NEW: RENDER VIP STATUS ON DASHBOARD ---
+  // --- NEW: RENDER MULTI-PASS WALLET ON DASHBOARD ---
   const vipBadgeContainer = document.getElementById('student-vip-badge');
   if (vipBadgeContainer) {
-    if (currentUser.dbData.isPremium) {
-      if (currentUser.dbData.premiumExpiry) {
-        const expDate = new Date(currentUser.dbData.premiumExpiry);
-        const daysLeft = Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24));
+    const passes = currentUser.dbData.passes || {};
+    const now = new Date();
+    let activePassesHTML = '';
+    let hasAnyPass = false;
+    let minDaysLeft = Infinity;
+
+    // Define the visual style for each pass type
+    const passDetails = [
+      { id: 'combo', name: 'Combo Mock Pass', icon: '🏆', color: '#9C27B0', bg: '#F3E5F5' },
+      { id: 'batch', name: 'Complete Batch', icon: '🎓', color: '#E65100', bg: '#FFF3E0' },
+      { id: 'sanskrit', name: 'Sanskrit Mocks', icon: '🪷', color: '#1565C0', bg: '#E3F2FD' },
+      { id: 'general', name: '1st Paper Mocks', icon: '📊', color: '#2E7D32', bg: '#E8F5E9' }
+    ];
+
+    passDetails.forEach(p => {
+      const expDateStr = passes[p.id];
+      if (expDateStr) {
+        const expDate = new Date(expDateStr);
+        const daysLeft = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
         
         if (daysLeft > 0) {
-          vipBadgeContainer.innerHTML = `<span style="background: rgba(255,215,0,0.15); color: var(--gold); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; border: 1px solid var(--gold); box-shadow: 0 2px 10px rgba(255,215,0,0.1);">👑 Vartika Param • ${daysLeft} Days Left</span>`;
-          // --- NEW: Trigger Expiry Pop-up (Only once per session) ---
-          if (daysLeft <= 5) {
-            if (!sessionStorage.getItem('expiry_warned')) {
-              setTimeout(() => {
-                document.getElementById('expiry-days-text').textContent = daysLeft;
-                document.getElementById('expiry-modal').style.display = 'flex';
-                sessionStorage.setItem('expiry_warned', 'true');
-              }, 1000); // 1-second delay so it feels natural after dashboard loads
-            }
-          }
-          // ---------------------------------------------------------
-        } else {
-          vipBadgeContainer.innerHTML = `<span style="background: rgba(255,82,82,0.15); color: #FF5252; padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; border: 1px solid #FF5252;">⚠️ Param Access Expired</span>`;
+          hasAnyPass = true;
+          if (daysLeft < minDaysLeft) minDaysLeft = daysLeft; // Track nearest expiry
+          
+          activePassesHTML += `
+            <div style="background: ${p.bg}; border: 1px solid ${p.color}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; flex-direction: column; align-items: center; min-width: 140px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+              <span style="font-size: 1.5rem; margin-bottom: 6px;">${p.icon}</span>
+              <span style="color: ${p.color}; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; text-align: center;">${p.name}</span>
+              <span style="color: var(--brown); font-size: 0.75rem; margin-top: 6px; font-weight: 600;">⏳ ${daysLeft} Days Left</span>
+            </div>
+          `;
         }
-      } else {
-        // Lifetime access (no expiry date set)
-        vipBadgeContainer.innerHTML = `<span style="background: rgba(255,215,0,0.15); color: var(--gold); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; border: 1px solid var(--gold); box-shadow: 0 2px 10px rgba(255,215,0,0.1);">👑 Vartika Param • Lifetime Access</span>`;
+      }
+    });
+
+    if (hasAnyPass) {
+      vipBadgeContainer.innerHTML = `
+        <div style="margin-top: 20px; margin-bottom: 24px;">
+          <p style="font-size: 0.8rem; color: rgba(255,248,231,0.7); margin-bottom: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Your Active Passes</p>
+          <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+            ${activePassesHTML}
+          </div>
+        </div>
+      `;
+
+      // Trigger Expiry Pop-up Logic if ANY pass is expiring within 5 days
+      if (minDaysLeft <= 5) {
+        if (!sessionStorage.getItem('expiry_warned')) {
+          setTimeout(() => {
+            document.getElementById('expiry-days-text').textContent = minDaysLeft;
+            document.getElementById('expiry-modal').style.display = 'flex';
+            sessionStorage.setItem('expiry_warned', 'true');
+          }, 1000); 
+        }
       }
     } else {
+      // No passes found or all expired
       vipBadgeContainer.innerHTML = `<span style="background: rgba(255,255,255,0.1); color: rgba(255,248,231,0.8); padding: 6px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(255,248,231,0.3);">Basic Access</span>`;
     }
   }
@@ -1989,7 +2063,7 @@ function submitContactForm() {
 // ==========================================
 const myCourses = [
   {
-    title: "NTA NET Sanskrit — Complete Batch",
+    title: "NTA NET Sanskrit Complete Batch",
     subtitle: "Full syllabus | Live sessions | Doubt clearing",
     isFree: false,
     duration: "6 Months",
@@ -1998,23 +2072,48 @@ const myCourses = [
     desc: "Complete coverage of all 10 units. Weekly live sessions, 100+ MCQs, mock tests, and personalized doubt clearing.",
     price: "₹2,499",
     originalPrice: "₹4,999",
-    btnText: "Enroll Now →",
-    link: "https://wa.me/YOUR_PHONE_NUMBER?text=Hello! I want to enroll in the Complete Batch." // EDIT THIS LINK
+    btnText: "Get Batch Pass →",
+    link: "https://wa.me/918172063129?text=Hello! I want to buy the Complete Batch Pass."
   },
   {
-    title: "UGC NET Sanskrit Mock Test Series",
+    title: "Combo Mock Test Pass",
+    subtitle: "1st Paper + Sanskrit Paper 2",
+    isFree: false,
+    duration: "6 Months",
+    level: "All Levels",
+    videos: "15,000+ Questions",
+    desc: "Ultimate practice bundle. Get full access to both General Paper 1 and Sanskrit Paper 2 mock tests, PYQs, and analytics.",
+    price: "₹99",
+    originalPrice: "₹149",
+    btnText: "Get Combo Pass →",
+    link: "https://wa.me/918172063129?text=Hello! I want to buy the Combo Mock Test Pass."
+  },
+  {
+    title: "Sanskrit Mock Test Pass",
     subtitle: "Topic-wise & Full Mock Tests",
     isFree: false,
     duration: "6 Months",
     level: "All Levels",
     videos: "10,000+ Questions",
-    desc: "At less then ₹10 in a month you get- Comprehensive test series covering all 10 units. Includes detailed explanations, performance analytics, and all previous year papers.",
+    desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
     price: "₹59",
     originalPrice: "₹89",
-    btnText: "Enroll Now →",
-    link: "https://wa.me/YOUR_PHONE_NUMBER?text=Hello! I want to enroll in the Mock Test Series." 
+    btnText: "Get Sanskrit Pass →",
+    link: "https://wa.me/918172063129?text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
-  
+  {
+    title: "General Paper 1 Mock Pass",
+    subtitle: "Teaching & Research Aptitude",
+    isFree: false,
+    duration: "6 Months",
+    level: "All Levels",
+    videos: "5,000+ Questions",
+    desc: "Dedicated mock tests for UGC NET Paper 1. Practice Teaching Aptitude, Research, DI, and Logical Reasoning.",
+    price: "₹49",
+    originalPrice: "₹79",
+    btnText: "Get General Pass →",
+    link: "https://wa.me/918172063129?text=Hello! I want to buy the General Paper 1 Mock Pass."
+  },
   {
     title: "Free Foundation Course",
     subtitle: "Start your journey | No payment needed",
@@ -2026,7 +2125,7 @@ const myCourses = [
     price: "FREE",
     originalPrice: "",
     btnText: "Access Free Content →",
-    link: "free" // Tells the site to navigate to the Free page
+    link: "free" 
   }
 ];
 
@@ -2141,27 +2240,45 @@ async function loadAdminDashboard() {
   document.getElementById('admin-users-body').innerHTML = '<tr><td colspan="7" style="text-align: center;">Fetching data from Cloud...</td></tr>';
 
   try {
-    const snapshot = await db.collection("users").get(); // Get ALL users (we will sort in JS)
-    
+    const fetchType = document.getElementById('admin-fetch-type').value;
+    let query = db.collection("users");
+
+    // Firebase Read Optimization:
+    if (fetchType === 'basic') {
+      // Direct query for Basic Access (Costs exactly 1 read per basic user!)
+      query = query.where('accessLevel', '==', 'basic');
+    } else if (fetchType !== 'all') {
+      // Query for specific passes
+      query = query.where(fetchType, '>', ''); 
+    }
+
+    const snapshot = await query.get();
     adminUserList = [];
+    
     snapshot.forEach(doc => {
       const data = doc.data();
       data.uid = doc.id;
       
-      // Calculate Exact Status for Filtering
+      const passes = data.passes || {};
+      const now = new Date();
       data.computedStatus = "free";
-      if (data.isPremium) {
-        if (data.premiumExpiry) {
-          if (new Date(data.premiumExpiry) > new Date()) data.computedStatus = "vip";
-          else data.computedStatus = "expired";
-        } else {
-          data.computedStatus = "vip"; // Lifetime
+      let hasActive = false;
+      let hasExpired = false;
+
+      ['combo', 'batch', 'sanskrit', 'general'].forEach(p => {
+        if (passes[p]) {
+          if (new Date(passes[p]) > now) hasActive = true;
+          else hasExpired = true;
         }
-      }
+      });
+
+      if (hasActive) data.computedStatus = "vip"; 
+      else if (hasExpired) data.computedStatus = "expired";
+      
       adminUserList.push(data);
     });
 
-    filterAndRenderAdminTable(); // Push to the screen!
+    filterAndRenderAdminTable(); 
   } catch (error) {
     document.getElementById('admin-users-body').innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
   }
@@ -2173,32 +2290,31 @@ function filterAndRenderAdminTable() {
   const statusFilter = document.getElementById('admin-filter-status').value;
   const sortBy = document.getElementById('admin-sort-by').value;
 
+  const now = new Date();
+
   // A. Filter the Data
   let filteredList = adminUserList.filter(user => {
-    // Search match
     const nameStr = (user.name || "").toLowerCase();
     const emailStr = (user.email || "").toLowerCase();
     const waStr = (user.whatsapp || "").toLowerCase();
     const matchesSearch = nameStr.includes(searchQuery) || emailStr.includes(searchQuery) || waStr.includes(searchQuery);
     
-    // Status match
-    const matchesStatus = (statusFilter === "all") || (user.computedStatus === statusFilter);
+    let matchesStatus = false;
+    if (statusFilter === "all") matchesStatus = true;
+    // Fix: Treat both originally free and expired users simply as "Basic Access"
+    else if (statusFilter === "free") matchesStatus = (user.computedStatus === "free" || user.computedStatus === "expired");
+    else {
+      // Check for specific passes (combo, batch, etc.)
+      matchesStatus = (user.passes && user.passes[statusFilter] && new Date(user.passes[statusFilter]) > now);
+    }
 
     return matchesSearch && matchesStatus;
   });
 
   // B. Sort the Data
   filteredList.sort((a, b) => {
-    if (sortBy === "newest") {
-      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-    } else if (sortBy === "oldest") {
-      return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
-    } else if (sortBy === "expiring") {
-      // Put lifetime (null expiry) at the bottom, sort dates properly
-      let dateA = (a.isPremium && a.premiumExpiry) ? new Date(a.premiumExpiry).getTime() : 9999999999999;
-      let dateB = (b.isPremium && b.premiumExpiry) ? new Date(b.premiumExpiry).getTime() : 9999999999999;
-      return dateA - dateB;
-    }
+    if (sortBy === "newest") return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    if (sortBy === "oldest") return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
   });
 
   currentFilteredUsers = filteredList;
@@ -2217,20 +2333,27 @@ function filterAndRenderAdminTable() {
     const dateJoined = data.createdAt ? new Date(data.createdAt).toLocaleDateString('en-IN') : 'Unknown';
     let vipBadge = '', validityText = '';
 
-    if (data.computedStatus === "free") {
-      vipBadge = '<span style="background: #E0E0E0; color: #757575; padding: 4px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">Free</span>';
+    // If they have NO active passes (formerly free/expired), they are Basic Access
+    if (data.computedStatus === "free" || data.computedStatus === "expired") {
+      vipBadge = '<span style="background: #E0E0E0; color: #757575; padding: 4px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">Basic Access</span>';
       validityText = '<span style="color: #9E9E9E;">—</span>';
-    } else if (data.computedStatus === "vip") {
-      vipBadge = '<span style="background: #FFF3E0; color: #E65100; padding: 4px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">👑 Param</span>';
-      if (data.premiumExpiry) {
-        const daysLeft = Math.ceil((new Date(data.premiumExpiry) - new Date()) / (1000 * 60 * 60 * 24));
-        validityText = `<span style="color: #2E7D32; font-weight: 600;">${daysLeft} days left</span><br><span style="font-size:0.7rem; color:var(--text-light);">${new Date(data.premiumExpiry).toLocaleDateString('en-IN')}</span>`;
-      } else {
-        validityText = `<span style="color: #1976D2; font-weight: 600;">Lifetime Access</span>`;
-      }
-    } else if (data.computedStatus === "expired") {
-      vipBadge = '<span style="background: #FFEBEE; color: #D32F2F; padding: 4px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: bold;">Expired Param</span>';
-      validityText = `<span style="color: #D32F2F; font-weight: 600;">Expired</span>`;
+    } else {
+      // Generate tags and exact validity dates for Premium users!
+      let activeTags = [];
+      let validityHTML = '';
+      
+      ['combo', 'batch', 'sanskrit', 'general'].forEach(p => {
+        if (data.passes && data.passes[p]) {
+          const expDate = new Date(data.passes[p]);
+          if (expDate > now) {
+            activeTags.push(p.toUpperCase());
+            validityHTML += `<div style="font-size:0.75rem; color:#2E7D32; margin-bottom:2px;"><b>${p.toUpperCase()}:</b> ${expDate.toLocaleDateString('en-IN')}</div>`;
+          }
+        }
+      });
+      
+      vipBadge = `<span style="background: #FFF3E0; color: #E65100; padding: 4px 8px; border-radius: 50px; font-size: 0.7rem; font-weight: bold;">${activeTags.join(', ')}</span>`;
+      validityText = validityHTML;
     }
 
     let waLink = data.whatsapp ? `<a href="https://wa.me/${data.whatsapp.replace(/\D/g,'')}" target="_blank" style="color: #25D366; font-weight: bold; text-decoration: underline;">${data.whatsapp}</a>` : '<span style="color: #ccc;">—</span>';
@@ -2242,7 +2365,7 @@ function filterAndRenderAdminTable() {
         <td style="padding: 14px 16px;">${waLink}</td>
         <td style="padding: 14px 16px; color: var(--text-light); font-size: 0.85rem;">${dateJoined}</td>
         <td style="padding: 14px 16px;">${vipBadge}</td>
-        <td style="padding: 14px 16px; font-size: 0.85rem;">${validityText}</td>
+        <td style="padding: 14px 16px;">${validityText}</td>
         <td style="padding: 14px 16px; text-align: right;">
           <button class="btn btn-sm btn-outline" style="padding: 4px 12px;" onclick="openAdminEdit('${data.uid}')">⚙️ Manage</button>
         </td>
@@ -2258,13 +2381,15 @@ function openAdminEdit(uid) {
   if (!user) return;
 
   document.getElementById('admin-edit-name').textContent = `${user.name} (${user.email})`;
-  document.getElementById('admin-edit-status').value = user.isPremium ? "true" : "false";
 
-  if (user.premiumExpiry) {
-    document.getElementById('admin-edit-expiry').value = new Date(user.premiumExpiry).toISOString().split('T')[0];
-  } else {
-    document.getElementById('admin-edit-expiry').value = '';
-  }
+  const p = user.passes || {};
+  const formatD = (iso) => iso ? new Date(iso).toISOString().split('T')[0] : '';
+  
+  // Populate the calendar inputs if a date exists
+  document.getElementById('admin-pass-combo').value = formatD(p.combo);
+  document.getElementById('admin-pass-batch').value = formatD(p.batch);
+  document.getElementById('admin-pass-sanskrit').value = formatD(p.sanskrit);
+  document.getElementById('admin-pass-general').value = formatD(p.general);
 
   document.getElementById('admin-edit-save-btn').onclick = () => saveAdminEdit(uid);
   document.getElementById('admin-edit-modal').style.display = 'flex';
@@ -2274,22 +2399,40 @@ async function saveAdminEdit(uid) {
   const btn = document.getElementById('admin-edit-save-btn');
   btn.textContent = "Saving..."; btn.disabled = true;
 
-  const isPremium = document.getElementById('admin-edit-status').value === "true";
-  const expiryVal = document.getElementById('admin-edit-expiry').value;
-  const expiryDate = (isPremium && expiryVal) ? new Date(expiryVal).toISOString() : null;
+  const getIso = (val) => val ? new Date(val).toISOString() : null;
+  
+  const newPasses = {
+    combo: getIso(document.getElementById('admin-pass-combo').value),
+    batch: getIso(document.getElementById('admin-pass-batch').value),
+    sanskrit: getIso(document.getElementById('admin-pass-sanskrit').value),
+    general: getIso(document.getElementById('admin-pass-general').value)
+  };
+
+  // Calculate the new Access Level based on the dates you just typed
+  let hasActive = false;
+  const now = new Date();
+  Object.values(newPasses).forEach(iso => {
+    if (iso && new Date(iso) > now) hasActive = true;
+  });
+  
+  const newAccessLevel = hasActive ? "premium" : "basic";
 
   try {
-    await db.collection('users').doc(uid).update({ isPremium: isPremium, premiumExpiry: expiryDate });
-    showToast("✅ Student account updated!");
+    await db.collection("users").doc(currentUser.uid).update({ 
+      passes: updatedPasses,
+      accessLevel: newAccessLevel // <-- Syncs your sandbox test!
+    });
+    showToast("✅ Student passes updated!");
     document.getElementById('admin-edit-modal').style.display = 'none';
-    loadAdminDashboard(); // Refresh full data
+    loadAdminDashboard(); 
   } catch (error) { alert(error.message); } 
-  finally { btn.textContent = "Save Changes"; btn.disabled = false; }
+  finally { btn.textContent = "Save Passes"; btn.disabled = false; }
 }
 
-// 4. BULK MANAGE SCRIPT (The safe chunking algorithm)
+// 4. BULK MANAGE SCRIPT (Multi-Pass Upgrade)
 async function executeBulkUpdate() {
   const targetGroup = document.getElementById('bulk-target-group').value;
+  const targetPass = document.getElementById('bulk-pass-type').value;
   const daysToAdd = parseInt(document.getElementById('bulk-days').value);
   
   if (!daysToAdd || daysToAdd <= 0) {
@@ -2297,7 +2440,6 @@ async function executeBulkUpdate() {
     return;
   }
 
-  // Filter which users to actually update based on dropdown
   const usersToUpdate = adminUserList.filter(u => targetGroup === "all" || u.computedStatus === targetGroup);
   
   if (usersToUpdate.length === 0) {
@@ -2305,14 +2447,12 @@ async function executeBulkUpdate() {
     return;
   }
 
-  if (!confirm(`Are you sure you want to add ${daysToAdd} VIP days to ${usersToUpdate.length} students?`)) return;
+  if (!confirm(`Are you sure you want to add ${daysToAdd} days of ${targetPass.toUpperCase()} to ${usersToUpdate.length} students?`)) return;
 
   const btn = document.getElementById('bulk-execute-btn');
   btn.textContent = "Processing..."; btn.disabled = true;
 
   try {
-    // Firestore limits batch writes to 500 operations at a time.
-    // We break our list into safe chunks of 200.
     const chunkSize = 200;
     for (let i = 0; i < usersToUpdate.length; i += chunkSize) {
       const chunk = usersToUpdate.slice(i, i + chunkSize);
@@ -2320,38 +2460,31 @@ async function executeBulkUpdate() {
 
       chunk.forEach(user => {
         const userRef = db.collection("users").doc(user.uid);
-        let newExpiry = new Date(); // Default starting point is today
-
-        // If they are already an Active VIP, add to their existing date
-        if (user.computedStatus === "vip" && user.premiumExpiry) {
-          newExpiry = new Date(user.premiumExpiry);
+        let currentPasses = user.passes || {};
+        let newExpiry = new Date(); 
+        
+        // If they already have this specific pass, add to the existing date
+        if (currentPasses[targetPass] && new Date(currentPasses[targetPass]) > new Date()) {
+          newExpiry = new Date(currentPasses[targetPass]);
         }
         
-        // Skip Lifetime users
-        if (user.computedStatus === "vip" && !user.premiumExpiry) return; 
-
-        // Add the extra days
         newExpiry.setDate(newExpiry.getDate() + daysToAdd);
+        currentPasses[targetPass] = newExpiry.toISOString();
 
-        batch.update(userRef, {
-          isPremium: true,
-          premiumExpiry: newExpiry.toISOString()
-        });
+        // Since we just added days, they are guaranteed to be premium!
+        batch.update(userRef, { passes: currentPasses, accessLevel: 'premium' });
       });
 
-      await batch.commit(); // Execute this chunk
+      await batch.commit(); 
     }
 
     showToast(`✅ Successfully updated ${usersToUpdate.length} students!`);
     document.getElementById('bulk-manage-modal').style.display = 'none';
     document.getElementById('bulk-days').value = '';
-    loadAdminDashboard(); // Refresh UI
+    loadAdminDashboard(); 
     
-  } catch (error) {
-    alert("Error during bulk update: " + error.message);
-  } finally {
-    btn.textContent = "Execute Update"; btn.disabled = false;
-  }
+  } catch (error) { alert("Error: " + error.message); } 
+  finally { btn.textContent = "Execute Update"; btn.disabled = false; }
 }
 
 // ==========================================
@@ -2368,20 +2501,25 @@ function exportToCSV() {
 
   // 2. Loop through the currently filtered students and add their data
   currentFilteredUsers.forEach(user => {
-    // We remove any accidental commas from names so it doesn't break the CSV columns
     const name = (user.name || "Unknown").replace(/,/g, ""); 
     const email = (user.email || "").replace(/,/g, "");
     const whatsapp = (user.whatsapp || "").replace(/,/g, "");
     const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-IN') : "Unknown";
     
-    // Format Status cleanly for the spreadsheet
-    let status = "Basic Access";
-    if (user.computedStatus === "vip") status = "Active Param";
-    if (user.computedStatus === "expired") status = "Expired Param";
+    // NEW: Clean Status without "Expired"
+    let status = (user.computedStatus === "vip") ? "Active Passes" : "Basic Access";
 
-    const validity = user.premiumExpiry ? new Date(user.premiumExpiry).toLocaleDateString('en-IN') : (status === "Active Param" ? "Lifetime" : "N/A");
+    // NEW: Extract all active pass dates for the CSV column
+    let activeTags = [];
+    const now = new Date();
+    ['combo', 'batch', 'sanskrit', 'general'].forEach(p => {
+      if (user.passes && user.passes[p] && new Date(user.passes[p]) > now) {
+        activeTags.push(`${p.toUpperCase()}: ${new Date(user.passes[p]).toLocaleDateString('en-IN')}`);
+      }
+    });
+    
+    const validity = activeTags.length > 0 ? activeTags.join(' | ') : "N/A";
 
-    // Add the row to the file
     csvContent += `${name},${email},${whatsapp},${joined},${status},${validity}\n`;
   });
 
@@ -2409,29 +2547,24 @@ function exportToCSV() {
 async function setTestState(state) {
   if (!currentUser) return;
   
-  let isPremium = false;
-  let expiryDate = null;
+  let updatedPasses = { batch: null, sanskrit: null, general: null, combo: null };
+  let d = new Date();
+  d.setDate(d.getDate() + FREE_TRIAL_DAYS);
   
-  if (state === 'vip') {
-    isPremium = true;
-    let d = new Date();
-    d.setDate(d.getDate() + FREE_TRIAL_DAYS);
-    expiryDate = d.toISOString();
-  } else if (state === 'expired') {
-    isPremium = true;
-    let d = new Date();
-    d.setDate(d.getDate() - 2); // Expired 2 days ago
-    expiryDate = d.toISOString();
+  if (state === 'combo') updatedPasses.combo = d.toISOString();
+  else if (state === 'batch') updatedPasses.batch = d.toISOString();
+  else if (state === 'sanskrit') updatedPasses.sanskrit = d.toISOString();
+  else if (state === 'general') updatedPasses.general = d.toISOString();
+  else if (state === 'expired') {
+    d.setDate(d.getDate() - 10); 
+    updatedPasses.combo = d.toISOString();
   }
+  // 'free' state leaves all passes as null
   
   try {
-    await db.collection("users").doc(currentUser.uid).update({
-      isPremium: isPremium,
-      premiumExpiry: expiryDate
-    });
+    await db.collection("users").doc(currentUser.uid).update({ passes: updatedPasses });
     showToast(`✅ Test State Applied: ${state.toUpperCase()}`);
-    // You don't even need to call loadDashboard() here, because the onSnapshot listener 
-    // will detect this cloud update and instantly refresh the UI for you!
+    setTimeout(() => window.location.reload(), 800); // Reload to reflect changes instantly
   } catch(error) {
     alert("Error changing test state: " + error.message);
   }
