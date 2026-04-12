@@ -2418,9 +2418,9 @@ async function saveAdminEdit(uid) {
   const newAccessLevel = hasActive ? "premium" : "basic";
 
   try {
-    await db.collection("users").doc(currentUser.uid).update({ 
-      passes: updatedPasses,
-      accessLevel: newAccessLevel // <-- Syncs your sandbox test!
+    await db.collection("users").doc(uid).update({ 
+      passes: newPasses,
+      accessLevel: newAccessLevel
     });
     showToast("✅ Student passes updated!");
     document.getElementById('admin-edit-modal').style.display = 'none';
