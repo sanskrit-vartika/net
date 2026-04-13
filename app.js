@@ -353,23 +353,28 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
     currentPage = page;
     window.scrollTo(0, 0);
     
-    // Browser History Integration (Saves the Free state!)
+    // Browser History Integration
     if (addToHistory) {
       history.pushState({ page: page, isFree: isFreeMode }, '', '#' + page);
     }
 
-    // Dynamic Tab Titles
-    const titles = { 'home': 'Home', 'study': 'Study Materials', 'mocktest': 'Mock Tests', 'courses': 'Courses', 'free': 'Free Services', 'dashboard': 'Student Dashboard', 'about': 'About Us', 'contact': 'Contact' };
+    // Dynamic Tab Titles (UPDATED FOR NEW ARCHITECTURE)
+    const titles = { 
+      'home': 'Home', 
+      'study': 'My Study Hub', 
+      'mocktest': 'Mock Tests', 
+      'courses': 'Courses', 
+      'free': 'Free Services', 
+      'dashboard': 'Student Dashboard', 
+      'about': 'About Us', 
+      'contact': 'Contact' 
+    };
     const pageTitle = (titles[page] || 'Welcome') + ' | संस्कृत-वर्तिका';
     document.title = pageTitle;
 
-    // === NEW: GOOGLE ANALYTICS SPA TRACKING ===
+    // === GOOGLE ANALYTICS SPA TRACKING ===
     if (typeof gtag === 'function') {
-      gtag('event', 'page_view', {
-        page_title: pageTitle,
-        page_location: window.location.href,
-        page_path: '/' + page
-      });
+      gtag('event', 'page_view', { page_title: pageTitle, page_location: window.location.href, page_path: '/' + page });
     }
 
     // Update Mobile Bottom Nav
@@ -378,21 +383,19 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
     if (activeNavBtn) activeNavBtn.classList.add('active');
   }
 
-  // === UPDATE DESKTOP TOP NAV ACTIVE STATE ===
+  // === UPDATE DESKTOP TOP NAV ACTIVE STATE (NEW ARCHITECTURE) ===
   document.querySelectorAll('.nav-links .nav-btn').forEach(btn => btn.classList.remove('active'));
   
   const topNavMap = {
-    'home': 'Home', 'study': 'Study Materials', 'mocktest': 'Study Materials',
-    'courses': 'Courses', 'free': 'Free Services', 'dashboard': 'Student Dashboard',
+    'home': 'Home', 'study': 'Study', 'mocktest': 'Test',
+    'courses': 'Courses', 'free': 'Free Services', 'dashboard': 'Dashboard',
     'about': 'About Us', 'contact': 'Contact', 'admin': '👑 Admin'
   };
   
   let activeText = topNavMap[page];
 
   // SMART OVERRIDE: If we are on Mock Tests but it's Free Mode, trick the nav bar!
-  if (page === 'mocktest' && isFreeMode) {
-    activeText = 'Free Services';
-  }
+  if (page === 'mocktest' && isFreeMode) activeText = 'Free Services';
 
   if (activeText) {
     document.querySelectorAll('.nav-links .nav-btn').forEach(btn => {
@@ -403,11 +406,12 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
   
   if (page === 'dashboard') loadDashboard();
   if (page === 'mocktest') {
-    // ONLY show paid categories if we are NOT in free mode
     if (!isFreeMode) showCategories();
     updateTestCardLocks();
   }
-  if (page === 'study') {
+  // CLEANUP LOGIC: Reset sub-views when navigating away
+  if (page === 'study' && typeof closePremiumSubView === 'function') closePremiumSubView();
+  if (page === 'free') {
     if (typeof backToNotesMain === 'function') backToNotesMain();
     if (typeof backToVideosMain === 'function') backToVideosMain();
   }
@@ -748,6 +752,74 @@ function updateTestCardLocks() {
   });
 }
 
+// ==========================================
+// === PREMIUM STUDY HUB ENGINE ===
+// ==========================================
+function openPremiumSubView(type) {
+  let reqPass = 'sanskrit';
+  if (type === 'paper1') reqPass = 'general';
+  if (type === 'batch') reqPass = 'batch';
+
+  if (!hasAccess(reqPass)) {
+    document.getElementById('premium-lock-modal').style.display = 'flex';
+    return;
+  }
+
+  document.getElementById('study-hub-gateway').style.display = 'none';
+  const subView = document.getElementById('study-sub-view');
+  subView.style.display = 'block';
+
+  // Trigger the smooth slide-up animation
+  subView.classList.remove('fade-in-up');
+  void subView.offsetWidth; 
+  subView.classList.add('fade-in-up');
+
+  const grid = document.getElementById('study-sub-grid');
+  const title = document.getElementById('study-sub-title');
+
+  if (type === 'paper1') {
+    title.textContent = "1st Paper Tests";
+    grid.innerHTML = `
+      <div class="test-cat-card" onclick="showSets('paper1')">
+        <div class="test-cat-icon">📊</div>
+        <h3>1st Paper Full sets</h3>
+        <p>Complete 50-question mocks</p>
+      </div>
+      <div class="test-cat-card" onclick="showSets('paper1_topic')">
+        <div class="test-cat-icon">📚</div>
+        <h3>1st Paper Topic-wise</h3>
+        <p>Teaching, Research & Aptitude</p>
+      </div>
+    `;
+  } else if (type === 'sanskrit') {
+    title.textContent = "Sanskrit Tests";
+    grid.innerHTML = `
+      <div class="test-cat-card" onclick="showSets('full')"><div class="test-cat-icon">📋</div><h3>Full Mock Test</h3><p>Complete 100-question tests</p></div>
+      <div class="test-cat-card" onclick="showSets('vedic')"><div class="test-cat-icon">🔱</div><h3>वैदिकसाहित्यम्</h3><p>Vedic Literature</p></div>
+      <div class="test-cat-card" onclick="showSets('grammar')"><div class="test-cat-icon">📖</div><h3>व्याकरणम्</h3><p>Sanskrit Grammar</p></div>
+      <div class="test-cat-card" onclick="showSets('darshan')"><div class="test-cat-icon">🧘</div><h3>दर्शनम्</h3><p>Philosophy</p></div>
+      <div class="test-cat-card" onclick="showSets('sahitya')"><div class="test-cat-icon">🪷</div><h3>साहित्यम्</h3><p>Sanskrit Literature</p></div>
+      <div class="test-cat-card" onclick="showSets('other')"><div class="test-cat-icon">🌺</div><h3>अन्यानि</h3><p>Miscellaneous topics</p></div>
+    `;
+  } else if (type === 'batch') {
+    title.textContent = "Sanskrit Net Class";
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: var(--cream); border-radius: var(--radius); border: 2px dashed var(--saffron);">
+        <div style="font-size: 3rem; margin-bottom: 16px;">🚧</div>
+        <h3 style="color: var(--brown); margin-bottom: 8px;">Live Classes Coming Soon!</h3>
+        <p style="color: var(--text-mid);">We are setting up the live streaming and PDF infrastructure for the Complete Batch.</p>
+      </div>
+    `;
+  }
+}
+
+function closePremiumSubView() {
+  const subView = document.getElementById('study-sub-view');
+  const gateway = document.getElementById('study-hub-gateway');
+  if (subView) subView.style.display = 'none';
+  if (gateway) gateway.style.display = 'grid';
+}
+
 // Standard Mock Test Loader (For Paid/Main Portal)
 async function showSets(cat) {
   // 1. SCENARIO A: No Account (Guest) -> Prompt Sign Up
@@ -781,6 +853,11 @@ async function showSets(cat) {
   document.getElementById('test-interface').style.display = 'none';
   document.getElementById('test-results').style.display = 'none';
   
+  // NEW: Hide the Study Sub-View if they launched from the Study Hub!
+  const studySubView = document.getElementById('study-sub-view');
+  if (studySubView) studySubView.style.display = 'none';
+
+
   const setsView = document.getElementById('test-sets-view');
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
@@ -804,6 +881,8 @@ async function showSets(cat) {
     showCategories(); // Go back if failed
   }
 }
+
+
 
 // --- UPGRADED SMART ENGINE: The Free Services Loader ---
 async function openFreeSets(mode) {
@@ -914,7 +993,9 @@ async function openFreeSets(mode) {
 function renderSetsUI(cat) {
 
   isFreeMode = false;
-if(document.getElementById('back-to-cat-btn')) document.getElementById('back-to-cat-btn').textContent = '← Back to Categories';
+if(document.getElementById('back-to-cat-btn')) {
+    document.getElementById('back-to-cat-btn').textContent = (currentPage === 'study') ? '← Back to Study Hub' : '← Back to Categories';
+  }
 
   document.getElementById('test-categories').style.display = 'none';
   document.getElementById('test-interface').style.display = 'none';
@@ -1300,7 +1381,12 @@ function showCategories() {
   // Smart Routing: Check where the user came from!
   if (isFreeMode) {
     navigate('free'); 
+  } else if (currentPage === 'study') {
+    // If they are in the Study Hub, simply reveal the sub-view again!
+    document.getElementById('study-sub-view').style.display = 'block';
+    window.scrollTo(0, 0);
   } else {
+    // Otherwise, they are on the normal Test page
     document.getElementById('test-categories').style.display = 'block';
     window.scrollTo(0, 0);
   }

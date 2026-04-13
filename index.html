@@ -96,30 +96,14 @@
     <!-- Desktop Nav Links -->
     <ul class="nav-links">
       <li><button class="nav-btn" onclick="navigate('home')">Home</button></li>
-      <li class="dropdown">
-        <button class="nav-btn">Study Materials</button>
-        <div class="dropdown-menu">
-          <a href="#" onclick="navigate('study');switchTab('notes');return false;">Notes</a>
-          <a href="#" onclick="navigate('mocktest');return false;">Mock Tests</a>
-          <a href="#" onclick="navigate('study');switchTab('videos');return false;">Videos</a>
-          <a href="#" onclick="navigate('study');switchTab('pyqs');return false;">PYQs</a>
-        </div>
-      </li>
+      <li><button class="nav-btn" onclick="navigate('study')">Study</button></li>
+      <li><button class="nav-btn" onclick="navigate('mocktest')">Test</button></li>
       <li><button class="nav-btn" onclick="navigate('courses')">Courses</button></li>
-      <li class="dropdown">
-        <button class="nav-btn">Free Services</button>
-        <div class="dropdown-menu">
-          <a href="#" onclick="navigate('free');return false;">Free Practice</a>
-          <a href="#" onclick="navigate('free');return false;">Free Notes</a>
-          <a href="#" onclick="navigate('free');return false;">Free Videos</a>
-        </div>
-      </li>
+      <li><button class="nav-btn" onclick="navigate('free')">Free Services</button></li>
       <li><button class="nav-btn" onclick="navigate('dashboard')">Dashboard</button></li>
-      <!-- SECRET ADMIN BUTTON (Hidden by default) -->
       <li><button class="nav-btn" onclick="navigate('about')">About Us</button></li>
       <li><button class="nav-btn" onclick="navigate('contact')">Contact</button></li>
-         <li id="nav-admin-link" style="display: none;"><button class="nav-btn" style="color: #FF5252; font-weight: 800;" onclick="navigate('admin')">👑 Admin</button></li>
-
+      <li id="nav-admin-link" style="display: none;"><button class="nav-btn" style="color: #FF5252; font-weight: 800;" onclick="navigate('admin')">👑 Admin</button></li>
     </ul>
 
 
@@ -390,146 +374,50 @@
 <div id="page-study" class="page">
   <div class="section">
     <div class="section-title">
-      <h2>Study Materials <span class="skt">अध्ययनसामग्री</span></h2>
+      <h2>My Study Hub <span class="skt">अध्ययन-केन्द्रम्</span></h2>
       <div class="divider"></div>
-      <p>Comprehensive resources for UGC NET Sanskrit preparation</p>
+      <p>Your enrolled premium courses and test series</p>
     </div>
-    <div class="tabs-container">
-      <div class="tabs-nav">
-        <button class="tab-btn active" onclick="switchTab('notes')">📚 Notes</button>
-        <button class="tab-btn" onclick="switchTab('tests')">📝 Mock Tests</button>
-        <button class="tab-btn" onclick="switchTab('videos')">🎥 Videos</button>
-        <button class="tab-btn" onclick="switchTab('pyqs')">📅 PYQs</button>
+    
+    <div class="test-categories-grid" id="study-hub-gateway">
+      
+      <div class="test-cat-card" onclick="openPremiumSubView('batch')" data-req="batch">
+        <div class="test-cat-icon">🎓</div>
+        <h3>Sanskrit Net Class</h3>
+        <p>Complete Batch Live & Recorded</p>
+        <span class="q-count">Batch Pass</span>
+      </div>
+      
+      <div class="test-cat-card" onclick="openPremiumSubView('paper1')" data-req="general">
+        <div class="test-cat-icon">📊</div>
+        <h3>1st Paper Tests</h3>
+        <p>General Aptitude & Reasoning Mocks</p>
+        <span class="q-count">General Pass</span>
       </div>
 
-      <!-- Notes Tab -->
-      <div id="tab-notes" class="tab-content active">
-        <div class="notes-grid" id="notes-main-grid">
-          <div class="note-card" onclick="showNotesTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>वेदः</h4>
-            <p>Complete notes on Vedic literature — Rig, Sam, Yajur & Atharva Veda.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-          <div class="note-card" onclick="showNotesTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>व्याकरणम्</h4>
-            <p>Panini's Ashtadhyayi, Mahabhashya, Vakyapadiya and analysis.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-          <div class="note-card" onclick="showNotesTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>दर्शनम्</h4>
-            <p>Six Darshanas — Nyaya, Samkhya, Yoga, Mimamsa, and Vedanta.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-          <div class="note-card" onclick="showNotesTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>साहित्यम्</h4>
-            <p>Sanskrit literary tradition — Kavya, Natya, and Rasa theory.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-          <div class="note-card" onclick="showNotesTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>पुराणम्</h4>
-            <p>Major Puranas, Panchalakshana, and philosophical significance.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-          <div class="note-card" onclick="showNotesTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>धर्मशास्त्रम्</h4>
-            <p>Manusmriti, Yajnavalkyasmriti, and concepts of Hindu law.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-          <div class="note-card" onclick="showNotesTopic('other')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>अन्यानि</h4>
-            <p>Miscellaneous topics, manuscripts, and script traditions.</p>
-            <button class="btn btn-gold btn-sm">View Topics 📂</button>
-          </div>
-        </div>
-
-        <div id="notes-topic-view" style="display:none;">
-          <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
-            <h3 id="notes-topic-title" style="font-size:1.2rem;">Topic Notes</h3>
-            <select id="notes-filter" class="form-input mt-16" style="max-width:300px; margin: 16px auto 0;" onchange="filterNotes()">
-              <option value="all">All Topics</option>
-            </select>
-          </div>
-          <div class="notes-grid" id="notes-links-grid">
-            </div>
-          <div class="text-center mt-32">
-            <button class="btn btn-outline" onclick="backToNotesMain()">← Back to Subjects</button>
-          </div>
-        </div>
+      <div class="test-cat-card" onclick="openPremiumSubView('sanskrit')" data-req="sanskrit">
+        <div class="test-cat-icon">🪷</div>
+        <h3>Sanskrit Tests</h3>
+        <p>Unit-wise & Full Mock Tests</p>
+        <span class="q-count">Sanskrit Pass</span>
       </div>
 
-      <!-- Mock Tests Tab -->
-      <div id="tab-tests" class="tab-content">
-        <div class="text-center" style="padding:40px;">
-          <p style="color:var(--text-mid);margin-bottom:20px;">Take topic-wise or full-length mock tests below.</p>
-          <button class="btn btn-primary" onclick="navigate('mocktest')">Go to Mock Tests →</button>
-        </div>
+    </div>
+
+    <div id="study-sub-view" style="display: none;">
+      <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
+        <h3 id="study-sub-title" style="font-size:1.2rem;">Select a Category</h3>
       </div>
-
-      <!-- Videos Tab -->
-      <div id="tab-videos" class="tab-content">
-        <div class="notes-grid" id="videos-main-grid">
-          <div class="note-card" onclick="showVideosTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>वेदः</h4>
-            <p>Video lectures covering Vedic literature and texts.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
-          <div class="note-card" onclick="showVideosTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>व्याकरणम्</h4>
-            <p>Detailed video analysis of Sanskrit grammar.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
-          <div class="note-card" onclick="showVideosTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>दर्शनम्</h4>
-            <p>Video explanations of the six Darshanas.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
-          <div class="note-card" onclick="showVideosTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>साहित्यम्</h4>
-            <p>Lectures on Kavya, Natya, and Rasa theory.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
-          <div class="note-card" onclick="showVideosTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>पुराणम्</h4>
-            <p>Video series on Puranic literature.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
-          <div class="note-card" onclick="showVideosTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>धर्मशास्त्रम्</h4>
-            <p>Lectures on Hindu law and ethics.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
-          <div class="note-card" onclick="showVideosTopic('other')" style="cursor:pointer; border-color:var(--gold);">
-            <h4>अन्यानि</h4>
-            <p>Miscellaneous topics and exam strategies.</p>
-            <button class="btn btn-gold btn-sm">View Videos ▶</button>
-          </div>
+      <div class="test-categories-grid" id="study-sub-grid">
         </div>
-
-        <div id="videos-topic-view" style="display:none;">
-          <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
-            <h3 id="videos-topic-title" style="font-size:1.2rem;">Video Lectures</h3>
-            <select id="videos-filter" class="form-input mt-16" style="max-width:300px; margin: 16px auto 0;" onchange="filterVideos()">
-              <option value="all">All Topics</option>
-            </select>
-          </div>
-          <div class="video-grid" id="videos-links-grid">
-            </div>
-          <div class="text-center mt-32">
-            <button class="btn btn-outline" onclick="backToVideosMain()">← Back to Subjects</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- PYQs Tab -->
-      <div id="tab-pyqs" class="tab-content">
-        <div class="pyq-grid" id="pyqs-grid">
-          <p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">Loading Previous Year Questions...</p>
-        </div>
+      <div class="text-center mt-32">
+        <button class="btn btn-outline" onclick="closePremiumSubView()">← Back to Hub</button>
       </div>
     </div>
+
   </div>
 </div>
-
+      
 <!-- ==================== MOCK TEST PAGE ==================== -->
 <div id="page-mocktest" class="page">
   <div class="section">
@@ -691,66 +579,171 @@
     <div class="section-title">
       <h2>Free Services <span class="skt">निःशुल्कसेवाः</span></h2>
       <div class="divider"></div>
-      <p>100% free resources for all aspiring UGC NET Sanskrit candidates</p>
+      <p>100% free resources for all aspiring UGC NET candidates</p>
     </div>
 
-    <div class="free-section">
-      <h3>📝 Free Practice Tests</h3>
-      <p style="color:var(--text-mid); margin-bottom: 24px;">Experience our exam interface with these open-access mock tests.</p>
-      
-      <div class="test-categories-grid" style="max-width:800px; margin: 0 auto;">
-             
-        <div class="test-cat-card" onclick="openFreeSets('paper1_full')" style="position: relative;">
-          <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
-          <div class="test-cat-icon">📊</div>
-          <h3>Paper 1 Full Sets</h3>
-          <p>Complete 50-question sets</p>
-          <span class="q-count">Free Access</span>
-        </div>
-        <div class="test-cat-card" onclick="openFreeSets('paper1_topic')" style="position: relative;">
-          <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
-          <div class="test-cat-icon">📚</div>
-          <h3>Paper 1 Topic-wise</h3>
-          <p>Teaching, Research & Aptitude</p>
-          <span class="q-count">Free Access</span>
+    <div class="tabs-container">
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('notes')">📚 Free Notes</button>
+        <button class="tab-btn" onclick="switchTab('tests')">📝 Free Mocks</button>
+        <button class="tab-btn" onclick="switchTab('videos')">🎥 Free Videos</button>
+        <button class="tab-btn" onclick="switchTab('pyqs')">📅 PYQs</button>
+      </div>
+
+      <div id="tab-notes" class="tab-content active">
+        <div class="notes-grid" id="notes-main-grid">
+          <div class="note-card" onclick="showNotesTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>वेदः</h4>
+            <p>Complete notes on Vedic literature — Rig, Sam, Yajur & Atharva Veda.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
+          <div class="note-card" onclick="showNotesTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>व्याकरणम्</h4>
+            <p>Panini's Ashtadhyayi, Mahabhashya, Vakyapadiya and analysis.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
+          <div class="note-card" onclick="showNotesTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>दर्शनम्</h4>
+            <p>Six Darshanas — Nyaya, Samkhya, Yoga, Mimamsa, and Vedanta.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
+          <div class="note-card" onclick="showNotesTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>साहित्यम्</h4>
+            <p>Sanskrit literary tradition — Kavya, Natya, and Rasa theory.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
+          <div class="note-card" onclick="showNotesTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>पुराणम्</h4>
+            <p>Major Puranas, Panchalakshana, and philosophical significance.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
+          <div class="note-card" onclick="showNotesTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>धर्मशास्त्रम्</h4>
+            <p>Manusmriti, Yajnavalkyasmriti, and concepts of Hindu law.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
+          <div class="note-card" onclick="showNotesTopic('other')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>अन्यानि</h4>
+            <p>Miscellaneous topics, manuscripts, and script traditions.</p>
+            <button class="btn btn-gold btn-sm">View Topics 📂</button>
+          </div>
         </div>
 
-         <div class="test-cat-card" onclick="openFreeSets('full')" style="position: relative;">
-          <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
-          <div class="test-cat-icon">📋</div>
-          <h3>Sanskrit Full sets</h3>
-          <p>Complete 100-question sets</p>
-          <span class="q-count">Free Access</span>
+        <div id="notes-topic-view" style="display:none;">
+          <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
+            <h3 id="notes-topic-title" style="font-size:1.2rem;">Topic Notes</h3>
+            <select id="notes-filter" class="form-input mt-16" style="max-width:300px; margin: 16px auto 0;" onchange="filterNotes()">
+              <option value="all">All Topics</option>
+            </select>
+          </div>
+          <div class="notes-grid" id="notes-links-grid"></div>
+          <div class="text-center mt-32">
+            <button class="btn btn-outline" onclick="backToNotesMain()">← Back to Subjects</button>
+          </div>
         </div>
-        <div class="test-cat-card" onclick="openFreeSets('topic')" style="position: relative;">
-          <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
-          <div class="test-cat-icon">🪷</div>
-          <h3>Sanskrit Topic-wise</h3>
-          <p>Subject-specific practice</p>
-          <span class="q-count">Free Access</span>
+      </div>
+
+      <div id="tab-tests" class="tab-content">
+        <p style="color:var(--text-mid); margin-bottom: 24px; text-align:center;">Experience our exam interface with these open-access mock tests.</p>
+        <div class="test-categories-grid" style="max-width:800px; margin: 0 auto;">
+          <div class="test-cat-card" onclick="openFreeSets('paper1_full')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📊</div>
+            <h3>Paper 1 Full Sets</h3>
+            <p>Complete 50-question sets</p>
+            <span class="q-count">Free Access</span>
+          </div>
+          <div class="test-cat-card" onclick="openFreeSets('paper1_topic')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📚</div>
+            <h3>Paper 1 Topic-wise</h3>
+            <p>Teaching, Research & Aptitude</p>
+            <span class="q-count">Free Access</span>
+          </div>
+          <div class="test-cat-card" onclick="openFreeSets('full')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📋</div>
+            <h3>Sanskrit Full sets</h3>
+            <p>Complete 100-question sets</p>
+            <span class="q-count">Free Access</span>
+          </div>
+          <div class="test-cat-card" onclick="openFreeSets('topic')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">🪷</div>
+            <h3>Sanskrit Topic-wise</h3>
+            <p>Subject-specific practice</p>
+            <span class="q-count">Free Access</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-videos" class="tab-content">
+        <div class="notes-grid" id="videos-main-grid">
+          <div class="note-card" onclick="showVideosTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>वेदः</h4>
+            <p>Video lectures covering Vedic literature and texts.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
+          <div class="note-card" onclick="showVideosTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>व्याकरणम्</h4>
+            <p>Detailed video analysis of Sanskrit grammar.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
+          <div class="note-card" onclick="showVideosTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>दर्शनम्</h4>
+            <p>Video explanations of the six Darshanas.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
+          <div class="note-card" onclick="showVideosTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>साहित्यम्</h4>
+            <p>Lectures on Kavya, Natya, and Rasa theory.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
+          <div class="note-card" onclick="showVideosTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>पुराणम्</h4>
+            <p>Video series on Puranic literature.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
+          <div class="note-card" onclick="showVideosTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>धर्मशास्त्रम्</h4>
+            <p>Lectures on Hindu law and ethics.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
+          <div class="note-card" onclick="showVideosTopic('other')" style="cursor:pointer; border-color:var(--gold);">
+            <h4>अन्यानि</h4>
+            <p>Miscellaneous topics and exam strategies.</p>
+            <button class="btn btn-gold btn-sm">View Videos ▶</button>
+          </div>
         </div>
 
+        <div id="videos-topic-view" style="display:none;">
+          <div class="test-header" style="justify-content:center; margin-bottom: 24px;">
+            <h3 id="videos-topic-title" style="font-size:1.2rem;">Video Lectures</h3>
+            <select id="videos-filter" class="form-input mt-16" style="max-width:300px; margin: 16px auto 0;" onchange="filterVideos()">
+              <option value="all">All Topics</option>
+            </select>
+          </div>
+          <div class="video-grid" id="videos-links-grid"></div>
+          <div class="text-center mt-32">
+            <button class="btn btn-outline" onclick="backToVideosMain()">← Back to Subjects</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-pyqs" class="tab-content">
+        <div class="pyq-grid" id="pyqs-grid">
+          <p style="grid-column: 1/-1; text-align:center; color:var(--text-light);">Loading Previous Year Questions...</p>
+        </div>
       </div>
     </div>
 
-    <div class="contact-grid" style="margin-top: 48px;">
-      <div class="contact-info" style="background: var(--white); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); border-left: 4px solid var(--saffron);">
-        <h3 style="margin-bottom: 12px; color: var(--brown);">📄 Free PDF Notes</h3>
-        <p style="color: var(--text-mid); line-height: 1.6; margin-bottom: 24px;">We continuously upload free, high-quality summary notes, formula sheets, and syllabus guides to our main study portal. Access the entire library instantly.</p>
-        <button class="btn btn-primary" onclick="navigate('study'); switchTab('notes');">Browse All Free Notes →</button>
-      </div>
-      
-      <div class="contact-info" style="background: var(--white); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); border-left: 4px solid #FF0000;">
-        <h3 style="margin-bottom: 12px; color: var(--brown);">🎥 Free Video Lectures</h3>
-        <p style="color: var(--text-mid); line-height: 1.6; margin-bottom: 24px;">Watch our complete UGC NET Sanskrit lecture series, PYQ discussions, and strategy sessions completely free on our official YouTube channel.</p>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-          <button class="btn btn-outline" style="border-color: #FF0000; color: #FF0000;" onclick="window.open('https://www.youtube.com/c/SanskritVartika', '_blank')">▶ YouTube Channel</button>
-          <button class="btn btn-gold" onclick="navigate('study'); switchTab('videos');">View Video Library</button>
-        </div>
-      </div>
+    <div class="contact-info" style="background: var(--white); padding: 32px; border-radius: var(--radius); box-shadow: var(--shadow); border-left: 4px solid #FF0000; margin-top: 48px; text-align: center;">
+      <h3 style="margin-bottom: 12px; color: var(--brown);">🎥 Join our YouTube Community</h3>
+      <p style="color: var(--text-mid); line-height: 1.6; margin-bottom: 24px; max-width: 600px; margin-left: auto; margin-right: auto;">We regularly upload free UGC NET Sanskrit lecture series, PYQ discussions, and strategy sessions completely free on our official YouTube channel.</p>
+      <button class="btn btn-outline" style="border-color: #FF0000; color: #FF0000; margin: 0 auto;" onclick="window.open('https://www.youtube.com/c/SanskritVartika', '_blank')">▶ Subscribe to our Channel</button>
     </div>
 
-    <div style="background:linear-gradient(135deg,var(--brown),#5A2E10);border-radius:var(--radius);padding:48px 32px;text-align:center;margin-top:64px;box-shadow:var(--shadow-lg);">
+    <div style="background:linear-gradient(135deg,var(--brown),#5A2E10);border-radius:var(--radius);padding:48px 32px;text-align:center;margin-top:32px;box-shadow:var(--shadow-lg);">
       <h3 style="color:var(--gold);font-size:1.6rem;margin-bottom:16px;">Ready to clear UGC NET?</h3>
       <p style="color:rgba(255,248,231,0.85);font-size:1rem;margin-bottom:32px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6;">
         If you love our free materials, you will be blown away by our Complete Batch. Get structured daily guidance, live doubt clearing, and premium mock tests.
@@ -1280,8 +1273,8 @@
   <div class="drawer-grid">
     <button class="drawer-btn" onclick="navigate('courses');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Courses</button>
     <button class="drawer-btn" onclick="navigate('free');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>Free Services</button>
-    <button class="drawer-btn" onclick="navigate('study');switchTab('videos');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><polygon points="10 15 15 12 10 9"/></svg>Videos</button>
-    <button class="drawer-btn" onclick="navigate('study');switchTab('pyqs');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>PYQs</button>
+    <button class="drawer-btn" onclick="navigate('free');switchTab('videos');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><polygon points="10 15 15 12 10 9"/></svg>Videos</button>
+    <button class="drawer-btn" onclick="navigate('free');switchTab('pyqs');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>PYQs</button>
     <button class="drawer-btn" onclick="navigate('about');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>About Us</button>
     <button class="drawer-btn" onclick="navigate('contact');toggleMobileDrawer()"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>Contact</button>
   </div>
