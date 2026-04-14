@@ -881,6 +881,32 @@ footer {
     border-radius: 8px;
     scroll-snap-align: start;
   }
+
+  /* 7. Home Courses Carousel (Mobile Only) */
+  #home-courses-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    padding-bottom: 20px; /* Leaves room so the drop-shadow isn't cut off */
+    /* Edge-to-edge scroll trick: breaks out of the section padding */
+    margin-left: -16px; 
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  /* Hide the ugly default scrollbar */
+  #home-courses-grid::-webkit-scrollbar {
+    display: none; 
+  }
+  
+  #home-courses-grid .course-card {
+    /* 85% width forces the edge of the NEXT card to peek out, telling the user to swipe! */
+    flex: 0 0 85%; 
+    scroll-snap-align: center;
+  }
 }
 
 /* ===== ANIMATIONS ===== */
