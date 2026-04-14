@@ -446,6 +446,13 @@ window.addEventListener('popstate', function(event) {
     history.pushState({ page: currentPage }, '', '#' + currentPage); // Trap the back button
     return; // Stop here!
   }
+  // 1.5 Check if the Mobile Question Palette is open
+  const paletteDrawer = document.getElementById('mobile-palette-drawer');
+  if (paletteDrawer && paletteDrawer.classList.contains('open')) {
+    closeMobilePalette(); // Close the palette
+    history.pushState({ page: currentPage }, '', '#' + currentPage); // Trap the back button
+    return; // Stop here!
+  }
 
   // 2. Check if the "Saved Questions" modal is open
   const savedModal = document.getElementById('saved-qs-modal');

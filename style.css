@@ -1347,11 +1347,15 @@ footer {
   }
   
   body.test-mode-active .test-sidebar {
-    position: fixed; bottom: 0; left: 0; right: 0;
+    position: fixed; 
+    bottom: 64px; /* Sits perfectly above the bottom action bar */
+    left: 0; 
+    right: 0; 
+    top: auto; /* FIX: Tells the browser to forget the desktop 'top' rule */
     z-index: 3000; transform: translateY(100%);
-    visibility: hidden; opacity: 0; /* FIX: Destroys the shadow bleed */
+    visibility: hidden; opacity: 0; 
     transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0.3s, opacity 0.3s;
-    max-height: 85vh; overflow-y: auto; margin: 0;
+    max-height: 80vh; overflow-y: auto; margin: 0;
     border-radius: 24px 24px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
   }
   body.test-mode-active .test-sidebar.open { 
