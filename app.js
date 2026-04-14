@@ -2139,6 +2139,9 @@ function submitContactForm() {
 // ==========================================
 // === COURSES ENGINE (SINGLE SOURCE OF TRUTH) ===
 // ==========================================
+// ==========================================
+// === COURSES ENGINE (SINGLE SOURCE OF TRUTH) ===
+// ==========================================
 const myCourses = [
   {
     title: "NTA NET Sanskrit Complete Batch",
@@ -2148,9 +2151,16 @@ const myCourses = [
     level: "All Levels",
     videos: "150+ Videos",
     desc: "Complete coverage of all 10 units. Weekly live sessions, 100+ MCQs, mock tests, and personalized doubt clearing.",
+    features: [
+      "✅ Live Interactive Classes & Full Recordings",
+      "✅ Comprehensive PDF Study Notes (Downloadable)",
+      "✅ Advanced Grammar (Śabdarūpa, Samaas, etc.)",
+      "✅ 100+ Topic-wise Mock Tests & Full Mocks",
+      "✅ 24/7 Dedicated WhatsApp Doubt Clearing"
+    ],
     price: "₹2,499",
     originalPrice: "₹4,999",
-    btnText: "Get Batch Pass →",
+    btnText: "Get Batch Pass",
     link: "https://wa.me/918172063129?text=Hello! I want to buy the Complete Batch Pass."
   },
   {
@@ -2161,9 +2171,16 @@ const myCourses = [
     level: "All Levels",
     videos: "15,000+ Questions",
     desc: "Ultimate practice bundle. Get full access to both General Paper 1 and Sanskrit Paper 2 mock tests, PYQs, and analytics.",
+    features: [
+      "✅ Unlimited access to ALL 1st Paper Tests",
+      "✅ Unlimited access to ALL Sanskrit (Code 25) Tests",
+      "✅ Save difficult questions to your Cloud Vault",
+      "✅ Subject-wise Performance Analytics",
+      "✅ Official UGC NET Previous Year Questions"
+    ],
     price: "₹99",
     originalPrice: "₹149",
-    btnText: "Get Combo Pass →",
+    btnText: "Get Combo Pass",
     link: "https://wa.me/918172063129?text=Hello! I want to buy the Combo Mock Test Pass."
   },
   {
@@ -2174,9 +2191,16 @@ const myCourses = [
     level: "All Levels",
     videos: "10,000+ Questions",
     desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
+    features: [
+      "✅ 100-Question NTA Pattern Full Mocks",
+      "✅ Unit-wise tests for Vedic Literature & Philosophy",
+      "✅ Classical Literature & Grammar practice",
+      "✅ Detailed Post-Test Explanations",
+      "✅ Earn streaks and gamification badges"
+    ],
     price: "₹59",
     originalPrice: "₹89",
-    btnText: "Get Sanskrit Pass →",
+    btnText: "Get Sanskrit Pass",
     link: "https://wa.me/918172063129?text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
   {
@@ -2187,9 +2211,15 @@ const myCourses = [
     level: "All Levels",
     videos: "5,000+ Questions",
     desc: "Dedicated mock tests for UGC NET Paper 1. Practice Teaching Aptitude, Research, DI, and Logical Reasoning.",
+    features: [
+      "✅ 50-Question Full Mock Tests",
+      "✅ Topic-wise reasoning and aptitude sets",
+      "✅ Identify your weakest sections instantly",
+      "✅ Cloud sync to save your progress"
+    ],
     price: "₹49",
     originalPrice: "₹79",
-    btnText: "Get General Pass →",
+    btnText: "Get General Pass",
     link: "https://wa.me/918172063129?text=Hello! I want to buy the General Paper 1 Mock Pass."
   },
   {
@@ -2200,6 +2230,7 @@ const myCourses = [
     level: "Beginners",
     videos: "YouTube",
     desc: "Access introductory videos on our YouTube channel, free PDF notes, and sample practice tests — completely free.",
+    features: [],
     price: "FREE",
     originalPrice: "",
     btnText: "Access Free Content →",
@@ -2210,22 +2241,19 @@ const myCourses = [
 function renderCourses() {
   let htmlOutput = '';
   
-  myCourses.forEach(course => {
-    // Styling logic for Free vs Paid courses
+  // Note: We added 'index' here to uniquely identify each course when clicking "Details"
+  myCourses.forEach((course, index) => {
     const badge = course.isFree ? '<span class="badge badge-free">Free</span>' : '<span class="badge badge-paid">Paid</span>';
     const headerBg = course.isFree ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);' : '';
     
-    // SMART PRICING ENGINE
     let priceDisplay = '';
     if (course.isFree) {
       priceDisplay = '<div class="course-price free-price">FREE</div>';
     } else {
       let discountTag = '';
       if (course.originalPrice) {
-        // Auto-extract numbers from strings like "₹2,499" to calculate the %
         let p1 = parseInt(course.price.replace(/[^0-9]/g, ''));
         let p2 = parseInt(course.originalPrice.replace(/[^0-9]/g, ''));
-        
         if (p1 && p2 && p2 > p1) {
           let pct = Math.round(((p2 - p1) / p2) * 100);
           discountTag = `<span class="discount">${pct}% OFF</span>`;
@@ -2234,12 +2262,17 @@ function renderCourses() {
       priceDisplay = `<div class="course-price"><span class="current">${course.price}</span> <span class="og">${course.originalPrice}</span> ${discountTag}</div>`;
     }
     
-    // Button logic
+    // --- NEW DUAL BUTTON LOGIC ---
     let buttonHtml = '';
     if (course.isFree) {
-      buttonHtml = `<button class="btn btn-gold" style="justify-content:center;width:100%;" onclick="navigate('${course.link}')">${course.btnText}</button>`;
+      buttonHtml = `<button class="btn btn-gold" style="justify-content:center;width:100%;margin-top:auto;" onclick="navigate('${course.link}')">${course.btnText}</button>`;
     } else {
-      buttonHtml = `<a href="${course.link}" target="_blank" class="btn btn-primary" style="justify-content:center;text-align:center;">${course.btnText}</a>`;
+      buttonHtml = `
+        <div style="display: flex; gap: 10px; margin-top: auto;">
+          <button class="btn btn-outline" style="flex: 1; justify-content: center; padding: 10px 12px;" onclick="showCourseDetails(${index})">Details</button>
+          <a href="${course.link}" target="_blank" class="btn btn-primary" style="flex: 1.5; justify-content: center; padding: 10px 12px; text-align: center;">${course.btnText}</a>
+        </div>
+      `;
     }
 
     htmlOutput += `
@@ -2255,7 +2288,7 @@ function renderCourses() {
             <span>🎯 ${course.level}</span>
             <span>📹 ${course.videos}</span>
           </div>
-          <p style="font-size:0.84rem;color:var(--text-mid);line-height:1.6;flex:1;">${course.desc}</p>
+          <p style="font-size:0.84rem;color:var(--text-mid);line-height:1.6;margin-bottom:16px;">${course.desc}</p>
           ${priceDisplay}
           ${buttonHtml}
         </div>
@@ -2263,12 +2296,64 @@ function renderCourses() {
     `;
   });
 
-  // Inject into both the Homepage and the Courses page!
   const homeGrid = document.getElementById('home-courses-grid');
   const allGrid = document.getElementById('all-courses-grid');
-  
   if (homeGrid) homeGrid.innerHTML = htmlOutput;
   if (allGrid) allGrid.innerHTML = htmlOutput;
+}
+
+// --- NEW MODAL INJECTOR ENGINE ---
+function showCourseDetails(index) {
+  const course = myCourses[index];
+  if (!course) return;
+
+  // 1. Populate Header
+  document.getElementById('cd-title').textContent = course.title;
+  document.getElementById('cd-subtitle').textContent = course.subtitle;
+  
+  // 2. Populate Meta Tags
+  document.getElementById('cd-meta').innerHTML = `
+    <span style="background: #E3F2FD; color: #1565C0; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">📅 ${course.duration}</span>
+    <span style="background: #E8F5E9; color: #2E7D32; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">🎯 ${course.level}</span>
+    <span style="background: #FFF3E0; color: #E65100; padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700;">📹 ${course.videos}</span>
+  `;
+
+  // 3. Populate Description & Features
+  document.getElementById('cd-desc').textContent = course.desc;
+
+  const featuresList = document.getElementById('cd-features');
+  featuresList.innerHTML = '';
+  if (course.features && course.features.length > 0) {
+    course.features.forEach(f => {
+      // Split the emoji from the text for a cleaner layout
+      featuresList.innerHTML += `
+        <li style="font-size: 0.9rem; color: var(--brown); display: flex; gap: 10px; align-items: flex-start;">
+          <span style="flex-shrink:0;">${f.substring(0,2)}</span>
+          <span style="line-height: 1.5;">${f.substring(2)}</span>
+        </li>`;
+    });
+  }
+
+  // 4. Build the Dynamic Pricing UI for the Sticky Footer
+  let priceDisplay = '';
+  if (course.originalPrice) {
+    let p1 = parseInt(course.price.replace(/[^0-9]/g, ''));
+    let p2 = parseInt(course.originalPrice.replace(/[^0-9]/g, ''));
+    let pct = Math.round(((p2 - p1) / p2) * 100);
+    priceDisplay = `
+      <div style="color: var(--text-light); text-decoration: line-through; font-size: 0.9rem; font-weight: 600;">${course.originalPrice}</div>
+      <div style="color: var(--saffron); font-size: 1.6rem; font-weight: 800; line-height: 1;">${course.price} <span style="font-size: 0.75rem; background: #FFEBEE; color: #D32F2F; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 4px;">${pct}% OFF</span></div>
+    `;
+  } else {
+    priceDisplay = `<div style="color: var(--saffron); font-size: 1.6rem; font-weight: 800;">${course.price}</div>`;
+  }
+  document.getElementById('cd-price-box').innerHTML = priceDisplay;
+
+  // 5. Connect the Buy Button
+  document.getElementById('cd-buy-btn').href = course.link;
+
+  // 6. Show the Modal
+  document.getElementById('course-details-modal').style.display = 'flex';
 }
 
 // ==========================================
