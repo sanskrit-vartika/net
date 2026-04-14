@@ -413,8 +413,8 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
 }
 
 // --- NEW: Modal Control Functions ---
-document.body.classList.remove('test-mode-active'); // Exit immersive mode
 function confirmExitTest() {
+  document.body.classList.remove('test-mode-active'); // Moved INSIDE the function!
   document.getElementById('exit-modal').style.display = 'none';
   clearInterval(testState.timerInterval); // Kill the test timer
   testState.finished = true; // Mark test as finished so it doesn't trigger again
@@ -1384,9 +1384,8 @@ function retakeTest() {
   document.getElementById('test-results').style.display = 'none';
   startTest(testState.category, testState.currentSet);
 }
-document.body.classList.remove('test-mode-active'); // Exit immersive mode
-
 function showCategories() {
+  document.body.classList.remove('test-mode-active'); // Moved INSIDE the function!
   clearInterval(testState.timerInterval);
   document.getElementById('test-sets-view').style.display = 'none';
   document.getElementById('test-interface').style.display = 'none';

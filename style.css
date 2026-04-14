@@ -1292,9 +1292,11 @@ footer {
   body.test-mode-active .bottom-nav-material {
     display: none !important;
   }
-  body.test-mode-active .page {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+  body.test-mode-active .page,
+  body.test-mode-active .section {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
   }
 
   /* Fix Header to Top Edge */
