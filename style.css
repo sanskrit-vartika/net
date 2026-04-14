@@ -162,10 +162,9 @@ button { cursor: pointer; font-family: var(--font-sans); border: none; outline: 
 .badge-new { background: #e3f2fd; color: #1565c0; }
 
 /* ===== HERO SECTION ===== */
-#home { background: none; }
 .hero {
   min-height: auto;
-  /*  cnange the original banner color- 160deg, var(--brown) 0%, #6B2E0A 40%, #A0440F 70%, var(--saffron-dark) 100% */
+  /*  cnange the original banner color */
   background: linear-gradient(129deg, #a00000ee 0%, #c81f0cef 30%, #d45901f4 65%, #c5930bf9 100%);
   position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
@@ -778,7 +777,7 @@ footer {
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .nav-links { display: none; }
-  .hamburger { display: flex; }
+  
   .section { padding: 48px 16px; }
   .test-layout { grid-template-columns: 1fr; }
   .test-sidebar { position: static; }

@@ -192,7 +192,6 @@ async function handleAuthAction() {
 }
 
 // --- LISTEN FOR LOGIN CHANGES (REAL-TIME SYNC) ---
-let userDocUnsubscribe = null; 
 let isFirebaseReady = false; // NEW: Prevents dashboard glitches
 
 
@@ -306,11 +305,7 @@ auth.onAuthStateChanged(async (user) => {
     currentUser = null;
     isFirebaseReady = true; 
     
-    if (userDocUnsubscribe) {
-      userDocUnsubscribe(); 
-      userDocUnsubscribe = null;
-    }
-    
+        
     updateNavUI(null); // Set to "Log In"
     if (currentPage === 'dashboard') loadDashboard();
     
@@ -868,12 +863,7 @@ async function showSets(cat) {
   document.getElementById('sets-category-title').textContent = "Loading Practice Sets...";
 
   // Fetch data + smooth 400ms artificial delay for a premium feel
-  const fetchPromise = fetchQuestions(cat);
-  const delayPromise = new Promise(r => setTimeout(r, 400));
-  
-  await Promise.all([fetchPromise, delayPromise]);
-  const success = await fetchPromise;
-
+  const [success] = await Promise.all([fetchQuestions(cat), new Promise(r => setTimeout(r, 400))]);
   if (success) {
     renderSetsUI(cat);
   } else {
