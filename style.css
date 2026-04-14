@@ -1440,3 +1440,45 @@ footer {
   .test-sidebar::-webkit-scrollbar-track { background: var(--cream-dark); border-radius: 10px; }
   .test-sidebar::-webkit-scrollbar-thumb { background: var(--saffron-light); border-radius: 10px; }
 }
+
+/* ==========================================
+   === NATIVE HTML TABLE RESPONSIVENESS ===
+   ========================================== */
+.question-text table,
+.explanation-box table,
+.options-list table,
+.results-review table,
+#saved-qs-container table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  
+  /* The Magic Trick for Mobile Horizontal Scroll */
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap; /* Keeps table columns from squishing */
+}
+
+.question-text th, .question-text td,
+.explanation-box th, .explanation-box td,
+.results-review th, .results-review td,
+#saved-qs-container th, #saved-qs-container td {
+  border: 1px solid var(--cream-dark);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+/* Beautiful Header Styling */
+.question-text th,
+.explanation-box th,
+.results-review th,
+#saved-qs-container th {
+  background-color: var(--cream);
+  font-weight: 700;
+  color: var(--brown);
+}

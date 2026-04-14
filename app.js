@@ -1153,7 +1153,7 @@ function renderQuestion() {
 
   // The question text itself is already safely handled!
   document.getElementById('q-number').textContent = `Question ${idx+1} of ${qs.length}`;
-  document.getElementById('q-text').textContent = q.q; 
+  document.getElementById('q-text').innerHTML = q.q; 
 
   const optList = document.getElementById('options-list');
   optList.innerHTML = '';
@@ -1168,7 +1168,7 @@ function renderQuestion() {
     labelDiv.textContent = String.fromCharCode(65 + i); // Safely sets A, B, C, or D
     
     const textDiv = document.createElement('div');
-    textDiv.textContent = opt; // Forces the browser to treat your sheet data ONLY as text!
+    textDiv.innerHTML = opt; // NOW IT RENDERS HTML TABLES AND TAGS!
 
     div.appendChild(labelDiv);
     div.appendChild(textDiv);
@@ -1385,15 +1385,15 @@ function confirmSubmit() {
     reviewHTML += `
       <div class="review-item ${cls}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
-          <div class="review-q">Q${i+1}. ${escapeHTML(q.q)}</div>
+          <div class="review-q">Q${i+1}. ${q.q}</div>
           <div style="display:flex; gap:8px;">
             <button onclick="openReportModal(${i})" style="background:var(--white); border:1px solid #F44336; border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; color:#F44336;" title="Report a mistake in this question">🚩 Report</button>
             <button id="save-btn-${i}" onclick="toggleSaveQuestion(${i})" style="background:var(--white); border:1px solid var(--cream-dark); border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; ${btnStyle}">${btnText}</button>
           </div>
         </div>
-        <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${escapeHTML(q.options[userAns])}</strong>` : ''}</div>
-        <div class="review-ans">✔ Correct answer: <strong>${escapeHTML(q.options[q.answer])}</strong></div>
-        ${q.explanation ? `<div class="review-exp">💡 ${escapeHTML(q.explanation)}</div>` : ''}
+        <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${q.options[userAns]}</strong>` : ''}</div>
+        <div class="review-ans">✔ Correct answer: <strong>${q.options[q.answer]}</strong></div>
+        ${q.explanation ? `<div class="review-exp">💡 ${q.explanation}</div>` : ''}
       </div>`;
   });
   document.getElementById('results-review').innerHTML = reviewHTML;
@@ -1816,9 +1816,9 @@ function renderSavedQuestions() {
   saved.forEach((sq, i) => {
     html += `
       <div style="background:var(--white); padding:16px 20px; border-radius:var(--radius-sm); border-left:4px solid var(--saffron); box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-        <div style="font-family:var(--font-skt); font-weight:600; color:var(--brown); margin-bottom:10px; font-size:0.95rem;">${escapeHTML(sq.q)}</div>
-        <div style="font-size:0.8rem; color:#1B5E20; background:#E8F5E9; padding:6px 10px; border-radius:4px; display:inline-block; margin-bottom:8px;">✔ Correct: <strong>${escapeHTML(sq.options[sq.answer])}</strong></div>
-        ${sq.explanation ? `<div style="font-size:0.8rem; color:#7B1FA2; font-style:italic; margin-bottom:12px; line-height:1.5;">💡 ${escapeHTML(sq.explanation)}</div>` : ''}
+        <div style="font-family:var(--font-skt); font-weight:600; color:var(--brown); margin-bottom:10px; font-size:0.95rem;">${sq.q}</div>
+        <div style="font-size:0.8rem; color:#1B5E20; background:#E8F5E9; padding:6px 10px; border-radius:4px; display:inline-block; margin-bottom:8px;">✔ Correct: <strong>${sq.options[sq.answer]}</strong></div>
+        ${sq.explanation ? `<div style="font-size:0.8rem; color:#7B1FA2; font-style:italic; margin-bottom:12px; line-height:1.5;">💡 ${sq.explanation}</div>` : ''}
         <div style="text-align:right;"><button onclick="removeSavedQuestion(${i})" style="background:none; border:none; color:#F44336; cursor:pointer; font-size:0.8rem; font-weight:600;">🗑️ Remove</button></div>
       </div>
     `;
