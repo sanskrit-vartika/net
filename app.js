@@ -413,6 +413,7 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
 }
 
 // --- NEW: Modal Control Functions ---
+document.body.classList.remove('test-mode-active'); // Exit immersive mode
 function confirmExitTest() {
   document.getElementById('exit-modal').style.display = 'none';
   clearInterval(testState.timerInterval); // Kill the test timer
@@ -1064,6 +1065,8 @@ function startTest(cat, setKey) {
   const displayTitle = setKey;
   testState.testName = catTitle + " - " + displayTitle;
 
+  document.body.classList.add('test-mode-active'); // Enter immersive mode!
+  
   document.getElementById('test-sets-view').style.display = 'none';
   document.getElementById('test-interface').style.display = 'block';
   window.scrollTo(0, 0);
@@ -1113,6 +1116,10 @@ function renderQuestion() {
   const idx = testState.current;
   const q = qs[idx];
   if (!q) return;
+  // Auto-scroll to top of new question
+  const scrollArea = document.getElementById('test-scroll-area');
+  if (scrollArea) scrollArea.scrollTop = 0;
+  if (window.innerWidth <= 900) window.scrollTo(0, 0);
 
   // The question text itself is already safely handled!
   document.getElementById('q-number').textContent = `Question ${idx+1} of ${qs.length}`;
@@ -1147,7 +1154,7 @@ function renderQuestion() {
   const markBtn = document.getElementById('mark-btn');
   const isMarked = !!testState.marked[idx];
   markBtn.classList.toggle('marked', isMarked);
-  markBtn.innerHTML = isMarked ? '✅ Marked' : '🔖 Mark for Review';
+  markBtn.innerHTML = isMarked ? '✅ Marked' : '🔖 Mark';
 
   const nextBtn = document.getElementById('next-btn');
   if (idx === qs.length - 1) {
@@ -1197,7 +1204,7 @@ function toggleMark() {
   const markBtn = document.getElementById('mark-btn');
   const isMarked = testState.marked[idx];
   markBtn.classList.toggle('marked', isMarked);
-  markBtn.innerHTML = isMarked ? '✅ Marked' : '🔖 Mark for Review';
+  markBtn.innerHTML = isMarked ? '✅ Marked' : '🔖 Mark';
 
   updatePalette();
 }
@@ -1210,7 +1217,11 @@ function buildPalette() {
     btn.className = 'palette-item';
     btn.id = 'pal-' + i;
     btn.textContent = i + 1;
-    btn.onclick = () => { testState.current = i; renderQuestion(); };
+    btn.onclick = () => { 
+      testState.current = i; 
+      renderQuestion(); 
+      closeMobilePalette(); // Auto-close drawer on mobile
+    };
     grid.appendChild(btn);
   });
 }
@@ -1238,6 +1249,16 @@ function updatePalette() {
   });
 }
 
+// --- MOBILE SLIDE-UP PALETTE ---
+function toggleMobilePalette() {
+  document.getElementById('mobile-palette-drawer').classList.toggle('open');
+  document.body.classList.toggle('palette-open');
+}
+function closeMobilePalette() {
+  document.getElementById('mobile-palette-drawer').classList.remove('open');
+  document.body.classList.remove('palette-open');
+}
+
 // Feature: Test Summary Warning
 function showResults() {
   let unanswered = 0;
@@ -1248,6 +1269,7 @@ function showResults() {
     document.getElementById('submit-modal').style.display = 'flex';
     return;
   }
+  document.body.classList.remove('test-mode-active'); // Exit immersive mode
   confirmSubmit();
 }
 
@@ -1362,6 +1384,8 @@ function retakeTest() {
   document.getElementById('test-results').style.display = 'none';
   startTest(testState.category, testState.currentSet);
 }
+document.body.classList.remove('test-mode-active'); // Exit immersive mode
+
 function showCategories() {
   clearInterval(testState.timerInterval);
   document.getElementById('test-sets-view').style.display = 'none';

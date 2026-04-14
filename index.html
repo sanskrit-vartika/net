@@ -496,42 +496,52 @@
         <button id="back-to-cat-btn" class="btn btn-outline" onclick="showCategories()">← Back to Categories</button>
       </div>
     </div>
-    <div id="test-interface">
+    <div id="test-interface" style="display:none;">
+      
       <div class="test-header">
-        <div>
+        <div class="test-header-info">
           <h3 id="test-title">Mock Test</h3>
           <p style="color:rgba(255,248,231,0.6);font-size:0.8rem;" id="test-subtitle"></p>
         </div>
         <div style="display:flex;align-items:center;gap:16px;">
           <div>
-            <div style="font-size:0.7rem;color:rgba(255,248,231,0.5);">TIME LEFT</div>
+            <div style="font-size:0.7rem;color:rgba(255,248,231,0.5);text-transform:uppercase;letter-spacing:1px;font-weight:700;">Time Left</div>
             <div class="test-timer" id="test-timer">60:00</div>
           </div>
-          <button class="btn btn-sm" style="background:#b71c1c;color:white;" onclick="showResults()">Submit Test</button>
+          <button class="btn btn-sm" style="background:#b71c1c;color:white;" onclick="showResults()">Submit</button>
         </div>
       </div>
 
       <div class="test-layout">
         <div class="test-main">
-          <div class="question-number" id="q-number">Question 1 of 5</div>
-          <div class="question-text" id="q-text"></div>
-          <div class="options-list" id="options-list"></div>
-          <div class="explanation-box" id="explanation-box"></div>
+          
+          <div class="test-scroll-area" id="test-scroll-area">
+            <div class="question-number" id="q-number">Question 1 of 5</div>
+            <div class="question-text" id="q-text"></div>
+            <div class="options-list" id="options-list"></div>
+            <div class="explanation-box" id="explanation-box"></div>
+          </div>
+
           <div class="test-actions">
-            <button class="mark-review-btn" id="mark-btn" onclick="toggleMark()">🔖 Mark for Review</button>
+            <button class="btn-palette-toggle" onclick="toggleMobilePalette()" title="Question Grid">
+              <i class="fa-solid fa-table-cells-large"></i>
+            </button>
+            
+            <button class="mark-review-btn" id="mark-btn" onclick="toggleMark()">🔖 Mark</button>
             <div style="flex:1;"></div>
-            <button class="nav-test-btn btn-prev" onclick="prevQuestion()">◀ Previous</button>
+            <button class="nav-test-btn btn-prev" onclick="prevQuestion()">◀ Prev</button>
             <button class="nav-test-btn btn-next" id="next-btn" onclick="nextQuestion()">Next ▶</button>
           </div>
         </div>
 
-        <div class="test-sidebar">
+        <div class="test-sidebar" id="mobile-palette-drawer">
+          <button class="mobile-palette-close" onclick="closeMobilePalette()">&times;</button>
           <div class="sidebar-title">Question Palette</div>
           <div class="palette-grid" id="palette-grid"></div>
           <div class="palette-legend">
-            <div class="legend-item"><div class="legend-dot unanswered"></div> Not Visited / Unanswered</div>
+            <div class="legend-item"><div class="legend-dot unanswered"></div> Unanswered</div>
             <div class="legend-item"><div class="legend-dot answered"></div> Answered</div>
-            <div class="legend-item"><div class="legend-dot marked"></div> Marked for Review</div>
+            <div class="legend-item"><div class="legend-dot marked"></div> Marked</div>
             <div class="legend-item"><div class="legend-dot answered-marked"></div> Answered & Marked</div>
           </div>
         </div>

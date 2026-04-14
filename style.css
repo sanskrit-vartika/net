@@ -1253,3 +1253,100 @@ footer {
 .skel-text { width: 100%; height: 14px; }
 .skel-text-short { width: 80%; height: 14px; margin: 0 auto; }
 .skel-button { width: 120px; height: 32px; border-radius: 50px; margin: auto auto 0; }
+
+/* ==========================================
+   === NATIVE APP TEST UI UPGRADE ===
+   ========================================== */
+
+/* DESKTOP: Fixed height card with internal scroll */
+.test-main {
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  min-height: 550px;
+}
+.test-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 12px;
+  margin-bottom: 16px;
+}
+.test-scroll-area::-webkit-scrollbar { width: 6px; }
+.test-scroll-area::-webkit-scrollbar-track { background: var(--cream-dark); border-radius: 10px; }
+.test-scroll-area::-webkit-scrollbar-thumb { background: var(--saffron-light); border-radius: 10px; }
+
+/* Pin actions to the bottom of the card */
+.test-actions {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--cream-dark);
+  background: var(--white);
+}
+.btn-palette-toggle { display: none; } /* Hidden on desktop */
+.mobile-palette-close { display: none; }
+
+/* MOBILE: Full Screen Immersive Mode */
+@media (max-width: 900px) {
+  /* Hide regular navigation when test is active */
+  body.test-mode-active #navbar,
+  body.test-mode-active .bottom-nav-material {
+    display: none !important;
+  }
+  body.test-mode-active .page {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Fix Header to Top Edge */
+  body.test-mode-active .test-header {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 2000; border-radius: 0; margin: 0;
+    padding: 12px 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  body.test-mode-active .test-header h3 { font-size: 0.95rem; }
+  body.test-mode-active .test-header p { display: none; } /* Hide subtitle to save space */
+
+  /* Let body scroll naturally between fixed header and footer */
+  body.test-mode-active .test-main {
+    height: auto; min-height: 100vh;
+    padding: 80px 16px 90px 16px; 
+    box-shadow: none; background: transparent; border-radius: 0;
+  }
+  body.test-mode-active .test-scroll-area {
+    overflow-y: visible; padding-right: 0;
+  }
+
+  /* Fix Action Bar to Bottom Edge */
+  body.test-mode-active .test-actions {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 2000; padding: 12px 16px; margin: 0;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.15);
+    justify-content: space-between;
+  }
+
+  /* Mobile Button Resizing */
+  body.test-mode-active .nav-test-btn,
+  body.test-mode-active .mark-review-btn {
+    padding: 10px 14px; font-size: 0.85rem;
+  }
+  .btn-palette-toggle {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--cream-dark); color: var(--brown); border: none;
+    border-radius: 50%; width: 40px; height: 40px; font-size: 1.1rem;
+  }
+
+  /* Slide-Up Bottom Sheet Palette */
+  body.test-mode-active .test-sidebar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 3000; transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    max-height: 85vh; overflow-y: auto; margin: 0;
+    border-radius: 24px 24px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.4);
+  }
+  body.test-mode-active .test-sidebar.open { transform: translateY(0); }
+  .mobile-palette-close {
+    display: block; position: absolute; top: 16px; right: 20px;
+    background: none; color: var(--text-light); font-size: 2rem; line-height: 1; border: none;
+  }
+  body.test-mode-active.palette-open { overflow: hidden; }
+}
