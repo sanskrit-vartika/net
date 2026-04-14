@@ -1378,6 +1378,38 @@ footer {
    === DESKTOP PALETTE SAFEGUARD ===
    ========================================== */
 @media (min-width: 901px) {
+  /* ==========================================
+     === DESKTOP FOCUS MODE ===
+     ========================================== */
+  /* Hide the navbar, footer, and top page headers when a test is active */
+  body.test-mode-active #navbar,
+  body.test-mode-active footer,
+  body.test-mode-active .page > .text-center,
+  body.test-mode-active .section-title {
+    display: none !important;
+  }
+
+  /* Remove the default navbar spacing */
+  body.test-mode-active .page {
+    padding-top: 0 !important;
+  }
+
+  /* Fix the Test Header to the top edge */
+  body.test-mode-active .test-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 2000;
+    border-radius: 0;
+    margin: 0;
+    /* Magic padding: keeps text aligned with the central test card while the background stretches */
+    padding: 16px max(24px, calc((100vw - 1200px) / 2));
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+  /* Push the test card down so it isn't hidden underneath the new fixed header */
+  body.test-mode-active .test-layout {
+    margin-top: 100px;
+  }
   /* Force the desktop palette to remain a standard, sticky sidebar */
   .test-sidebar,
   body.test-mode-active .test-sidebar {
