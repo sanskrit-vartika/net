@@ -459,6 +459,14 @@ window.addEventListener('popstate', function(event) {
     return;
   }
 
+  // Check if the "History" modal is open
+  const historyModal = document.getElementById('history-modal');
+  if (historyModal && historyModal.style.display === 'flex') {
+    historyModal.style.display = 'none';
+    history.pushState({ page: currentPage }, '', '#' + currentPage);
+    return;
+  }
+
   // 3. Check if the "Submit Warning" modal is open
   const submitModal = document.getElementById('submit-modal');
   if (submitModal && submitModal.style.display === 'flex') {
@@ -1867,7 +1875,7 @@ function loadDashboard() {
     `;
     document.getElementById('dashboard-hero').style.display = 'none';
     document.querySelector('.stats-grid').style.display = 'none';
-    document.getElementById('history-container').parentElement.style.display = 'none';
+    
     const badgesBox = document.getElementById('badges-container');
     if (badgesBox) badgesBox.parentElement.parentElement.style.display = 'none';
     return;
@@ -1883,7 +1891,7 @@ function loadDashboard() {
     `;
     document.getElementById('dashboard-hero').style.display = 'none';
     document.querySelector('.stats-grid').style.display = 'none';
-    document.getElementById('history-container').parentElement.style.display = 'none';
+    
     const badgesBox = document.getElementById('badges-container');
     if (badgesBox) badgesBox.parentElement.parentElement.style.display = 'none';
     return;
@@ -1893,7 +1901,7 @@ function loadDashboard() {
   document.getElementById('name-setup-box').style.display = 'none';
   document.getElementById('dashboard-hero').style.display = 'block';
   document.querySelector('.stats-grid').style.display = 'grid';
-  document.getElementById('history-container').parentElement.style.display = 'block';
+  
   
   const badgesBox = document.getElementById('badges-container');
   if (badgesBox) badgesBox.parentElement.parentElement.style.display = 'block';
@@ -1985,11 +1993,11 @@ function loadDashboard() {
     const avg = Math.round(history.reduce((a,h) => a + h.pct, 0) / history.length);
     const best = Math.max(...history.map(h => h.pct));
     document.getElementById('stat-avg').textContent = avg + '%';
-    document.getElementById('stat-last').textContent = history[0].date;
+    
     document.getElementById('stat-best').textContent = best + '%';
   } else {
     document.getElementById('stat-avg').textContent = '—';
-    document.getElementById('stat-last').textContent = '—';
+    
     document.getElementById('stat-best').textContent = '—';
   }
 
@@ -3226,3 +3234,8 @@ window.addEventListener('appinstalled', () => {
   if (installBtn) installBtn.style.display = 'none';
   showToast("✅ App installed successfully!");
 });
+
+function openHistoryModal() {
+  if (!currentUser) { showAuthModal(); return; }
+  document.getElementById('history-modal').style.display = 'flex';
+}

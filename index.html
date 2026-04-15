@@ -808,6 +808,11 @@
         <span class="value" id="stat-saved-qs">0</span>
         <span class="label">Saved Questions<br><span style="font-size:0.65rem;color:var(--saffron);font-weight:600;">Click to view</span></span>
       </div>
+      <div class="stat-card" style="cursor:pointer; border: 2px solid transparent; transition: 0.2s; background: linear-gradient(135deg, var(--white), #F3E5F5);" onclick="openHistoryModal()" onmouseover="this.style.borderColor='#9C27B0'" onmouseout="this.style.borderColor='transparent'">
+        <div class="icon">📜</div>
+        <span class="value" style="font-size:1rem; padding: 6px 0; color: #9C27B0;">View All</span>
+        <span class="label">Full Test History<br><span style="font-size:0.65rem;color:#9C27B0;font-weight:600;">Click to open</span></span>
+      </div>
       <div class="stat-card">
         <div class="icon">📝</div>
         <span class="value" id="stat-attempted">0</span>
@@ -823,11 +828,7 @@
         <span class="value" id="stat-avg">—</span>
         <span class="label">Average Score</span>
       </div>
-      <div class="stat-card">
-        <div class="icon">📅</div>
-        <span class="value" id="stat-last" style="font-size:1rem;">—</span>
-        <span class="label">Last Test Date</span>
-      </div>
+      
       <div class="stat-card">
         <div class="icon">🏆</div>
         <span class="value" id="stat-best">—</span>
@@ -857,27 +858,7 @@
         </div>
     </div>
 
-    <!-- Test History -->
-    <div style="margin-top:8px;">
-      <h3 style="color:var(--brown);margin-bottom:16px;font-size:1.05rem;">📊 Recent Test History</h3>
-      <div id="history-container">
-        <table class="history-table" id="history-table">
-          <thead>
-            <tr>
-              <th>Test Name</th>
-              <th>Score</th>
-              <th>Percentage</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody id="history-body">
-          </tbody>
-        </table>
-        <div id="no-history" style="text-align:center;padding:40px;color:var(--text-light);">
-          <p>No tests attempted yet. <button class="btn btn-primary btn-sm" style="margin-left:8px;" onclick="navigate('mocktest')">Take a Test →</button></p>
-        </div>
-      </div>
-    </div>
+   
     <!-- Motivational Quote -->
     <div style="background:linear-gradient(135deg,var(--saffron),var(--saffron-dark));border-radius:var(--radius);padding:28px;text-align:center;margin-top:32px;">
       <p style="font-family:var(--font-skt);font-size:1.3rem;color:var(--white);margin-bottom:8px;">उद्योगिनं पुरुषसिंहमुपैति लक्ष्मीः</p>
@@ -1186,6 +1167,7 @@
       <option value="Wrong Answer">The correct answer is marked wrong</option>
       <option value="Typo">Spelling mistake or typo</option>
       <option value="Out of Syllabus">Out of syllabus</option>
+      <option value="Data Broken">Table/ Data is not visible or broken</option>
       <option value="Other">Other issue</option>
     </select>
     
@@ -1273,6 +1255,33 @@
     </div>
     <div id="saved-qs-container" style="display:flex; flex-direction:column; gap:12px;">
       </div>
+  </div>
+</div>
+
+<div id="history-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto; text-align: left; padding: 24px; background: var(--cream);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: -24px; background: var(--cream); padding-top: 24px; padding-bottom: 12px; z-index: 10; border-bottom: 2px solid var(--cream-dark);">
+      <h3 style="color: var(--brown); margin: 0; font-size: 1.2rem;">📊 Full Test History</h3>
+      <button onclick="document.getElementById('history-modal').style.display='none'" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-light); line-height: 1;">&times;</button>
+    </div>
+    
+    <div id="history-container" style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); box-shadow: var(--shadow); background: var(--white);">
+      <table class="history-table" id="history-table">
+        <thead>
+          <tr>
+            <th>Test Name</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+        </tbody>
+      </table>
+      <div id="no-history" style="text-align:center;padding:40px;color:var(--text-light);">
+        <p>No tests attempted yet. <br><br> <button class="btn btn-primary btn-sm" onclick="document.getElementById('history-modal').style.display='none'; navigate('mocktest')">Take a Test →</button></p>
+      </div>
+    </div>
   </div>
 </div>
 
