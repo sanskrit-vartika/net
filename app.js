@@ -1568,14 +1568,28 @@ async function generateAIBooster(paperType) {
      return;
   }
 
-  document.getElementById('loading-overlay').style.display = 'flex';
+  document.getElementById('loading-overlay').style.display = 'none'; // Ensure main spinner is off
 
   // D. "Smart Fetch" - Only download the Google Sheets we actually need!
+  
+  // NEW: Transition to the skeleton grid while calculating
+  document.getElementById('test-categories').style.display = 'none';
+  const setsView = document.getElementById('test-sets-view');
+  setsView.style.display = 'block';
+  document.getElementById('sets-category-title').textContent = "🧠 AI Assembling Custom Test...";
+  
+  // Inject 6 skeleton blocks rapidly into the grid
+  let skelHTML = '';
+  for(let i=0; i<6; i++) {
+    skelHTML += `<div class="skel-card"><div class="skeleton skel-icon"></div><div class="skeleton skel-title"></div><div class="skeleton skel-text"></div><div class="skeleton skel-text-short"></div></div>`;
+  }
+  document.getElementById('sets-grid').innerHTML = skelHTML;
+  window.scrollTo(0, 0);
+
+  // Start the database download
   let catsToFetch = [...new Set(weakTopics.map(t => t.cat))];
   let fetchPromises = catsToFetch.map(c => fetchQuestions(c));
   await Promise.all(fetchPromises);
-
-  document.getElementById('loading-overlay').style.display = 'none';
 
   // E. Assemble the Custom Test
   let assembledQuestions = [];
