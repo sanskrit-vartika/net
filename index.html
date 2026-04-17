@@ -587,8 +587,6 @@
       </div>
     </div>
 
-    
-
     <!-- Results -->
     <div id="test-results" style="display:none;">
       <div class="results-container">
@@ -878,21 +876,6 @@
       </div>
     </div>
 
-    <div class="mv-card" style="margin-bottom: 32px; background: linear-gradient(135deg, #FFF3E0, #FFFFFF); border-color: #FF9800; cursor: pointer; text-align: center;" onclick="openMistakeVault()">
-        <div style="font-size: 2.5rem; margin-bottom: 12px;">🗃️</div>
-        <h3 style="color: #E65100; font-size: 1.2rem;">My Mistake Vault</h3>
-        <p style="color: var(--text-mid); font-size: 0.9rem; margin-bottom: 12px;">Review the questions you got wrong to build your mastery.</p>
-        <span id="vault-count-badge" style="background: #E65100; color: white; padding: 4px 12px; border-radius: 50px; font-weight: 700; font-size: 0.8rem;">0 Saved Mistakes</span>
-      </div>
-      
-
-      <div class="mv-card" style="margin-bottom: 32px; background: linear-gradient(135deg, #FFFDE7, #FFFFFF); border-color: #FBC02D; cursor: pointer; text-align: center;" onclick="openLeaderboard()">
-         <div style="font-size: 2.5rem; margin-bottom: 12px;">🏆</div>
-          <h3 style="color: #F57F17; font-size: 1.2rem;">Global Top Scholars</h3>
-          <p style="color: var(--text-mid); font-size: 0.9rem; margin-bottom: 12px;">See who scored the highest this week. Can you reach the top 10?</p>
-         <span style="background: #FBC02D; color: white; padding: 4px 12px; border-radius: 50px; font-weight: 700; font-size: 0.8rem;">View Rankings</span>
-       </div>
-
 <div style="margin-top:8px; margin-bottom: 24px;">
       <h3 style="color:var(--brown);margin-bottom:16px;font-size:1.05rem;">🏆 Your Achievements</h3>
       <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -921,76 +904,6 @@
       <p style="font-family:var(--font-skt);font-size:1.3rem;color:var(--white);margin-bottom:8px;">उद्योगिनं पुरुषसिंहमुपैति लक्ष्मीः</p>
       <p style="color:rgba(255,255,255,0.8);font-size:0.85rem;">Fortune favors the diligent.</p>
     </div>
-  </div>
-</div>
-
-<!-- Mistake vault -->
-
-<div id="mistake-vault-view" class="page" style="display: none;">
-  <div class="section" style="max-width: 800px; margin: 0 auto;">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-      <button class="nav-btn" onclick="closeMistakeVault()" style="background: var(--cream-dark); color: var(--brown); padding: 8px 16px; border-radius: 50px; font-weight: 600;">← Back</button>
-      <span id="mv-header-title" style="font-weight: 700; color: var(--saffron); font-size: 1.2rem;">My Vault</span>
-    </div>
-
-    <div id="mv-folders-view">
-      <h3 style="text-align: center; color: var(--brown);">Select a Topic to Review</h3>
-      <div id="mv-folders-grid" class="mv-folders-grid"></div>
-    </div>
-
-    <div id="mv-stack-view" style="display: none; text-align: center;">
-      <p style="color: var(--text-light); margin-bottom: 24px; font-size: 0.9rem;">Tap the card to flip it. Rate your confidence below!</p>
-      
-      <div class="card-stack-container">
-        <div id="active-swipe-card" class="swipe-card" onclick="flipVaultCard()">
-          
-          <div class="card-face card-face-front">
-            <span style="font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">Question <span id="mv-stack-counter">1/1</span></span>
-            <div id="mv-card-q" style="font-size: 1.15rem; font-family: var(--font-skt); color: var(--brown); font-weight: 600;"></div>
-            <div style="margin-top: auto; font-size: 0.85rem; color: var(--saffron); animation: pulse 2s infinite;">👆 Tap to flip</div>
-          </div>
-          
-          <div class="card-face card-face-back">
-            <div style="background: #E8F5E9; border: 2px solid #4CAF50; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 12px;">
-              <strong style="color: #1B5E20; display: block; margin-bottom: 4px; font-size: 0.8rem;">Correct Answer:</strong>
-              <span id="mv-card-ans" style="color: var(--brown); font-weight: 600;"></span>
-            </div>
-            <div id="mv-card-exp" style="text-align: left; font-size: 0.85rem; color: #4A148C; line-height: 1.5; font-style: italic;"></div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="swipe-controls" id="mv-swipe-controls" style="opacity: 0; pointer-events: none; transition: 0.3s;">
-        <button class="btn-circle btn-bad" onclick="handleSwipe('left')" title="Need More Practice">❌</button>
-        <button class="btn-circle btn-good" onclick="handleSwipe('right')" title="I Mastered This!">💚</button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-<!-- Leaderboard -->
-
-<div id="leaderboard-view" class="page" style="display: none;">
-  <div class="section" style="max-width: 700px; margin: 0 auto; text-align: center;">
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <button class="nav-btn" onclick="closeLeaderboard()" style="background: var(--cream-dark); color: var(--brown); padding: 8px 16px; border-radius: 50px; font-weight: 600;">← Back</button>
-      <span style="font-weight: 700; color: var(--saffron); font-size: 1.2rem;">Top Scholars</span>
-    </div>
-    <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 24px;">Rankings are based on the highest accuracy scored.</p>
-
-    <div id="lb-loading" style="padding: 40px; color: var(--saffron); font-weight: 600;">
-      <span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Fetching latest scores...
-    </div>
-
-    <div id="lb-content" style="display: none;">
-      <div class="lb-podium" id="lb-podium-container"></div>
-      <div class="lb-list" id="lb-list-container"></div>
-    </div>
-
   </div>
 </div>
 
