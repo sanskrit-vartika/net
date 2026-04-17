@@ -1358,8 +1358,7 @@ function confirmSubmit() {
   // NEW: Save any mistakes to the local vault before we calculate the final score!
   if (typeof saveMistakesLocally === 'function') saveMistakesLocally();
 
-  if (typeof silentlySaveScoreToLeaderboard === 'function') silentlySaveScoreToLeaderboard(score, testState.questions.length);
-
+  
   clearInterval(testState.timerInterval);
   testState.finished = true;
 
@@ -1377,6 +1376,11 @@ function confirmSubmit() {
     else wrong++;
   });
 
+  // ---> NEW FIX: Safely send the score to the Leaderboard NOW! <---
+  if (typeof silentlySaveScoreToLeaderboard === 'function') {
+    silentlySaveScoreToLeaderboard(correct, testState.questions.length);
+  }
+  
   const pct = Math.round((correct / qs.length) * 100);
 
   // === NEW: GOOGLE ANALYTICS MACRO TRACKING ===
