@@ -29,6 +29,9 @@ const LAUNCH_PROMO_END_DATE = new Date("2030-05-01T00:00:00Z");
 // 5. THE MASTER ADMIN EMAIL
 const ADMIN_EMAIL = "enquiry.sanskritvartika@gmail.com";
 
+// 5A. MASTER WHATSAPP NUMBER (Centralized)
+const WHATSAPP_NUMBER = "918172063129";
+
 // 6. TESTING SWITCH: Require Email Verification?
 const REQUIRE_EMAIL_VERIFICATION = false; // Change to true before official public launch!
 
@@ -1494,6 +1497,24 @@ function showCategories() {
 // === THE AI BOOSTER ENGINE ===
 // ==========================================
 
+// --- AI BOOSTER POP-UP LOGIC ---
+let pendingAITestType = null; 
+
+function showAIBoosterPopup(paperType) {
+  pendingAITestType = paperType; 
+  document.getElementById('ai-booster-modal').style.display = 'flex'; 
+}
+
+function closeAIBoosterPopup() {
+  pendingAITestType = null;
+  document.getElementById('ai-booster-modal').style.display = 'none'; 
+}
+
+function confirmStartAIBooster() {
+  document.getElementById('ai-booster-modal').style.display = 'none'; 
+  generateAIBooster(pendingAITestType); 
+}
+
 // Helper: Basic Array Shuffler
 function shuffleArray(array) {
   let curId = array.length;
@@ -2086,19 +2107,26 @@ function openSavedQsModal() {
 // ==========================================
 function loadDashboard() {
         
-  // NEW: If Firebase is still booting up, show a loading state!
+  // FIXED: Show a TRUE loading spinner while Firebase is booting up!
   if (!isFirebaseReady) {
     document.getElementById('name-setup-box').style.display = 'block';
     document.getElementById('name-setup-box').innerHTML = `
-      <h3 style="color:var(--brown); margin-bottom: 12px;">Welcome to your Dashboard!</h3>
-      <p style="color:var(--text-light); margin-bottom:20px;">Please create a free account or log in to track your scores, earn badges, and save difficult questions.</p>
-      <button class="btn btn-primary" onclick="showAuthModal('signup')" style="margin: 0 auto;">🔒 Log In / Sign Up</button>
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+        <div class="spinner" style="border-top-color: var(--saffron); margin-bottom: 16px;"></div>
+        <h3 style="color:var(--brown);">Loading your profile...</h3>
+        <p style="color:var(--text-light); font-size: 0.85rem;">Fetching your scores and passes from the cloud.</p>
+      </div>
     `;
     document.getElementById('dashboard-hero').style.display = 'none';
     document.querySelector('.stats-grid').style.display = 'none';
     
     const badgesBox = document.getElementById('badges-container');
     if (badgesBox) badgesBox.parentElement.parentElement.style.display = 'none';
+    
+    // Also hide the analytics chart while loading to prevent visual glitches
+    const analyticsBox = document.getElementById('analytics-section');
+    if (analyticsBox) analyticsBox.style.display = 'none';
+    
     return;
   }
 
@@ -2123,20 +2151,37 @@ function loadDashboard() {
   document.getElementById('dashboard-hero').style.display = 'block';
   document.querySelector('.stats-grid').style.display = 'grid';
   
-  
   const badgesBox = document.getElementById('badges-container');
   if (badgesBox) badgesBox.parentElement.parentElement.style.display = 'block';
+
+  // BUG FIX: Unhide the analytics section after the loading spinner finishes!
+  const analyticsBox = document.getElementById('analytics-section');
+  if (analyticsBox) analyticsBox.style.display = 'block';
 
   document.getElementById('display-name').textContent = currentUser.dbData.name || "Student";
 
 
-  // --- NEW: UNHIDE DEV SANDBOX FOR ADMIN ---
-  const devSandbox = document.getElementById('dev-sandbox');
-  if (devSandbox) {
+  // --- FIXED: SECURE DYNAMIC INJECTION FOR ADMIN SANDBOX ---
+  const sandboxContainer = document.getElementById('admin-sandbox-container');
+  if (sandboxContainer) {
     if (currentUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-      devSandbox.style.display = 'block';
+      sandboxContainer.innerHTML = `
+        <div style="background: #FFF3E0; border: 2px dashed #FF9800; border-radius: var(--radius); padding: 20px; margin-bottom: 24px; text-align: center;">
+          <h3 style="color: #E65100; margin-bottom: 12px; font-size: 1rem;">🛠️ Developer Test Switch</h3>
+          <p style="font-size: 0.8rem; color: var(--text-mid); margin-bottom: 16px;">Instantly change your own account status to test the UI locks.</p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-sm" style="background: #9E9E9E; color: white;" onclick="setTestState('free')">Set Free</button>
+            <button class="btn btn-sm" style="background: #9C27B0; color: white;" onclick="setTestState('combo')">Set Combo Pass</button>
+            <button class="btn btn-sm" style="background: #E65100; color: white;" onclick="setTestState('batch')">Set Batch Pass</button>
+            <button class="btn btn-sm" style="background: #1565C0; color: white;" onclick="setTestState('sanskrit')">Set Sanskrit Pass</button>
+            <button class="btn btn-sm" style="background: #2E7D32; color: white;" onclick="setTestState('general')">Set 1st Paper Pass</button>
+            <button class="btn btn-sm" style="background: #F44336; color: white;" onclick="setTestState('expired')">Set Expired</button>
+          </div>
+        </div>
+      `;
     } else {
-      devSandbox.style.display = 'none';
+      // For normal students, ensure the container remains completely empty
+      sandboxContainer.innerHTML = ''; 
     }
   }
 
@@ -2429,12 +2474,9 @@ function submitContactForm() {
   // 2. Format the final message exactly as requested
   const finalMessage = `Hi, I am ${studentName},\n\n${msg}`;
   
-  // 3. EDIT THIS: Put your actual WhatsApp business number here
-  const phone = "918172063129"; 
-  
-  // 4. Launch WhatsApp
+  // 3. Launch WhatsApp using Master Number
   const encodedMessage = encodeURIComponent(finalMessage);
-  window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
   
   // Clear the box after sending
   document.getElementById('cf-msg').value = '';
@@ -2465,7 +2507,7 @@ const myCourses = [
     price: "₹2,499",
     originalPrice: "₹4,999",
     btnText: "Get Batch Pass",
-    link: "https://wa.me/918172063129?text=Hello! I want to buy the Complete Batch Pass."
+    link: "text=Hello! I want to buy the Complete Batch Pass."
   },
   {
     title: "Combo Mock Test Pass",
@@ -2485,7 +2527,7 @@ const myCourses = [
     price: "₹99",
     originalPrice: "₹149",
     btnText: "Get Combo Pass",
-    link: "https://wa.me/918172063129?text=Hello! I want to buy the Combo Mock Test Pass."
+    link: "text=Hello! I want to buy the Combo Mock Test Pass."
   },
   {
     title: "Sanskrit Mock Test Pass",
@@ -2505,7 +2547,7 @@ const myCourses = [
     price: "₹59",
     originalPrice: "₹89",
     btnText: "Get Sanskrit Pass",
-    link: "https://wa.me/918172063129?text=Hello! I want to buy the Sanskrit Mock Test Pass."
+    link: "text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
   {
     title: "General Paper 1 Mock Pass",
@@ -2524,7 +2566,7 @@ const myCourses = [
     price: "₹49",
     originalPrice: "₹79",
     btnText: "Get General Pass",
-    link: "https://wa.me/918172063129?text=Hello! I want to buy the General Paper 1 Mock Pass."
+    link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
   },
   {
     title: "Free Foundation Course",
@@ -2560,8 +2602,7 @@ function purchaseCourse(index) {
     baseMsg += `\n\nMy Details:\nName: ${name}\nEmail: ${email}`;
   }
 
-  const phone = "918172063129";
-  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(baseMsg)}`, '_blank');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(baseMsg)}`, '_blank');
 }
 
 function renderCourses() {
@@ -3294,11 +3335,8 @@ function claimRenewalDiscount() {
   // Create a pre-filled WhatsApp message dynamically
   const message = `Hello! I am ${studentName} (${studentEmail}). My ${passName}  and I saw the special renewal discount pop-up. I would like to renew my account!`;
   
-  // EDIT THIS: Put your actual WhatsApp business number here (include country code, no + or spaces)
-  const phone = "918172063129"; 
-  
   const encodedMessage = encodeURIComponent(message);
-  window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
 }
 
 // ==========================================
