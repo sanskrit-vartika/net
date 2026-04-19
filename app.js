@@ -2524,8 +2524,8 @@ const myCourses = [
       "✅ Subject-wise Performance Analytics",
       "✅ Official UGC NET Previous Year Questions"
     ],
-    price: "₹99",
-    originalPrice: "₹149",
+    price: "₹119",
+    originalPrice: "₹199",
     btnText: "Get Combo Pass",
     link: "text=Hello! I want to buy the Combo Mock Test Pass."
   },
@@ -2544,8 +2544,8 @@ const myCourses = [
       "✅ Detailed Post-Test Explanations",
       "✅ Earn streaks and gamification badges"
     ],
-    price: "₹59",
-    originalPrice: "₹89",
+    price: "₹89",
+    originalPrice: "₹119",
     btnText: "Get Sanskrit Pass",
     link: "text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
@@ -2563,8 +2563,8 @@ const myCourses = [
       "✅ Identify your weakest sections instantly",
       "✅ Cloud sync to save your progress"
     ],
-    price: "₹49",
-    originalPrice: "₹79",
+    price: "₹59",
+    originalPrice: "₹89",
     btnText: "Get General Pass",
     link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
   },
