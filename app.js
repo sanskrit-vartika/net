@@ -614,7 +614,12 @@ const TEST_DATABASE_URLS = {
   'full': 'https://script.google.com/macros/s/AKfycbyikVGeVJijVnekPuqULdIQwzLGYFWPEm-bJmGMQviqf1ehUQJp-VfYGZ03SBvnjfHt4A/exec',
   'other': 'https://script.google.com/macros/s/AKfycbwgzQw9hZPBNOznWJUCobVyjN7LYU9-Tf93fZgm4VxWQfKo9Lo9vdYP4HnaqBEgHPU/exec',
   'paper1': 'https://script.google.com/macros/s/AKfycbyTOYJSrg6XhQ7bKDSnArkFYr_OyBGo29Wq2k-vIu-5LVFZbeBGXwB1KoslTCqXlfT3eQ/exec',
-  'paper1_topic': 'https://script.google.com/macros/s/AKfycbzsEC8O95qh1r3zW2yHri66U1BbYogCrf-afkUzZcMXbt6M_AtKChdPzOqAc7f5ihjN/exec'
+  'paper1_topic': [
+    { tabName: 'Teaching Aptitude', url: 'https://sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_teach_8xN3mP.json' },
+    { tabName: 'Math', url: 'https://sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_math_kf5Hr56.json' },
+    { tabName: 'Research', url: 'https://sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_rese_8sdfk45v.json' }
+    // You can add more later using this exact same format!
+  ]
 };
 
 // NEW: The Dedicated Free Databases
@@ -651,31 +656,74 @@ const catNames = {
   free_paper1_topic: 'Free 1st Paper Topic'     // NEW
 };
 
-// 2. THE CENTRAL DATA FETCHER (Upgraded with Free Filters & TIMEOUT)
+// 2. THE CENTRAL DATA FETCHER (Upgraded with Smart Decryption & Timeout)
 async function fetchQuestions(cat) {
   if (allQuestions[cat]) return true; // Already loaded in memory!
 
   const targetURL = TEST_DATABASE_URLS[cat];
-  if (!targetURL || targetURL.includes('PASTE_')) return false;
+  if (!targetURL || (typeof targetURL === 'string' && targetURL.includes('PASTE_'))) return false;
 
   try {
-    // --- NEW CODE: The 30-Second Stopwatch ---
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30000 ms = 30 seconds
+    const timeoutId = setTimeout(() => controller.abort(), 30000); 
 
-    // We pass the "stopwatch" to the fetch request
-    const response = await fetch(targetURL, { signal: controller.signal });
+    let data = [];
     
-    // If it succeeds before 30 seconds, we stop the stopwatch!
-    clearTimeout(timeoutId); 
-    // ----------------------------------------
+    // --- THE SECRET DECRYPTION KEY (Must match Encryptor.html) ---
+    const SECRET_KEY = "SanskritVartikaSecure2026!"; 
 
-    const textData = await response.text();
-    let data;
-    try { data = JSON.parse(textData); } catch (e) { return false; }
+    // --- NEW ENGINE: Handle Arrays of ENCRYPTED JSON Files ---
+    if (Array.isArray(targetURL)) {
+      const fetchPromises = targetURL.map(item => {
+        const url = (typeof item === 'string') ? item : item.url;
+        const tabName = (typeof item === 'string') ? null : item.tabName;
+
+        return fetch(url, { signal: controller.signal })
+          .then(res => res.text()) // Get raw text (Gibberish or JSON)
+          .then(textData => {
+            let fileData;
+            
+            try {
+              // Attempt 1: Try to decrypt it (Layer 3)
+              const bytes = CryptoJS.AES.decrypt(textData, SECRET_KEY);
+              const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+              if (!decryptedString) throw new Error("Empty decryption");
+              fileData = JSON.parse(decryptedString);
+            } catch(e) {
+              // Attempt 2 (Smart Fallback): If decryption fails, maybe you forgot to encrypt it!
+              // It will parse normal JSON files safely without crashing.
+              fileData = JSON.parse(textData);
+            }
+
+            // Secretly inject the tab name into the questions
+            if (tabName && Array.isArray(fileData)) {
+              fileData.forEach(row => {
+                if (!row.category && !row.Category) row.category = tabName;
+              });
+            }
+            return fileData;
+          });
+      });
+      
+      const allResults = await Promise.all(fetchPromises);
+      clearTimeout(timeoutId);
+      
+      // Glue all the separate files into one massive data list
+      allResults.forEach(fileData => {
+        if (Array.isArray(fileData)) data = data.concat(fileData);
+      });
+
+    } else {
+      // --- OLD ENGINE: Handle single Google Sheet URL ---
+      const response = await fetch(targetURL, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      const textData = await response.text();
+      data = JSON.parse(textData);
+    }
 
     allQuestions[cat] = {};
 
+    // Build the Grid System for the UI
     data.forEach(row => {
       const originalSet = String(row.set || row.Set || "1").trim();
       const questionText = row.question || row.Question;
@@ -704,7 +752,6 @@ async function fetchQuestions(cat) {
         else if (rawAns === "D" || rawAns === "4") convertedAns = 3;
         else convertedAns = Math.max(0, Number(rawAns) - 1);
 
-        
         const groupId = String(row.groupid || row.GroupID || row.group || "").trim();
         
         allQuestions[cat][setKey].push({
@@ -718,14 +765,12 @@ async function fetchQuestions(cat) {
     });
     return true;
   } catch (error) { 
-    // --- NEW CODE: Handle the timeout error silently ---
     if (error.name === 'AbortError') {
       console.warn("Connection timed out. Took longer than 30 seconds.");
     } else {
       console.error("Fetch error:", error); 
     }
-    return false; // Returning false tells your UI to hide the spinner and show the error toast
-    // ----------------------------------------
+    return false; 
   }
 }
 
@@ -1195,15 +1240,19 @@ function updateTimerDisplay() {
   el.classList.toggle('warning', testState.timeLeft < 300);
 }
 
-function renderQuestion() {
+// FIXED: Added "keepScroll" memory so it doesn't jump when selecting an option!
+function renderQuestion(keepScroll = false) {
   const qs = testState.questions;
   const idx = testState.current;
   const q = qs[idx];
   if (!q) return;
-  // Auto-scroll to top of new question
-  const scrollArea = document.getElementById('test-scroll-area');
-  if (scrollArea) scrollArea.scrollTop = 0;
-  if (window.innerWidth <= 900) window.scrollTo(0, 0);
+  
+  // Auto-scroll to top ONLY if we are moving to a brand new question
+  if (keepScroll === false) {
+    const scrollArea = document.getElementById('test-scroll-area');
+    if (scrollArea) scrollArea.scrollTop = 0;
+    if (window.innerWidth <= 900) window.scrollTo(0, 0);
+  }
 
   // The question text itself is already safely handled!
   document.getElementById('q-number').textContent = `Question ${idx+1} of ${qs.length}`;
@@ -1266,7 +1315,8 @@ function selectOption(i) {
     testState.answers[idx] = i;
   }
   
-  renderQuestion();
+  // FIXED: Tell the renderer to keep the scroll position exactly where it is!
+  renderQuestion(true); 
 }
 
 function nextQuestion() {
