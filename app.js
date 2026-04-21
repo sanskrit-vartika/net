@@ -70,12 +70,13 @@ function toggleAuthMode() {
   
   if (isSignUpMode) {
     title.textContent = "Create Account";
-    subtitle.textContent = `Start your ${FREE_TRIAL_DAYS}-Day Vartika Param Trial!`;
+    subtitle.textContent = `Start your ${FREE_TRIAL_DAYS}-Day Combo Pass Trial!`;
     nameInput.style.display = 'block';
     if(whatsappInput) whatsappInput.style.display = 'block';
     if(forgotPassBox) forgotPassBox.style.display = 'none';
     actionBtn.textContent = "Sign Up";
-    switchText.innerHTML = "Already have an account? <a href='#' onclick='toggleAuthMode()' style='color: var(--saffron); font-weight: bold;'>Log In</a>";
+    // 🚀 BUG FIX: Changed href='#' to href='javascript:void(0);' to prevent the pop-up closer from triggering!
+    switchText.innerHTML = "Already have an account? <a href='javascript:void(0);' onclick='toggleAuthMode()' style='color: var(--saffron); font-weight: bold;'>Log In</a>";
   } else {
     title.textContent = "Welcome Back";
     subtitle.textContent = "Log in to track your scores.";
@@ -83,7 +84,8 @@ function toggleAuthMode() {
     if(whatsappInput) whatsappInput.style.display = 'none';
     if(forgotPassBox) forgotPassBox.style.display = 'block';
     actionBtn.textContent = "Log In";
-    switchText.innerHTML = "New here? <a href='#' onclick='toggleAuthMode()' style='color: var(--saffron); font-weight: bold;'>Create an account</a>";
+    // 🚀 BUG FIX: Changed href='#' to href='javascript:void(0);' to prevent the pop-up closer from triggering!
+    switchText.innerHTML = "New here? <a href='javascript:void(0);' onclick='toggleAuthMode()' style='color: var(--saffron); font-weight: bold;'>Create an account</a>";
   }
 }
 
@@ -136,8 +138,10 @@ async function handleAuthAction() {
       const userCredential = await auth.createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
       
-      // We always send the email, but we won't strictly enforce clicking it if testing
-      try { await user.sendEmailVerification(); } catch(e) {}
+      // 🚀 OPTIMIZATION: Only send the email if the system actually requires it! Saves Firebase quota.
+      if (REQUIRE_EMAIL_VERIFICATION) {
+        try { await user.sendEmailVerification(); } catch(e) {}
+      }
       
       // === NEW MULTI-PASS TRIAL LOGIC ===
       let initialPasses = {
@@ -169,10 +173,25 @@ async function handleAuthAction() {
       // DEV SWITCH LOGIC: Show the hard pop-up instead of a disappearing toast!
       if (REQUIRE_EMAIL_VERIFICATION) {
         await auth.signOut(); 
-        document.getElementById('verify-alert-modal').style.display = 'flex'; // <-- NEW: Triggers the big warning!
+        document.getElementById('verify-alert-modal').style.display = 'flex'; 
       } else {
-        showToast("Account created! Logging you in...");
-        setTimeout(() => window.location.reload(), 1500); 
+        showToast("Account created successfully! Welcome.");
+        
+        // === 🚀 BUG FIX 1: SEAMLESS SPA LOGIN (No Page Reloads!) ===
+        currentUser = user;
+        currentUser.dbData = {
+          name: name,
+          email: email,
+          whatsapp: whatsapp,
+          passes: initialPasses, 
+          accessLevel: initialAccessLevel,
+          createdAt: new Date().toISOString()
+        };
+        
+        isFirebaseReady = true;
+        updateNavUI(currentUser, name);
+        updateTestCardLocks();
+        if (currentPage === 'dashboard') loadDashboard();
       }
       
       document.getElementById('auth-modal').style.display = 'none';
@@ -284,11 +303,9 @@ auth.onAuthStateChanged(async (user) => {
 
         const correctLevel = hasActivePass ? "premium" : "basic";
         
-        // If the database has the wrong level (e.g., they expired yesterday), fix it silently!
-        if (currentUser.dbData.accessLevel !== correctLevel) {
-          currentUser.dbData.accessLevel = correctLevel;
-          db.collection("users").doc(user.uid).update({ accessLevel: correctLevel });
-        }
+        // 🔒 SECURE FIX: We update the local UI state so the website works, 
+        // but we NEVER tell the database to update it! (Prevents DevTools hacking)
+        currentUser.dbData.accessLevel = correctLevel;
         // ======================================
         
         // 1. Tell the app Firebase is ready!
@@ -314,12 +331,47 @@ auth.onAuthStateChanged(async (user) => {
           db.collection("users").doc(user.uid).get().then((retryDoc) => {
             if (retryDoc.exists) {
               clearInterval(checkInterval); // Stop checking!
-              refreshStudentProfile();      // Load the dashboard
+              
+              // === 🚀 BUG FIX 2: RESTORE MISSING UI SYNC ===
+              currentUser.dbData = retryDoc.data();
+              
+              // Run Auto-Healing Access Level on Retry
+              let hasActivePass = false;
+              const now = new Date();
+              const p = currentUser.dbData.passes || {};
+              ['combo', 'batch', 'sanskrit', 'general'].forEach(pass => {
+                if (p[pass] && new Date(p[pass]) > now) hasActivePass = true;
+              });
+              const correctLevel = hasActivePass ? "premium" : "basic";
+              
+              // 🔒 SECURE FIX: Update local UI only. No database writes!
+              currentUser.dbData.accessLevel = correctLevel;
+
               isFirebaseReady = true;
+              updateNavUI(user, currentUser.dbData.name);
+              updateTestCardLocks();
+              if (currentPage === 'dashboard') loadDashboard();
+              
             } else if (attempts >= 5) {
               // Give up after 5 seconds to prevent an endless loop
               clearInterval(checkInterval);
+              
+              // === 🚀 BUG FIX 3: CRITICAL ACCOUNT REPAIR (Missing Profile Auto-Generator) ===
+              // If they somehow have an Auth account but no Firestore document due to a network crash, generate a blank one safely!
+              const newProfile = {
+                name: "Student",
+                email: user.email,
+                whatsapp: "",
+                passes: { batch: null, sanskrit: null, general: null, combo: null },
+                accessLevel: "basic",
+                createdAt: new Date().toISOString()
+              };
+              db.collection("users").doc(user.uid).set(newProfile);
+              currentUser.dbData = newProfile;
+
               isFirebaseReady = true;
+              updateNavUI(user, newProfile.name);
+              updateTestCardLocks();
               if (currentPage === 'dashboard') loadDashboard();
             }
           });
@@ -361,6 +413,16 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
     document.getElementById('exit-modal').style.display = 'flex';
     return; // Stop the navigation instantly!
   }
+
+  // 🚨 PERMANENT FIX: CLOSE ALL OVERLAYS ON TAB SWITCH 🚨
+  // If a user clicks a nav link while looking at Sets or Results, instantly hide the overlays!
+  const setsView = document.getElementById('test-sets-view');
+  const testInterface = document.getElementById('test-interface');
+  const testResults = document.getElementById('test-results');
+  if (setsView) setsView.style.display = 'none';
+  if (testInterface) testInterface.style.display = 'none';
+  if (testResults) testResults.style.display = 'none';
+  document.body.classList.remove('test-mode-active');
 
   // SMART STATE ROUTING: Respect the free mode flag
   if (page === 'mocktest') {
@@ -443,13 +505,20 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
 
 // --- NEW: Modal Control Functions ---
 function confirmExitTest() {
-  // 1. Hide the warning modal
   const exitModal = document.getElementById('exit-modal');
   if (exitModal) exitModal.style.display = 'none';
   
-  // 2. Trigger the master exit routing (this safely kills the timer, 
-  // turns off Immersive Mode, and sends the student back to the Hub!)
-  showCategories(); 
+  if (pendingNavigation) {
+    // 🚨 PERMANENT FIX: If they clicked a nav link, fulfill that navigation!
+    document.body.classList.remove('test-mode-active');
+    clearInterval(testState.timerInterval);
+    testState.finished = true; // Mark as finished so it doesn't trigger intercept again
+    navigate(pendingNavigation.page, pendingNavigation.addToHistory, pendingNavigation.keepFreeMode);
+    pendingNavigation = null;
+  } else {
+    // Normal exit behavior (e.g., they clicked the red Exit button)
+    showCategories(); 
+  }
 }
 
 function cancelExitTest() {
@@ -911,27 +980,7 @@ async function showSets(cat) {
   const studySubView = document.getElementById('study-sub-view');
   if (studySubView) studySubView.style.display = 'none';
 
-  // --- NEW FIX: DYNAMIC DOM RELOCATION ---
-  // Automatically moves the Test Interface to the active page so it never loads on a blank screen!
-  const testSetsView = document.getElementById('test-sets-view');
-  const testInterface = document.getElementById('test-interface');
-  const testResults = document.getElementById('test-results');
-
-  if (currentPage === 'study') {
-    document.getElementById('page-study').querySelector('.section').appendChild(testSetsView);
-    document.getElementById('page-study').querySelector('.section').appendChild(testInterface);
-    document.getElementById('page-study').querySelector('.section').appendChild(testResults);
-  } else {
-    document.getElementById('page-mocktest').querySelector('.section').appendChild(testSetsView);
-    document.getElementById('page-mocktest').querySelector('.section').appendChild(testInterface);
-    document.getElementById('page-mocktest').querySelector('.section').appendChild(testResults);
-  }
-  // ----------------------------------------
-
-  testSetsView.style.display = 'block';
-  window.scrollTo(0, 0);
-
-
+  
   const setsView = document.getElementById('test-sets-view');
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
@@ -961,13 +1010,7 @@ async function openFreeSets(mode) {
   document.getElementById('test-interface').style.display = 'none';
   document.getElementById('test-results').style.display = 'none';
 
-  // --- NEW FIX: DOM RELOCATION SAFEGUARD ---
   const setsView = document.getElementById('test-sets-view');
-  document.getElementById('page-mocktest').querySelector('.section').appendChild(setsView);
-  document.getElementById('page-mocktest').querySelector('.section').appendChild(document.getElementById('test-interface'));
-  document.getElementById('page-mocktest').querySelector('.section').appendChild(document.getElementById('test-results'));
-  // ----------------------------------------
-  
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
 
@@ -1187,8 +1230,11 @@ function startTest(cat, setKey) {
   document.body.classList.add('test-mode-active'); // Enter immersive mode!
   
   document.getElementById('test-sets-view').style.display = 'none';
-  document.getElementById('test-interface').style.display = 'block';
+  
+  const testInterface = document.getElementById('test-interface');
+  testInterface.style.display = 'block';
   window.scrollTo(0, 0);
+  testInterface.scrollTop = 0; // 🚀 NEW FIX: Start question 1 at the absolute top!
   
   document.getElementById('test-title').textContent = displayTitle;
   
@@ -1251,13 +1297,19 @@ function renderQuestion(keepScroll = false) {
   // Auto-scroll to top ONLY if we are moving to a brand new question
   if (keepScroll === false) {
     const scrollArea = document.getElementById('test-scroll-area');
-    if (scrollArea) scrollArea.scrollTop = 0;
-    if (window.innerWidth <= 900) window.scrollTo(0, 0);
+    if (scrollArea) scrollArea.scrollTop = 0; // Fixes Desktop
+    
+    // 🚀 NEW FIX: Scroll the actual mobile overlay container to the top!
+    const testOverlay = document.getElementById('test-interface');
+    if (testOverlay) testOverlay.scrollTop = 0; 
+    
+    if (window.innerWidth <= 900) window.scrollTo(0, 0); // Failsafe
   }
 
   // The question text itself is already safely handled!
   document.getElementById('q-number').textContent = `Question ${idx+1} of ${qs.length}`;
-  document.getElementById('q-text').innerHTML = q.q; 
+  // 🔒 SECURE FIX: Wash the question text before rendering!
+  document.getElementById('q-text').innerHTML = DOMPurify.sanitize(q.q); 
 
   const optList = document.getElementById('options-list');
   optList.innerHTML = '';
@@ -1272,7 +1324,8 @@ function renderQuestion(keepScroll = false) {
     labelDiv.textContent = String.fromCharCode(65 + i); // Safely sets A, B, C, or D
     
     const textDiv = document.createElement('div');
-    textDiv.innerHTML = opt; // NOW IT RENDERS HTML TABLES AND TAGS!
+    // 🔒 SECURE FIX: Wash the options before rendering!
+    textDiv.innerHTML = DOMPurify.sanitize(opt);
 
     div.appendChild(labelDiv);
     div.appendChild(textDiv);
@@ -1419,8 +1472,11 @@ function confirmSubmit() {
   testState.finished = true;
 
   document.getElementById('test-interface').style.display = 'none';
-  document.getElementById('test-results').style.display = 'block';
+  
+  const testResults = document.getElementById('test-results');
+  testResults.style.display = 'block';
   window.scrollTo(0, 0);
+  testResults.scrollTop = 0; // 🚀 NEW FIX: Jumps the Results overlay to the top!
 
   document.getElementById('results-test-name').textContent = testState.testName;
 
@@ -1490,15 +1546,15 @@ function confirmSubmit() {
     reviewHTML += `
       <div class="review-item ${cls}">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
-          <div class="review-q">Q${i+1}. ${q.q}</div>
+          <div class="review-q">Q${i+1}. ${DOMPurify.sanitize(q.q)}</div>
           <div style="display:flex; gap:8px;">
             <button onclick="openReportModal(${i})" style="background:var(--white); border:1px solid #F44336; border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; color:#F44336;" title="Report a mistake in this question">🚩 Report</button>
             <button id="save-btn-${i}" onclick="toggleSaveQuestion(${i})" style="background:var(--white); border:1px solid var(--cream-dark); border-radius:50px; padding:4px 10px; cursor:pointer; font-weight:600; font-size:0.75rem; transition:0.2s; white-space:nowrap; ${btnStyle}">${btnText}</button>
           </div>
         </div>
-        <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${q.options[userAns]}</strong>` : ''}</div>
-        <div class="review-ans">✔ Correct answer: <strong>${q.options[q.answer]}</strong></div>
-        ${q.explanation ? `<div class="review-exp">💡 ${q.explanation}</div>` : ''}
+        <div class="review-ans">${status}${userAns !== undefined ? ` — Your answer: <strong>${DOMPurify.sanitize(q.options[userAns])}</strong>` : ''}</div>
+        <div class="review-ans">✔ Correct answer: <strong>${DOMPurify.sanitize(q.options[q.answer])}</strong></div>
+        ${q.explanation ? `<div class="review-exp">💡 ${DOMPurify.sanitize(q.explanation)}</div>` : ''}
       </div>`;
   });
   document.getElementById('results-review').innerHTML = reviewHTML;
@@ -1667,21 +1723,11 @@ async function generateAIBooster(paperType) {
 
   // D. "Smart Fetch" - Only download the Google Sheets we actually need!
   
-  // --- NEW FIX: DOM RELOCATION SAFEGUARD FOR AI BOOSTER ---
-  const setsView = document.getElementById('test-sets-view');
-  const testInterface = document.getElementById('test-interface');
-  const testResults = document.getElementById('test-results');
   
-  // Move the test screens to whatever page the student is currently looking at!
-  const activePageSection = document.getElementById('page-' + currentPage).querySelector('.section');
-  activePageSection.appendChild(setsView);
-  activePageSection.appendChild(testInterface);
-  activePageSection.appendChild(testResults);
-  // --------------------------------------------------------
 
   // NEW: Transition to the skeleton grid while calculating
   document.getElementById('test-categories').style.display = 'none';
-  setsView.style.display = 'block';
+  document.getElementById('test-sets-view').style.display = 'block';
   document.getElementById('sets-category-title').textContent = "🧠 AI Assembling Custom Test...";
   
   // Inject 6 skeleton blocks rapidly into the grid
@@ -2978,17 +3024,20 @@ function openNotifications() {
       btnHtml = `<a href="${escapeHTML(notif.btnLink)}" target="_blank" class="btn btn-sm" style="background: var(--saffron); color: white; display: inline-block; margin-top: 10px; text-decoration: none; font-size: 0.8rem; padding: 6px 14px; border-radius: 4px;">${escapeHTML(notif.btnText)}</a>`;
     }
 
-    feed.innerHTML += `
-      <div style="padding: 16px; border: 1px solid #eee; position: relative; background: #fff; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <span style="font-size:0.65rem; padding:4px 10px; border-radius:50px; font-weight:bold; text-transform:uppercase; ${style}">${notif.type || 'Update'}</span>
-          <span style="font-size:0.75rem; color:#9E9E9E; font-weight: 500;">🕒 ${displayTime}</span>
-        </div>
-        <h4 style="color: var(--brown); margin-bottom: 6px; font-size: 1rem; line-height: 1.3;">${escapeHTML(notif.title)}</h4>
-        <p style="font-size: 0.85rem; color: var(--text-mid); white-space: pre-wrap; line-height: 1.5;">${escapeHTML(notif.desc)}</p>
-        ${btnHtml}
+    // 🎨 Template 1: Modern Minimalist
+  let accentColor = notif.type === 'alert' ? '#D32F2F' : (notif.type === 'offer' ? '#E65100' : '#2E7D32');
+  
+  feed.innerHTML += `
+    <div style="padding: 16px 20px; background: #fff; border-radius: 8px; margin-bottom: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border-left: 5px solid ${accentColor}; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size:0.7rem; color: ${accentColor}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${notif.type || 'Update'}</span>
+        <span style="font-size:0.75rem; color:#9E9E9E; font-weight: 500;">${displayTime}</span>
       </div>
-    `;
+      <h4 style="color: var(--text-dark); margin-bottom: 6px; font-size: 1.05rem; font-weight: 700;">${escapeHTML(notif.title)}</h4>
+      <p style="font-size: 0.85rem; color: var(--text-mid); white-space: pre-wrap; line-height: 1.5;">${escapeHTML(notif.desc)}</p>
+      ${btnHtml}
+    </div>
+  `;
   });
 }
 

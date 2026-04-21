@@ -31,7 +31,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Sanskrit:ital@0;1&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
 <link rel="stylesheet" href="style.css">
 
@@ -105,7 +105,7 @@
       <li><button class="nav-btn" onclick="navigate('dashboard')">Dashboard</button></li>
       <li><button class="nav-btn" onclick="navigate('about')">About Us</button></li>
       <li><button class="nav-btn" onclick="navigate('contact')">Contact</button></li>
-      <li id="nav-admin-link" style="display: none;"><button class="nav-btn" style="color: #FF5252; font-weight: 800;" onclick="navigate('admin')">👑 Admin</button></li>
+      
     </ul>
 
 
@@ -517,100 +517,9 @@
       
     </div>
 
-    <!-- Test Interface -->
-     <div id="test-sets-view" style="display:none;">
-      <div class="test-header" style="justify-content:center;">
-        <h3 id="sets-category-title" style="font-size:1.2rem;">Select a Practice Set</h3>
-      </div>
-      <p style="text-align:center; color:var(--text-mid); margin: 16px 0 24px;">New sets are added every week. Completed sets are marked with a green checkmark.</p>
-      
-      
+    </div> </div>
 
-
-
-      <div class="test-categories-grid" id="sets-grid">
-        </div>
-      
-      <div class="text-center mt-32">
-        <button id="back-to-cat-btn" class="btn btn-outline" onclick="showCategories()">← Back to Categories</button>
-      </div>
-    </div>
-    <div id="test-interface" style="display:none;">
-      
-      <div class="test-header">
-        <div class="test-header-info" style="flex: 1; min-width: 0; padding-right: 8px;">
-          <h3 id="test-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Mock Test</h3>
-          <p id="test-subtitle" style="color:rgba(255,248,231,0.8); font-size:0.8rem; margin-top:2px;"></p>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px; flex-shrink: 0;">
-          <div style="text-align: center; min-width: 58px;">
-            <div style="font-size:0.6rem; color:rgba(255,248,231,0.6); text-transform:uppercase; letter-spacing:1px; font-weight:700; line-height:1;">Time Left</div>
-            <div class="test-timer" id="test-timer" style="font-size: 1.1rem; margin-top: 3px; line-height: 1;">60:00</div>
-          </div>
-          <button class="btn btn-sm" style="background: #F44336; color: white; padding: 6px 14px; font-size: 0.85rem; border: none;" onclick="document.getElementById('exit-modal').style.display='flex'">Exit</button>
-          <button class="btn btn-sm" style="background:#4CAF50; color:white; padding: 6px 10px; font-size: 0.8rem;" onclick="showResults()">Submit</button>
-        </div>
-      </div>
-
-      <div class="test-layout">
-        <div class="test-main">
-          
-          <div class="test-scroll-area" id="test-scroll-area">
-            <div class="question-number" id="q-number">Question 1 of 5</div>
-            <div class="question-text" id="q-text"></div>
-            <div class="options-list" id="options-list"></div>
-            <div class="explanation-box" id="explanation-box"></div>
-          </div>
-
-          <div class="test-actions">
-            <button class="btn-palette-toggle" onclick="toggleMobilePalette()" title="Question Grid">
-              <i class="fa-solid fa-table-cells-large"></i>
-            </button>
-            
-            <button class="mark-review-btn" id="mark-btn" onclick="toggleMark()">🔖 Mark</button>
-            <div style="flex:1;"></div>
-            <button class="nav-test-btn btn-prev" onclick="prevQuestion()">◀ Prev</button>
-            <button class="nav-test-btn btn-next" id="next-btn" onclick="nextQuestion()">Next ▶</button>
-          </div>
-        </div>
-
-        <div class="palette-overlay" id="palette-overlay" onclick="closeMobilePalette()"></div>
-        <div class="test-sidebar" id="mobile-palette-drawer">
-          <button class="mobile-palette-close" onclick="closeMobilePalette()">&times;</button>
-          <div class="sidebar-title">Question Palette</div>
-          <div class="palette-grid" id="palette-grid"></div>
-          <div class="palette-legend">
-            <div class="legend-item"><div class="legend-dot unanswered"></div> Unanswered</div>
-            <div class="legend-item"><div class="legend-dot answered"></div> Answered</div>
-            <div class="legend-item"><div class="legend-dot marked"></div> Marked</div>
-            <div class="legend-item"><div class="legend-dot answered-marked"></div> Answered & Marked</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Results -->
-    <div id="test-results" style="display:none;">
-      <div class="results-container">
-        <h2 style="text-align:center;color:var(--brown);margin-bottom:8px;">परिणामः — Results</h2>
-        <p id="results-test-name" style="text-align:center; color:var(--saffron); font-weight:600; margin-bottom:24px; font-size:1.05rem;"></p>
-        <div class="score-circle" id="score-circle">
-          <div class="score-inner">
-            <span class="num" id="score-num">0/0</span>
-            <span class="lbl">Score</span>
-          </div>
-        </div>
-        <div class="results-stats" id="results-stats"></div>
-        <div style="text-align:center;margin-bottom:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="retakeTest()">🔄 Retake</button>
-          <button class="btn btn-gold" onclick="showCategories()">← Back</button>
-          <button class="btn" style="background:#25D366;color:white;" onclick="shareOnWhatsApp()">📱 Share Score</button>
-        </div>
-        <div class="results-review" id="results-review"></div>
-      </div>
-    </div>
-  </div>
-</div>
+    
 
 <!-- ==================== COURSES PAGE ==================== -->
 <div id="page-courses" class="page">
@@ -830,10 +739,7 @@
     </div>
 
 
-    <div id="admin-sandbox-container"></div>
-
-
-    
+        
     <!-- Stats -->
     <div class="stats-grid">
       <div class="stat-card" style="cursor:pointer; border: 2px solid transparent; transition: 0.2s; background: linear-gradient(135deg, var(--white), #FFF3E0);" onclick="openSavedQsModal()" onmouseover="this.style.borderColor='var(--saffron)'" onmouseout="this.style.borderColor='transparent'">
@@ -1046,103 +952,6 @@
   </div>
 </div>
 
-<!-- admin page -->
-<div id="page-admin" class="page">
-  <div class="section">
-    <div class="section-title">
-      <h2 style="color: #b71c1c;">👑 Admin Command Center</h2>
-      <div class="divider" style="background: #b71c1c;"></div>
-      <p>Manage your students and premium access.</p>
-    </div>
-
-    <div style="background: var(--white); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-lg); border-top: 4px solid #b71c1c;">
-      
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <h3 style="color: var(--brown);">Registered Students (<span id="admin-user-count">0</span>)</h3>
-        
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <select id="admin-fetch-type" class="form-input" style="padding: 6px; font-size: 0.8rem; border-color: #b71c1c;">
-            <option value="all">Fetch All (Uses more reads)</option>
-            <option value="passes.combo">Fetch Only Combo</option>
-            <option value="passes.batch">Fetch Only Batch</option>
-            <option value="passes.sanskrit">Fetch Only Sanskrit</option>
-            <option value="passes.general">Fetch Only 1st Paper</option>
-            <option value="basic">Fetch Basic Access Users</option>
-          </select>
-          <button class="btn btn-sm" style="background: #b71c1c; color: white; border: 2px solid #8e1515;" onclick="loadAdminDashboard()">🚨 Load DB</button>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; background: var(--cream); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--cream-dark);">
-        <input type="text" id="admin-search" class="form-input" style="flex: 1; min-width: 200px; border-color: var(--gold);" placeholder="🔍 Search Name, Email..." onkeyup="filterAndRenderAdminTable()">
-        
-        <select id="admin-filter-status" class="form-input" style="width: auto; min-width: 140px;" onchange="filterAndRenderAdminTable()">
-          <option value="all">All Loaded</option>
-          <option value="combo">🏆 Combo Pass</option>
-          <option value="batch">🎓 Batch Pass</option>
-          <option value="sanskrit">🪷 Sanskrit Pass</option>
-          <option value="general">📊 1st Paper Pass</option>
-          <option value="free">Basic/Free Users</option>
-          
-        </select>
-
-        <select id="admin-sort-by" class="form-input" style="width: auto; min-width: 150px;" onchange="filterAndRenderAdminTable()">
-          <option value="newest">Sort: Newest First</option>
-          <option value="oldest">Sort: Oldest First</option>
-        </select>
-
-        <button class="btn btn-primary btn-sm" style="background: #FF9800; white-space: nowrap;" onclick="document.getElementById('bulk-manage-modal').style.display='flex'">🎁 Bulk Extend</button>
-        <button class="btn btn-primary btn-sm" style="background: #4CAF50; white-space: nowrap;" onclick="exportToCSV()">📥 Export CSV</button>
-      </div>
-
-      <!-- NEW: Scrollable Table Container -->
-      <div style="width: 100%; max-height: 500px; overflow-y: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); border: 1px solid var(--cream-dark); position: relative;">
-        <table class="history-table" style="min-width: 950px; position: relative; border-collapse: separate; border-spacing: 0;">
-          <thead style="position: sticky; top: 0; z-index: 10;">
-            <tr>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: left; border-bottom: 2px solid #8e1515;">Name</th>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: left; border-bottom: 2px solid #8e1515;">Email</th>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: left; border-bottom: 2px solid #8e1515;">WhatsApp</th>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: left; border-bottom: 2px solid #8e1515;">Joined</th>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: left; border-bottom: 2px solid #8e1515;">Status</th>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: left; border-bottom: 2px solid #8e1515;">Validity</th>
-              <th style="background: #b71c1c; color: white; padding: 14px 16px; text-align: right; border-bottom: 2px solid #8e1515;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="admin-users-body">
-            <tr><td colspan="7" style="text-align: center; padding: 24px;">Loading student data...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      
-    </div>
-    
-    <!-- ================= ERROR REPORTS TABLE ================= -->
-    <div style="background: var(--white); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-lg); border-top: 4px solid #FF9800; margin-top: 32px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-        <h3 style="color: var(--brown);">🚩 Reported Questions (<span id="admin-reports-count">0</span>)</h3>
-        <button class="btn btn-sm" style="background: var(--cream-dark); color: var(--brown);" onclick="loadAdminReports()">🔄 Refresh Reports</button>
-      </div>
-
-      <div style="width: 100%; max-height: 400px; overflow-y: auto; border-radius: var(--radius-sm); border: 1px solid var(--cream-dark);">
-        <table class="history-table" style="min-width: 900px; border-collapse: separate; border-spacing: 0;">
-          <thead style="position: sticky; top: 0; z-index: 10;">
-            <tr>
-              <th style="background: #FF9800; color: white; padding: 14px 16px; text-align: left;">Test & Question</th>
-              <th style="background: #FF9800; color: white; padding: 14px 16px; text-align: left;">Reason & Comment</th>
-              <th style="background: #FF9800; color: white; padding: 14px 16px; text-align: left;">Reported By</th>
-              <th style="background: #FF9800; color: white; padding: 14px 16px; text-align: left;">Date</th>
-              <th style="background: #FF9800; color: white; padding: 14px 16px; text-align: right;">Action</th>
-            </tr>
-          </thead>
-          <tbody id="admin-reports-body">
-            <tr><td colspan="5" style="text-align: center; padding: 24px;">Loading reports...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
 
 <div id="loading-overlay" class="loading-overlay">
   <div class="spinner"></div>
@@ -1213,36 +1022,6 @@
   </div>
 </div>
 
-<div id="admin-edit-modal" class="modal-overlay">
-  <div class="modal-content" style="text-align: left; max-width: 450px;">
-    <h3 style="color: var(--brown); margin-bottom: 6px;">⚙️ Manage Student Passes</h3>
-    <p id="admin-edit-name" style="font-weight: 700; color: var(--saffron); margin-bottom: 20px; font-size: 0.9rem;"></p>
-
-    <p style="font-size: 0.8rem; color: var(--text-mid); margin-bottom: 16px;">Set an expiry date to grant a pass. Clear the date to remove it.</p>
-
-    <div class="form-group" style="margin-bottom: 12px;">
-      <label class="form-label" style="color: #9C27B0;">🏆 Combo Mock Pass</label>
-      <input type="date" id="admin-pass-combo" class="form-input">
-    </div>
-    <div class="form-group" style="margin-bottom: 12px;">
-      <label class="form-label" style="color: #E65100;">🎓 Complete Batch</label>
-      <input type="date" id="admin-pass-batch" class="form-input">
-    </div>
-    <div class="form-group" style="margin-bottom: 12px;">
-      <label class="form-label" style="color: #1565C0;">🪷 Sanskrit Mock Pass</label>
-      <input type="date" id="admin-pass-sanskrit" class="form-input">
-    </div>
-    <div class="form-group" style="margin-bottom: 20px;">
-      <label class="form-label" style="color: #2E7D32;">📊 1st Paper Mock Pass</label>
-      <input type="date" id="admin-pass-general" class="form-input">
-    </div>
-
-    <div style="display: flex; gap: 12px;">
-      <button class="btn btn-outline" style="flex: 1; justify-content: center;" onclick="document.getElementById('admin-edit-modal').style.display='none'">Cancel</button>
-      <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #b71c1c;" id="admin-edit-save-btn">Save Passes</button>
-    </div>
-  </div>
-</div>
 
 <div id="premium-lock-modal" class="modal-overlay">
   <div class="modal-content" style="text-align: center;">
@@ -1357,6 +1136,101 @@
   </div>
 </div>
 
+<!-- Test Interface -->
+     <div id="test-sets-view" class="test-overlay-system" style="display:none;">
+      <div class="test-header" style="justify-content:center;">
+        <h3 id="sets-category-title" style="font-size:1.2rem;">Select a Practice Set</h3>
+      </div>
+      <p style="text-align:center; color:var(--text-mid); margin: 16px 0 24px;">New sets are added every week. Completed sets are marked with a green checkmark.</p>
+      
+      
+
+
+
+      <div class="test-categories-grid" id="sets-grid">
+        </div>
+      
+      <div class="text-center mt-32">
+        <button id="back-to-cat-btn" class="btn btn-outline" onclick="showCategories()">← Back to Categories</button>
+      </div>
+    </div>
+    <div id="test-interface" class="test-overlay-system" style="display:none;">
+      
+      <div class="test-header">
+        <div class="test-header-info" style="flex: 1; min-width: 0; padding-right: 8px;">
+          <h3 id="test-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Mock Test</h3>
+          <p id="test-subtitle" style="color:rgba(255,248,231,0.8); font-size:0.8rem; margin-top:2px;"></p>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px; flex-shrink: 0;">
+          <div style="text-align: center; min-width: 58px;">
+            <div style="font-size:0.6rem; color:rgba(255,248,231,0.6); text-transform:uppercase; letter-spacing:1px; font-weight:700; line-height:1;">Time Left</div>
+            <div class="test-timer" id="test-timer" style="font-size: 1.1rem; margin-top: 3px; line-height: 1;">60:00</div>
+          </div>
+          <button class="btn btn-sm" style="background: #F44336; color: white; padding: 6px 14px; font-size: 0.85rem; border: none;" onclick="document.getElementById('exit-modal').style.display='flex'">Exit</button>
+          <button class="btn btn-sm" style="background:#4CAF50; color:white; padding: 6px 10px; font-size: 0.8rem;" onclick="showResults()">Submit</button>
+        </div>
+      </div>
+
+      <div class="test-layout">
+        <div class="test-main">
+          
+          <div class="test-scroll-area" id="test-scroll-area">
+            <div class="question-number" id="q-number">Question 1 of 5</div>
+            <div class="question-text" id="q-text"></div>
+            <div class="options-list" id="options-list"></div>
+            <div class="explanation-box" id="explanation-box"></div>
+          </div>
+
+          <div class="test-actions">
+            <button class="btn-palette-toggle" onclick="toggleMobilePalette()" title="Question Grid">
+              <i class="fa-solid fa-table-cells-large"></i>
+            </button>
+            
+            <button class="mark-review-btn" id="mark-btn" onclick="toggleMark()">🔖 Mark</button>
+            <div style="flex:1;"></div>
+            <button class="nav-test-btn btn-prev" onclick="prevQuestion()">◀ Prev</button>
+            <button class="nav-test-btn btn-next" id="next-btn" onclick="nextQuestion()">Next ▶</button>
+          </div>
+        </div>
+
+        <div class="palette-overlay" id="palette-overlay" onclick="closeMobilePalette()"></div>
+        <div class="test-sidebar" id="mobile-palette-drawer">
+          <button class="mobile-palette-close" onclick="closeMobilePalette()">&times;</button>
+          <div class="sidebar-title">Question Palette</div>
+          <div class="palette-grid" id="palette-grid"></div>
+          <div class="palette-legend">
+            <div class="legend-item"><div class="legend-dot unanswered"></div> Unanswered</div>
+            <div class="legend-item"><div class="legend-dot answered"></div> Answered</div>
+            <div class="legend-item"><div class="legend-dot marked"></div> Marked</div>
+            <div class="legend-item"><div class="legend-dot answered-marked"></div> Answered & Marked</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="test-results" class="test-overlay-system" style="display:none;">
+      <div class="results-container">
+        <h2 style="text-align:center;color:var(--brown);margin-bottom:8px;">परिणामः — Results</h2>
+        <p id="results-test-name" style="text-align:center; color:var(--saffron); font-weight:600; margin-bottom:24px; font-size:1.05rem;"></p>
+        <div class="score-circle" id="score-circle">
+          <div class="score-inner">
+            <span class="num" id="score-num">0/0</span>
+            <span class="lbl">Score</span>
+          </div>
+        </div>
+        <div class="results-stats" id="results-stats"></div>
+        <div style="text-align:center;margin-bottom:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="retakeTest()">🔄 Retake</button>
+          <button class="btn btn-gold" onclick="showCategories()">← Back</button>
+          <button class="btn" style="background:#25D366;color:white;" onclick="shareOnWhatsApp()">📱 Share Score</button>
+        </div>
+        <div class="results-review" id="results-review"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- ==================== AUTH MODAL ==================== -->
 <div id="auth-modal" class="modal-overlay" style="display:none; z-index: 3000;">
@@ -1374,54 +1248,17 @@
     <button id="auth-action-btn" class="btn btn-primary" style="width: 100%; justify-content: center; margin-bottom: 16px;" onclick="handleAuthAction()">Log In</button>
 
     <div id="forgot-password-box" style="text-align: center; margin-bottom: 16px;">
-      <a href="#" onclick="handleForgotPassword()" style="font-size: 0.8rem; color: var(--text-light);">Forgot Password?</a>
+      <a href="javascript:void(0);" onclick="handleForgotPassword()" style="font-size: 0.8rem; color: var(--text-light);">Forgot Password?</a>
     </div>
 
     <p id="auth-switch-text" style="font-size: 0.85rem; text-align: center; color: var(--text-mid);">
-      New here? <a href="#" onclick="toggleAuthMode()" style="color: var(--saffron); font-weight: bold;">Sign Up</a>
+      New here? <a href="javascript:void(0);" onclick="toggleAuthMode()" style="color: var(--saffron); font-weight: bold;">Create an account</a>
     </p>
 
     <button class="btn btn-outline" style="width: 100%; justify-content: center; margin-top: 15px;" onclick="document.getElementById('auth-modal').style.display='none'">Cancel</button>
   </div>
 </div>
 
-<!-- ==================== BULK MANAGE MODAL ==================== -->
-<div id="bulk-manage-modal" class="modal-overlay" style="z-index: 3500;">
-  <div class="modal-content" style="text-align: left; max-width: 450px;">
-    <h3 style="color: #FF9800; margin-bottom: 8px;">🎁 Bulk Extend Passes</h3>
-    <p style="color: var(--text-mid); font-size: 0.85rem; margin-bottom: 20px;">Add extra days to a specific pass for a group of students instantly.</p>
-    
-    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-      <div class="form-group" style="flex: 1; margin: 0;">
-        <label class="form-label">Target Audience</label>
-        <select id="bulk-target-group" class="form-input">
-          <option value="all">All Students</option>
-          <option value="vip">Only Active Premium</option>
-          <option value="free">Only Free Users</option>
-        </select>
-      </div>
-      <div class="form-group" style="flex: 1; margin: 0;">
-        <label class="form-label">Select Pass</label>
-        <select id="bulk-pass-type" class="form-input">
-          <option value="combo">Combo Pass</option>
-          <option value="batch">Complete Batch</option>
-          <option value="sanskrit">Sanskrit Mocks</option>
-          <option value="general">1st Paper Mocks</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-group" style="margin-bottom: 24px;">
-      <label class="form-label">Days to Add</label>
-      <input type="number" id="bulk-days" class="form-input" placeholder="e.g., 2" min="1" max="365">
-    </div>
-
-    <div style="display: flex; gap: 12px;">
-      <button class="btn btn-outline" style="flex: 1; justify-content: center;" onclick="document.getElementById('bulk-manage-modal').style.display='none'">Cancel</button>
-      <button class="btn btn-primary" style="flex: 1; justify-content: center; background: #FF9800;" id="bulk-execute-btn" onclick="executeBulkUpdate()">Execute Update</button>
-    </div>
-  </div>
-</div>
 
 <!-- ==================== EXPIRY WARNING MODAL ==================== -->
 <div id="expiry-modal" class="modal-overlay" style="z-index: 3600;">
