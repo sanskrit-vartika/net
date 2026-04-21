@@ -1802,9 +1802,9 @@ async function generateAIBooster(paperType) {
   let catsToFetch = [...new Set(weakTopics.map(t => t.cat))];
   let fetchPromises = catsToFetch.map(c => fetchQuestions(c));
   
-  // 🚀 LABOR ILLUSION: Force the AI engine to take AT LEAST 7 seconds 
+  // 🚀 LABOR ILLUSION: Force the AI engine to take AT LEAST 5 seconds 
   // so the student can enjoy the animation and trust the calculation!
-  fetchPromises.push(new Promise(resolve => setTimeout(resolve, 7000)));
+  fetchPromises.push(new Promise(resolve => setTimeout(resolve, 5000)));
   
   await Promise.all(fetchPromises);
 
