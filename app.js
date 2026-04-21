@@ -555,7 +555,11 @@ window.addEventListener('popstate', function(event) {
     openModals.forEach(m => m.style.display = 'none');
     
     // If they pressed back on the "Leave Test" warning, cancel the pending exit
-    if (pendingNavigation) pendingNavigation = null;
+    if (pendingNavigation) {
+      pendingNavigation = null;
+      // 🚀 BUG FIX: Artificially restore the URL so the browser doesn't get confused!
+      history.pushState({ page: currentPage, isFree: isFreeMode }, '', '#' + currentPage);
+    }
     return; // Stop here! The back button successfully closed the pop-up.
   }
 
@@ -984,6 +988,7 @@ async function showSets(cat) {
   const setsView = document.getElementById('test-sets-view');
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
+  setsView.scrollTop = 0; // 🚀 UX FIX: Always start grid at the top!
 
   // INJECT THE SKELETONS
   const grid = document.getElementById('sets-grid');
@@ -1013,6 +1018,7 @@ async function openFreeSets(mode) {
   const setsView = document.getElementById('test-sets-view');
   setsView.style.display = 'block';
   window.scrollTo(0, 0);
+  setsView.scrollTop = 0; // 🚀 UX FIX: Always start grid at the top!
 
   // Configuration for the 4 Free Modes
   const modeConfigs = {
@@ -1461,6 +1467,12 @@ function showResults() {
   }
   document.body.classList.remove('test-mode-active'); // Exit immersive mode
   confirmSubmit();
+
+  // 🚀 BUSINESS LOGIC FIX: Hide the "Retake" button for AI Boosters to protect limits!
+  const retakeBtn = document.querySelector('[onclick="retakeTest()"]');
+  if (retakeBtn) {
+    retakeBtn.style.display = (testState.category === 'ai_booster') ? 'none' : 'inline-block';
+  }
 }
 
 function confirmSubmit() {
@@ -1575,6 +1587,13 @@ function shareOnWhatsApp() {
 }
 
 function retakeTest() {
+  // 🔒 SECURITY FIX: Strictly prevent bypassing AI limits!
+  if (testState.category === 'ai_booster') {
+    if (typeof showToast === "function") showToast("AI Tests cannot be retaken. Please generate a new test!");
+    return; // Instantly stop the function
+  }
+
+  // Normal test retake logic
   document.getElementById('test-results').style.display = 'none';
   startTest(testState.category, testState.currentSet);
 }
@@ -1727,7 +1746,9 @@ async function generateAIBooster(paperType) {
 
   // NEW: Transition to the skeleton grid while calculating
   document.getElementById('test-categories').style.display = 'none';
-  document.getElementById('test-sets-view').style.display = 'block';
+  const setsView = document.getElementById('test-sets-view'); // 🚀 CRITICAL FIX: Define the variable first!
+  setsView.style.display = 'block';
+  setsView.scrollTop = 0; // 🚀 UX FIX: Always start grid at the top!
   document.getElementById('sets-category-title').textContent = "🧠 AI Assembling Custom Test...";
   
   // Inject 6 skeleton blocks rapidly into the grid

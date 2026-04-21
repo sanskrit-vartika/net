@@ -1548,6 +1548,7 @@ footer {
   background: var(--cream);
   overflow-y: auto;
   padding: 24px;
+  overscroll-behavior: contain; /* 🚀 UX FIX: Stops the background website from scrolling! */
 }
 
 /* Mobile Adjustments: Keep Bottom Nav visible unless taking a test */
@@ -1561,6 +1562,7 @@ footer {
 /* IMMERSIVE MODE: Only goes full screen when a test is ACTUALLY running */
 body.test-mode-active .test-overlay-system {
   top: 0;
-  height: 100vh;
+  height: 100vh; /* Fallback for older phones */
+  height: 100dvh; /* 🚀 UX FIX: Solves mobile Safari/Chrome URL bar cut-off! */
   z-index: 2500; /* Covers the navbar and bottom nav completely */
 }
