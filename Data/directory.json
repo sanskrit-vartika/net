@@ -1,0 +1,22 @@
+{
+  "PAPER 1 Full Sets": [
+    {
+      "tabName": "Set- 1",
+      "url": "https://Sanskrit-pradeep.github.io/sanskrit-portal/Data/p1s1p.json"
+    },
+    {
+      "tabName": "Set- 2",
+      "url": "https://Sanskrit-pradeep.github.io/sanskrit-portal/Data/p1s2p.json"
+    }
+  ],
+  "PAPER 1 TOPIC-WISE": [
+    {
+      "tabName": "Teaching",
+      "url": "https://Sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_teach_8xN3mP.json"
+    },
+    {
+      "tabName": "Research",
+      "url": "https://Sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_rsrch_4kL9vR.json"
+    }
+  ]
+}
