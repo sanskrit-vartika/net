@@ -2785,14 +2785,14 @@ const myCourses = [
     features: [
       "✅ Live Interactive Classes & Full Recordings",
       "✅ Comprehensive PDF Study Notes (Downloadable)",
-      "✅ Advanced Grammar (Śabdarūpa, Samaas, etc.)",
+      "✅ Beginner to Advanced levels",
       "✅ 100+ Topic-wise Mock Tests & Full Mocks",
       "✅ 24/7 Dedicated WhatsApp Doubt Clearing"
     ],
-    price: "₹2,499",
-    originalPrice: "₹4,999",
-    btnText: "Get Batch Pass",
-    link: "text=Hello! I want to buy the Complete Batch Pass."
+    price: "₹2,999",
+    originalPrice: "₹5,999",
+    btnText: "Launching soon",
+    // link: "text=Hello! I want to buy the Complete Batch Pass."
   },
   {
     title: "Combo Mock Test Pass",
@@ -2813,7 +2813,7 @@ const myCourses = [
       "✅ You will get access to all questions over a period of six months."
     ],
     price: "₹119",
-    originalPrice: "₹199",
+    originalPrice: "₹239",
     btnText: "Get Combo Pass",
     link: "text=Hello! I want to buy the Combo Mock Test Pass."
   },
@@ -2836,13 +2836,13 @@ const myCourses = [
       "✅ You will get access to all questions over a period of six months."
     ],
     price: "₹89",
-    originalPrice: "₹119",
+    originalPrice: "₹149",
     btnText: "Get Sanskrit Pass",
     link: "text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
   {
     title: "General Paper 1 Mock Pass",
-    subtitle: "Teaching & Research Aptitude",
+    subtitle: "All 10 units, Topic-wise & Full Mock Tests",
     isFree: false,
     duration: "6 Months",
     level: "All Levels",
@@ -2859,7 +2859,7 @@ const myCourses = [
       "✅ You will get access to all questions over a period of six months."
     ],
     price: "₹59",
-    originalPrice: "₹89",
+    originalPrice: "₹99",
     btnText: "Get General Pass",
     link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
   },
