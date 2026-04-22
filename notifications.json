@@ -1,5 +1,14 @@
 [
   {
+    "id": "2026-04-22T05:59:31.923Z",
+    "title": "Launch",
+    "desc": "We are launching our website in July 23, stay connected with us for offers and discounts.",
+    "type": "update",
+    "expiresAt": "2026-07-23",
+    "btnText": "",
+    "btnLink": ""
+  },
+  {
     "id": "2026-04-21T02:29:04.412Z",
     "title": "Discount on Test Pass",
     "desc": "Get 20% discount on the purchase of pass.",
@@ -7,14 +16,5 @@
     "expiresAt": "2026-04-29",
     "btnText": "Buy now",
     "btnLink": "https://fastdl.app/photo"
-  },
-  {
-    "id": "2026-04-20T17:56:46.486Z",
-    "title": "Welcome to github",
-    "desc": "We have built a new thing.",
-    "type": "update",
-    "expiresAt": "2026-04-30",
-    "btnText": "Click now",
-    "btnLink": "https://youtu.be/39oQrGzbosE?si=p3hp5i744CIVxdXP"
   }
 ]
