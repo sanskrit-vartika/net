@@ -1732,13 +1732,12 @@ function updateAIBoosterLimitsUI() {
   });
 }
 
-// 2. The Weakness Analyzer
+// 2. The Weakness Analyzer (PHASE 1: Tab-Level Aggregation)
 function getWeakTopics(paperType) {
-  if (!currentUser || !currentUser.dbData || !currentUser.dbData.history) return [];
+  if (!currentUser || !currentUser.dbData || !currentUser.dbData.history) return { topics: [], error: null };
   const history = currentUser.dbData.history;
   let topicStats = {}; 
 
-  // Create a reverse lookup dictionary to find the system key from the display name
   const reverseCatNames = {};
   Object.keys(catNames).forEach(k => reverseCatNames[catNames[k]] = k);
 
@@ -1750,7 +1749,7 @@ function getWeakTopics(paperType) {
     if (parts.length < 2) return;
 
     let catTitle = parts[0].trim();
-    let setKey = parts.slice(1).join(" - ").trim();
+    let fullSetKey = parts.slice(1).join(" - ").trim();
     let cat = reverseCatNames[catTitle];
 
     if (!cat) return;
@@ -1759,8 +1758,16 @@ function getWeakTopics(paperType) {
     if (paperType === 'paper1' && cat !== 'paper1_topic') return;
     if (paperType === 'sanskrit' && !['vedic', 'grammar', 'darshan', 'sahitya', 'other'].includes(cat)) return;
 
-    let key = cat + "|" + setKey;
-    if (!topicStats[key]) topicStats[key] = { sum: 0, count: 0, cat: cat, setKey: setKey };
+    // 🚀 PHASE 1: Extract the broad tab name! (Slices off " - Set 1")
+    let topicName = fullSetKey;
+    if (fullSetKey.includes(' - Set')) {
+        topicName = fullSetKey.split(' - Set')[0].trim();
+    } else if (fullSetKey.startsWith('Set ')) {
+        topicName = catNames[cat]; // Fallback if no specific tab name
+    }
+
+    let key = cat + "|" + topicName;
+    if (!topicStats[key]) topicStats[key] = { sum: 0, count: 0, cat: cat, topicName: topicName };
 
     topicStats[key].sum += h.pct;
     topicStats[key].count += 1;
@@ -1768,14 +1775,22 @@ function getWeakTopics(paperType) {
 
   // Calculate averages and sort worst to best
   let averages = Object.values(topicStats).map(t => ({
-    cat: t.cat, setKey: t.setKey, avg: t.sum / t.count
+    cat: t.cat, topicName: t.topicName, avg: t.sum / t.count
   }));
 
   averages.sort((a, b) => a.avg - b.avg);
-  return averages.slice(0, 5); // Return the bottom 5
+
+  // 🚀 PHASE 1: Dynamic Fallback Prerequisites
+  if (paperType === 'paper1') {
+    if (averages.length < 2) return { topics: [], error: "⚠️ Not enough data! Take tests in at least 2 DIFFERENT topics (e.g., Teaching Aptitude and Research) to unlock the AI Booster." };
+    return { topics: averages.slice(0, 3), error: null }; // Returns 2 or 3 topics
+  } else {
+    if (averages.length < 4) return { topics: [], error: "⚠️ Not enough data! Take tests in at least 4 DIFFERENT Sanskrit topics (e.g., तर्कसंग्रहः, यजुर्वेदः) to unlock the AI Booster." };
+    return { topics: averages.slice(0, 6), error: null }; // Returns 4, 5, or 6 topics
+  }
 }
 
-// 3. The Master Generator
+// 3. The Master Generator (PHASE 2: Dynamic Pool Assembly)
 async function generateAIBooster(paperType) {
   // A. Check Premium Pass Access
   const reqPass = paperType === 'paper1' ? 'general' : 'sanskrit';
@@ -1784,11 +1799,9 @@ async function generateAIBooster(paperType) {
     return;
   }
 
-  // B. Check Daily Limits (Zero-Cost Local Storage)
+  // B. Check Daily Limits
   const today = new Date().toLocaleDateString('en-IN');
   const limitKey = `ai_booster_limit_${paperType}`;
-  
-  // 🚀 DYNAMIC FIX: Read from the Master Switch!
   let limitData = JSON.parse(localStorage.getItem(limitKey) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
 
   if (limitData.date !== today) limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT };
@@ -1797,31 +1810,26 @@ async function generateAIBooster(paperType) {
     return;
   }
 
-  // C. Find Weak Topics
-  const weakTopics = getWeakTopics(paperType);
-  if (weakTopics.length === 0) {
-     showToast("📊 Not enough data! Take a few topic-wise tests first so the AI can analyze your weaknesses.");
+  // C. Find Weak Topics & Enforce Prerequisites
+  const analysis = getWeakTopics(paperType);
+  if (analysis.error) {
+     showToast(analysis.error);
      return;
   }
+  const weakTopics = analysis.topics;
 
-  document.getElementById('loading-overlay').style.display = 'none'; // Ensure main spinner is off
+  document.getElementById('loading-overlay').style.display = 'none';
 
-  // D. "Smart Fetch" - Only download the Google Sheets we actually need!
-  
-  
-
-  // NEW: Transition to the AI Engine UI while calculating
+  // D. Transition to AI Engine UI
   document.getElementById('test-categories').style.display = 'none';
   const setsView = document.getElementById('test-sets-view'); 
   setsView.style.display = 'block';
   setsView.scrollTop = 0; 
   document.getElementById('sets-category-title').textContent = "🔒 System Override: AI Active";
   
-  // 🚀 UX FIX: Hide the "New sets added..." text for AI tests!
   const setsDesc = document.querySelector('#test-sets-view p');
   if (setsDesc) setsDesc.style.display = 'none';
   
-  // 🚀 CUSTOM AI LOADER: Injects the animated brain and checklist!
   document.getElementById('sets-grid').innerHTML = `
     <div class="ai-loader-container">
       <div class="ai-core-scanner">
@@ -1839,7 +1847,6 @@ async function generateAIBooster(paperType) {
   `;
   window.scrollTo(0, 0);
 
-  // 🪄 Visual Magic: Step through the checklist while Firebase downloads the data!
   setTimeout(() => {
     const s1 = document.getElementById('ai-step-1');
     const s2 = document.getElementById('ai-step-2');
@@ -1852,26 +1859,33 @@ async function generateAIBooster(paperType) {
     if(s2 && s3) { s2.className = "ai-step done"; s3.className = "ai-step active"; }
   }, 1800);
 
-  // Start the database download
+  // E. Database Download
   let catsToFetch = [...new Set(weakTopics.map(t => t.cat))];
   let fetchPromises = catsToFetch.map(c => fetchQuestions(c));
-  
-  // 🚀 LABOR ILLUSION: Force the AI engine to take AT LEAST 4 seconds 
-  // so the student can enjoy the animation and trust the calculation!
   fetchPromises.push(new Promise(resolve => setTimeout(resolve, 4000)));
-  
   await Promise.all(fetchPromises);
 
-  // E. Assemble the Custom Test
+  // F. Assemble the Custom Test from the Massive Topic Pools
   let assembledQuestions = [];
-  // Calculate how many questions to pull per topic (e.g., 6 questions from 5 topics = 30)
+  
+  // 🚀 PHASE 2: Dynamic Question Math (e.g., 30 / 2 topics = 15 questions each. 30 / 6 = 5 each)
   let qsPerTopic = Math.ceil(30 / weakTopics.length);
 
   weakTopics.forEach(t => {
-     let topicQs = allQuestions[t.cat][t.setKey];
-     if (topicQs && topicQs.length > 0) {
-        // SAFEGUARD: Exclude questions tied to Data Tables/Comprehension so they don't break!
-        let standaloneQs = topicQs.filter(q => !q.groupId);
+     let topicPool = [];
+     const categoryData = allQuestions[t.cat];
+     
+     // Find ALL sets inside this broad topic and pool their questions together
+     if (categoryData) {
+         Object.keys(categoryData).forEach(setKey => {
+             if (setKey.includes(t.topicName)) {
+                 topicPool.push(...categoryData[setKey]);
+             }
+         });
+     }
+     
+     if (topicPool.length > 0) {
+        let standaloneQs = topicPool.filter(q => !q.groupId);
         let shuffled = shuffleArray([...standaloneQs]);
         assembledQuestions.push(...shuffled.slice(0, qsPerTopic));
      }
@@ -1886,15 +1900,15 @@ async function generateAIBooster(paperType) {
       return;
   }
 
-  // F. The "Interleaved Shuffle" for maximum brain retention
+  // G. Final Interleaved Shuffle
   assembledQuestions = shuffleArray(assembledQuestions);
 
-  // G. Deduct Local Limit
+  // H. Deduct Local Limit
   limitData.count -= 1;
   localStorage.setItem(limitKey, JSON.stringify(limitData));
   updateAIBoosterLimitsUI();
 
-  // H. Launch the Test!
+  // I. Launch Test
   testState.category = 'ai_booster';
   testState.currentSet = paperType;
   testState.questions = assembledQuestions;
@@ -1904,8 +1918,6 @@ async function generateAIBooster(paperType) {
   testState.finished = false;
   
   testState.timeLeft = assembledQuestions.length * 72;
-  
-  // NOTE: Saved without emojis for optimized Firebase storage
   testState.testName = paperType === 'paper1' ? "AI Booster: Paper 1" : "AI Booster: Sanskrit";
 
   document.body.classList.add('test-mode-active');
