@@ -122,6 +122,7 @@
         </button>
         <div id="user-dropdown" class="dropdown-content">
           <a onclick="showMyProfile()"><span style="font-size: 1.2rem; margin-right: 8px;">👤</span> My Profile</a>
+          <a onclick="openSettingsModal()"><span style="font-size: 1.2rem; margin-right: 8px;">⚙️</span> Settings</a>
           <a onclick="contactSupport()"><span style="font-size: 1.2rem; margin-right: 8px;">🎧</span> Help & Support</a>
           <a id="install-app-btn" onclick="installApp()" style="display: none; color: var(--saffron); font-weight: bold;">
         <span style="margin-right: 8px; font-size: 1.1rem;"><i class="fa-brands fa-google-play"></i></span> Install App
@@ -1399,6 +1400,102 @@
     </div>
   </div>
 
+</div>
+
+
+<!-- settings modal -->
+ <div id="settings-modal" class="modal-overlay" style="z-index: 3900;">
+  <div class="modal-content" style="max-width: 500px; text-align: left; padding: 24px; max-height: 85vh; overflow-y: auto; background: var(--white);">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--cream-dark); padding-bottom: 12px; position: sticky; top: -24px; background: var(--white); z-index: 10;">
+      <h3 style="color: var(--brown); margin: 0; font-size: 1.2rem;">⚙️ Account Settings</h3>
+      <button onclick="document.getElementById('settings-modal').style.display='none'" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-light); line-height: 1;">&times;</button>
+    </div>
+
+    <div class="tabs-nav" style="margin: 0 auto 20px; width: 100%; display: flex; justify-content: center; background: var(--cream-dark); padding: 4px; border-radius: 50px;">
+      <button class="tab-btn s-tab active" onclick="switchSettingsTab('account')" style="flex:1; padding:8px; font-size:0.8rem;">👤 Account</button>
+      <button class="tab-btn s-tab" onclick="switchSettingsTab('data')" style="flex:1; padding:8px; font-size:0.8rem;">💾 Data Storage</button>
+    </div>
+
+    <div id="set-tab-account" style="display: block;">
+      
+      <label class="form-label" style="font-size: 0.8rem;">Display Name</label>
+      <input type="text" id="set-name" class="form-input mb-16" readonly style="background: #f9f9f9;">
+
+      <h4 style="margin: 20px 0 10px; color: var(--brown); font-size:0.9rem; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">Personal Details</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;" class="mb-16">
+         <div>
+           <label class="form-label" style="font-size: 0.8rem;">Date of Birth</label>
+           <input type="date" id="set-dob" class="form-input" readonly style="background: #f9f9f9;">
+         </div>
+         <div>
+           <label class="form-label" style="font-size: 0.8rem;">Gender</label>
+           <select id="set-gender" class="form-input" disabled style="background: #f9f9f9;">
+             <option value="">Select...</option>
+             <option value="Male">Male</option>
+             <option value="Female">Female</option>
+             <option value="Other">Other</option>
+           </select>
+         </div>
+      </div>
+      <label class="form-label" style="font-size: 0.8rem;">Location (City, State)</label>
+      <input type="text" id="set-address" class="form-input mb-16" placeholder="e.g., Dubrajpur, West Bengal" readonly style="background: #f9f9f9;">
+      
+      <label class="form-label" style="font-size: 0.8rem;">College / University</label>
+      <input type="text" id="set-college" class="form-input mb-16" placeholder="Name of your institution" readonly style="background: #f9f9f9;">
+      
+      <div id="profile-view-actions" style="display: flex; margin-bottom: 24px;">
+        <button class="btn btn-outline" style="width:100%; justify-content:center;" onclick="toggleProfileEdit(true)">✏️ Edit Personal Details</button>
+      </div>
+      <div id="profile-edit-actions" style="display: none; gap: 10px; margin-bottom: 24px;">
+        <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="savePersonalDetails()">💾 Save Changes</button>
+        <button class="btn btn-outline" style="flex:1; justify-content:center;" onclick="toggleProfileEdit(false)">Cancel</button>
+      </div>
+
+      <h4 style="margin: 20px 0 10px; color: var(--brown); font-size:0.9rem; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">Security & Contact</h4>
+      
+      <label class="form-label" style="font-size: 0.8rem;">WhatsApp Number (Can change once every 30 days)</label>
+      
+      <div style="display:flex; gap:8px;" class="mb-16">
+         <input type="text" id="set-whatsapp" class="form-input" style="flex:1; background: #f9f9f9;" readonly>
+         <button id="btn-edit-wa" class="btn btn-outline" style="padding: 0 16px;" onclick="toggleWhatsAppEdit(true)">✏️ Edit</button>
+         <button id="btn-update-wa" class="btn btn-primary" style="padding: 0 16px; display:none;" onclick="updateWhatsAppNumber()">Save</button>
+         <button id="btn-cancel-wa" class="btn btn-outline" style="padding: 0 16px; display:none;" onclick="toggleWhatsAppEdit(false)">Cancel</button>
+      </div>
+      <p id="whatsapp-lock-msg" style="font-size:0.75rem; color: #D32F2F; margin-top:-10px; margin-bottom: 16px; display:none; background: #FFEBEE; padding: 4px 8px; border-radius: 4px;">Locked for X days.</p>
+
+      <button class="btn btn-outline" style="width:100%; justify-content:center; color:#D32F2F; border-color:#D32F2F;" onclick="sendPasswordResetFromSettings()">Send Password Reset Email</button>
+    </div>
+
+    <div id="set-tab-data" style="display: none;">
+       <h4 style="margin: 10px 0 10px; color: var(--brown); font-size:0.9rem;">Cloud Vault Status</h4>
+       <div style="background: var(--cream); border: 2px solid var(--cream-dark); border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+         <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:bold; margin-bottom:8px;">
+            <span style="color: var(--text-mid);">Saved Questions</span>
+            <span id="set-vault-text" style="color: var(--saffron);">0 / 100</span>
+         </div>
+         <div class="progress-track" style="margin-bottom: 12px; background: #eee;"><div id="set-vault-bar" class="progress-fill" style="width: 0%; background: var(--saffron);"></div></div>
+         <button class="btn btn-gold btn-sm" style="width:100%; justify-content:center;" onclick="document.getElementById('settings-modal').style.display='none'; openSavedQsModal();">Manage Vault</button>
+       </div>
+
+       <h4 style="margin: 20px 0 10px; color: var(--brown); font-size:0.9rem;">Device Cache</h4>
+       <p style="font-size:0.8rem; color:var(--text-light); margin-bottom:12px;">Clears locally downloaded free tests. Does not affect AI limits or your Cloud data.</p>
+       <button class="btn btn-outline mb-24" style="width:100%; justify-content:center;" onclick="clearSettingsDeviceCache()">Clear Device Cache</button>
+
+       <div style="border: 2px solid #FFCDD2; background: #FFEBEE; border-radius: 8px; padding: 16px;">
+         <h4 style="margin: 0 0 10px; color: #C62828; font-size:0.9rem;">Danger Zone</h4>
+         <p style="font-size:0.8rem; color: #B71C1C; margin-bottom:12px;">Wipes all test history, analytics, and gamification badges. This cannot be undone.</p>
+         <button class="btn" style="width:100%; justify-content:center; background: #D32F2F; color: white;" onclick="triggerHistoryWipe()">Delete All History</button>
+         
+         <div id="wipe-confirm-box" style="display:none; margin-top:16px; border-top: 1px dashed #EF9A9A; padding-top: 12px;">
+            <label style="font-size:0.75rem; color:#C62828; font-weight:bold; display:block; margin-bottom:6px;">Type DELETE to confirm:</label>
+            <input type="text" id="wipe-confirm-input" class="form-input mb-8" placeholder="DELETE" style="border-color:#D32F2F;">
+            <button class="btn" style="width:100%; justify-content:center; background: #B71C1C; color: white;" onclick="executeHistoryWipe()">Confirm Wipe</button>
+         </div>
+       </div>
+    </div>
+
+  </div>
 </div>
 
 <script src="database_config.js"></script>

@@ -3440,3 +3440,223 @@ function openHistoryModal() {
   if (!currentUser) { showAuthModal(); return; }
   document.getElementById('history-modal').style.display = 'flex';
 }
+
+// ==========================================
+// === ⚙️ ACCOUNT SETTINGS ENGINE ===
+// ==========================================
+
+function openSettingsModal() {
+  if (!currentUser || !currentUser.dbData) {
+    showToast("⚠️ Please log in to access settings.");
+    showAuthModal();
+    return;
+  }
+  document.getElementById('user-dropdown').classList.remove('show');
+  
+  const data = currentUser.dbData;
+  
+  // 1. Populate Account Data
+  document.getElementById('set-name').value = data.name || '';
+  const pd = data.personalDetails || {}; // The Single JSON Object
+  document.getElementById('set-dob').value = pd.dob || '';
+  document.getElementById('set-gender').value = pd.gender || '';
+  document.getElementById('set-address').value = pd.address || '';
+  document.getElementById('set-college').value = pd.college || '';
+  
+  // 2. WhatsApp 30-Day Lock Logic
+  document.getElementById('set-whatsapp').value = data.whatsapp || '';
+  const waMsg = document.getElementById('whatsapp-lock-msg');
+  const waBtn = document.getElementById('btn-update-wa');
+  
+  if (data.whatsapp_last_updated) {
+    // Calculate days passed since last update
+    const daysPassed = (Date.now() - data.whatsapp_last_updated) / (1000 * 60 * 60 * 24);
+    if (daysPassed < 30) {
+      const daysLeft = Math.ceil(30 - daysPassed);
+      waMsg.innerHTML = `🔒 <strong>Locked:</strong> You can change this again in ${daysLeft} days.`;
+      waMsg.style.display = 'block';
+      waBtn.disabled = true;
+      waBtn.style.opacity = '0.5';
+      waBtn.style.cursor = 'not-allowed';
+    } else {
+      waMsg.style.display = 'none';
+      waBtn.disabled = false;
+      waBtn.style.opacity = '1';
+      waBtn.style.cursor = 'pointer';
+    }
+  } else {
+      waMsg.style.display = 'none';
+      waBtn.disabled = false;
+      waBtn.style.opacity = '1';
+  }
+
+  // 3. Populate Data Vault Status
+  const savedLength = data.saved_qs ? data.saved_qs.length : 0;
+  document.getElementById('set-vault-text').textContent = `${savedLength} / ${MAX_SAVED_QUESTIONS}`;
+  const pct = Math.min(100, Math.round((savedLength / MAX_SAVED_QUESTIONS) * 100));
+  document.getElementById('set-vault-bar').style.width = pct + '%';
+  
+  // 4. Reset Danger Zone
+  document.getElementById('wipe-confirm-box').style.display = 'none';
+  document.getElementById('wipe-confirm-input').value = '';
+
+  switchSettingsTab('account');
+  
+  // 🚀 Add these two lines here to ensure it opens locked!
+  toggleProfileEdit(false);
+  toggleWhatsAppEdit(false);
+
+  document.getElementById('settings-modal').style.display = 'flex';
+}
+
+// Mini-Tab Switcher
+function switchSettingsTab(tab) {
+  document.querySelectorAll('.s-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.s-tab[onclick*="${tab}"]`).classList.add('active');
+  document.getElementById('set-tab-account').style.display = tab === 'account' ? 'block' : 'none';
+  document.getElementById('set-tab-data').style.display = tab === 'data' ? 'block' : 'none';
+}
+
+// Save Profile to Cloud
+async function savePersonalDetails() {
+  const name = document.getElementById('set-name').value.trim();
+  const dob = document.getElementById('set-dob').value;
+  const gender = document.getElementById('set-gender').value;
+  const address = document.getElementById('set-address').value.trim();
+  const college = document.getElementById('set-college').value.trim();
+  
+  if(!name) return showToast("⚠️ Display name cannot be empty");
+
+  try {
+    const updates = {
+      name: name,
+      personalDetails: { dob, gender, address, college }
+    };
+    await db.collection('users').doc(currentUser.uid).update(updates);
+    
+    // Update local memory so we don't have to spend a Firebase Read!
+    currentUser.dbData.name = name;
+    currentUser.dbData.personalDetails = updates.personalDetails;
+    
+    updateNavUI(currentUser, name);
+    if (currentPage === 'dashboard') document.getElementById('display-name').textContent = name;
+    
+    showToast("✅ Profile details saved successfully!");
+    toggleProfileEdit(false);
+  } catch (e) {
+    showToast("Error saving details: " + e.message);
+  }
+}
+
+// Update WhatsApp with Timestamp
+async function updateWhatsAppNumber() {
+  const newWA = document.getElementById('set-whatsapp').value.trim();
+  if(!newWA) return showToast("⚠️ WhatsApp number cannot be empty");
+  
+  try {
+    const updates = {
+      whatsapp: newWA,
+      whatsapp_last_updated: Date.now() // Save exact millisecond of change
+    };
+    await db.collection('users').doc(currentUser.uid).update(updates);
+    
+    currentUser.dbData.whatsapp = newWA;
+    currentUser.dbData.whatsapp_last_updated = updates.whatsapp_last_updated;
+    
+    showToast("✅ WhatsApp number updated securely!");
+    openSettingsModal(); // Refresh modal to instantly trigger the 30-day UI lock
+  } catch(e) {
+    showToast("Error updating WhatsApp: " + e.message);
+  }
+}
+
+async function sendPasswordResetFromSettings() {
+  try {
+    // Sends the reset link safely without forcing them to log out first
+    await auth.sendPasswordResetEmail(currentUser.email);
+    showToast("📧 Password reset link sent to your email!");
+  } catch(e) {
+    showToast("Error: " + e.message);
+  }
+}
+
+// Clear local storage
+function clearSettingsDeviceCache() {
+  localStorage.removeItem('vartika_free_history');
+  showToast("🧹 Device Cache Cleared! Free tests have been reset locally.");
+}
+
+// Danger Zone Confirm
+function triggerHistoryWipe() {
+  document.getElementById('wipe-confirm-box').style.display = 'block';
+}
+
+// Danger Zone Execute
+async function executeHistoryWipe() {
+  const input = document.getElementById('wipe-confirm-input').value.trim();
+  if (input !== "DELETE") {
+    showToast("⚠️ Type DELETE exactly to confirm.");
+    return;
+  }
+  
+  try {
+    const updates = {
+      history: [],
+      streak: { count: 0, lastDate: "" }
+    };
+    await db.collection('users').doc(currentUser.uid).update(updates);
+    
+    currentUser.dbData.history = [];
+    currentUser.dbData.streak = updates.streak;
+    
+    document.getElementById('settings-modal').style.display = 'none';
+    showToast("🗑️ All test history and analytics have been permanently wiped.");
+    
+    if (currentPage === 'dashboard') loadDashboard(); // Redraw UI locally
+  } catch (e) {
+    showToast("Error deleting history: " + e.message);
+  }
+}
+
+// 🚀 Toggle Profile Edit Mode
+function toggleProfileEdit(isEditing) {
+  const fields = ['set-name', 'set-dob', 'set-address', 'set-college'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (isEditing) { el.removeAttribute('readonly'); el.style.background = '#fff'; }
+    else { el.setAttribute('readonly', 'true'); el.style.background = '#f9f9f9'; }
+  });
+  
+  const gender = document.getElementById('set-gender');
+  gender.disabled = !isEditing;
+  gender.style.background = isEditing ? '#fff' : '#f9f9f9';
+
+  document.getElementById('profile-view-actions').style.display = isEditing ? 'none' : 'flex';
+  document.getElementById('profile-edit-actions').style.display = isEditing ? 'flex' : 'none';
+
+  // If they click cancel, revert changes back to database values
+  if (!isEditing && currentUser && currentUser.dbData) {
+    document.getElementById('set-name').value = currentUser.dbData.name || '';
+    const pd = currentUser.dbData.personalDetails || {};
+    document.getElementById('set-dob').value = pd.dob || '';
+    document.getElementById('set-gender').value = pd.gender || '';
+    document.getElementById('set-address').value = pd.address || '';
+    document.getElementById('set-college').value = pd.college || '';
+  }
+}
+
+// 🚀 Toggle WhatsApp Edit Mode
+function toggleWhatsAppEdit(isEditing) {
+  const wa = document.getElementById('set-whatsapp');
+  if (isEditing) { wa.removeAttribute('readonly'); wa.style.background = '#fff'; wa.focus(); }
+  else { wa.setAttribute('readonly', 'true'); wa.style.background = '#f9f9f9'; }
+
+  document.getElementById('btn-edit-wa').style.display = isEditing ? 'none' : 'block';
+  document.getElementById('btn-update-wa').style.display = isEditing ? 'block' : 'none';
+  document.getElementById('btn-cancel-wa').style.display = isEditing ? 'block' : 'none';
+
+  // If they click cancel, revert to DB value
+  if (!isEditing && currentUser && currentUser.dbData) {
+    document.getElementById('set-whatsapp').value = currentUser.dbData.whatsapp || '';
+  }
+}
