@@ -2272,6 +2272,18 @@ async function saveTestResult(name, correct, total) {
   }, 800);
 }
 
+// ==========================================
+// === UPGRADED SAVED QUESTIONS ENGINE ===
+// ==========================================
+let currentSavedQsTab = 'all'; // 🚀 NEW: Tracks which tab is active
+
+function switchSavedQsTab(tab) {
+  currentSavedQsTab = tab;
+  document.querySelectorAll('.sq-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.sq-tab[onclick*="'${tab}'"]`).classList.add('active');
+  renderSavedQuestions();
+}
+
 async function toggleSaveQuestion(qIndex) {
   if (!currentUser || !currentUser.dbData) {
     showToast("Please Log In to save questions!");
@@ -2289,26 +2301,40 @@ async function toggleSaveQuestion(qIndex) {
     showToast("Removed from saved questions");
     if(btn) { btn.innerHTML = '☆ Save'; btn.style.color = 'var(--text-light)'; }
   } else {
-    // 🚀 DATABASE OPTIMIZATION: Prevent the array from exceeding the safe limit!
+    // Prevent the array from exceeding the safe limit
     if (saved.length >= MAX_SAVED_QUESTIONS) {
       showToast(`⚠️ Cloud Vault Full! You can only save up to ${MAX_SAVED_QUESTIONS} questions. Please remove some old ones first.`);
-      return; // Instantly stop them from saving!
+      return; 
     }
     
-    saved.unshift({ q: q.q, options: q.options, answer: q.answer, explanation: q.explanation });
+    // Detect if the current test is Paper 1 or Sanskrit
+    let currentPaperType = 'sanskrit';
+    const p1Cats = ['paper1', 'paper1_topic', 'free_paper1_full', 'free_paper1_topic'];
+    if (p1Cats.includes(testState.category) || (testState.category === 'ai_booster' && testState.currentSet === 'paper1')) {
+        currentPaperType = 'paper1';
+    }
+    
+    // 🚀 IDEA 2 OPTIMIZATION: Only save the correct answer text!
+    saved.unshift({ 
+      q: q.q, 
+      correctAnswerText: q.options[q.answer], // Saves just the right string!
+      explanation: q.explanation,
+      paperType: currentPaperType 
+    });
+    
     showToast("⭐ Question Saved to Cloud!");
     if(btn) { btn.innerHTML = '⭐ Saved'; btn.style.color = 'var(--saffron)'; }
   }
   
   currentUser.dbData.saved_qs = saved;
   await db.collection("users").doc(currentUser.uid).update({ saved_qs: saved });
-  renderSavedQuestions(); // Redraw UI locally, 0 Cloud Reads!
+  renderSavedQuestions(); 
 }
 
 function renderSavedQuestions() {
   const saved = (currentUser && currentUser.dbData && currentUser.dbData.saved_qs) ? currentUser.dbData.saved_qs : [];
   const statEl = document.getElementById('stat-saved-qs');
-  if (statEl) statEl.textContent = saved.length;
+  if (statEl) statEl.textContent = saved.length; // Always show Total Count on Dashboard
 
   const container = document.getElementById('saved-qs-container');
   if(!container) return;
@@ -2319,17 +2345,38 @@ function renderSavedQuestions() {
   }
 
   let html = '';
-  saved.forEach((sq, i) => {
+  let displayCount = 0;
+
+  // We must loop through all questions to maintain the original ID for deleting them properly
+  saved.forEach((sq, originalIndex) => {
+    // Backwards Compatibility: If an old question has no paperType, assume it is Sanskrit
+    const pType = sq.paperType || 'sanskrit';
+    
+    // If we are filtering, skip questions that don't match the active tab
+    if (currentSavedQsTab !== 'all' && pType !== currentSavedQsTab) return;
+    
+    displayCount++;
+    const badgeName = pType === 'paper1' ? 'Paper 1' : 'Sanskrit';
+    
+    // 🚀 BACKWARD COMPATIBILITY: Handles both new optimized saves and old saves
+    const correctText = sq.correctAnswerText || (sq.options ? sq.options[sq.answer] : "N/A");
+    
     html += `
-      <div style="background:var(--white); padding:16px 20px; border-radius:var(--radius-sm); border-left:4px solid var(--saffron); box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-        <div style="font-family:var(--font-skt); font-weight:600; color:var(--brown); margin-bottom:10px; font-size:0.95rem;">${sq.q}</div>
-        <div style="font-size:0.8rem; color:#1B5E20; background:#E8F5E9; padding:6px 10px; border-radius:4px; display:inline-block; margin-bottom:8px;">✔ Correct: <strong>${sq.options[sq.answer]}</strong></div>
+      <div style="background:var(--white); padding:16px 20px; border-radius:var(--radius-sm); border-left:4px solid var(--saffron); box-shadow:0 2px 10px rgba(0,0,0,0.05); position:relative;">
+        <span style="position:absolute; top:12px; right:16px; font-size:0.65rem; font-weight:bold; color:var(--text-light); background:var(--cream); padding:2px 8px; border-radius:4px;">${badgeName}</span>
+        <div style="font-family:var(--font-skt); font-weight:600; color:var(--brown); margin-bottom:10px; font-size:0.95rem; padding-right: 60px;">${sq.q}</div>
+        <div style="font-size:0.8rem; color:#1B5E20; background:#E8F5E9; padding:6px 10px; border-radius:4px; display:inline-block; margin-bottom:8px;">✔ Correct: <strong>${correctText}</strong></div>
         ${sq.explanation ? `<div style="font-size:0.8rem; color:#7B1FA2; font-style:italic; margin-bottom:12px; line-height:1.5;">💡 ${sq.explanation}</div>` : ''}
-        <div style="text-align:right;"><button onclick="removeSavedQuestion(${i})" style="background:none; border:none; color:#F44336; cursor:pointer; font-size:0.8rem; font-weight:600;">🗑️ Remove</button></div>
+        <div style="text-align:right;"><button onclick="removeSavedQuestion(${originalIndex})" style="background:none; border:none; color:#F44336; cursor:pointer; font-size:0.8rem; font-weight:600;">🗑️ Remove</button></div>
       </div>
     `;
   });
-  container.innerHTML = html;
+  
+  if (displayCount === 0) {
+    container.innerHTML = '<div style="background:var(--white); border:2px dashed var(--cream-dark); border-radius:var(--radius-sm); padding:24px; text-align:center; color:var(--text-light); font-size:0.85rem;">No questions found in this category.</div>';
+  } else {
+    container.innerHTML = html;
+  }
 }
 
 async function removeSavedQuestion(index) {
@@ -2338,13 +2385,13 @@ async function removeSavedQuestion(index) {
   saved.splice(index, 1);
   currentUser.dbData.saved_qs = saved;
   await db.collection("users").doc(currentUser.uid).update({ saved_qs: saved });
-  renderSavedQuestions(); // Redraw UI locally, 0 Cloud Reads!
+  renderSavedQuestions(); 
   showToast("Question removed from Cloud");
 }
 
 function openSavedQsModal() {
   if (!currentUser) { showAuthModal(); return; }
-  renderSavedQuestions();
+  switchSavedQsTab('all'); // 🚀 NEW: Resets to 'All' tab every time it opens!
   document.getElementById('saved-qs-modal').style.display = 'flex';
 }
 
@@ -3462,6 +3509,31 @@ function openSettingsModal() {
   document.getElementById('set-gender').value = pd.gender || '';
   document.getElementById('set-address').value = pd.address || '';
   document.getElementById('set-college').value = pd.college || '';
+
+  // 1A. Profile 30-Day Lock Logic
+  const profMsg = document.getElementById('profile-lock-msg');
+  const profBtn = document.getElementById('btn-edit-profile');
+  
+  if (data.personal_details_last_updated) {
+    const daysPassed = (Date.now() - data.personal_details_last_updated) / (1000 * 60 * 60 * 24);
+    if (daysPassed < 30) {
+      const daysLeft = Math.ceil(30 - daysPassed);
+      profMsg.innerHTML = `🔒 <strong>Locked:</strong> You can change this again in ${daysLeft} days.`;
+      profMsg.style.display = 'block';
+      profBtn.disabled = true;
+      profBtn.style.opacity = '0.5';
+      profBtn.style.cursor = 'not-allowed';
+    } else {
+      profMsg.style.display = 'none';
+      profBtn.disabled = false;
+      profBtn.style.opacity = '1';
+      profBtn.style.cursor = 'pointer';
+    }
+  } else {
+      profMsg.style.display = 'none';
+      profBtn.disabled = false;
+      profBtn.style.opacity = '1';
+  }
   
   // 2. WhatsApp 30-Day Lock Logic
   document.getElementById('set-whatsapp').value = data.whatsapp || '';
@@ -3530,19 +3602,22 @@ async function savePersonalDetails() {
   try {
     const updates = {
       name: name,
-      personalDetails: { dob, gender, address, college }
+      personalDetails: { dob, gender, address, college },
+      personal_details_last_updated: Date.now() // 🚀 NEW: Timestamp for the 30-day lock
     };
     await db.collection('users').doc(currentUser.uid).update(updates);
     
     // Update local memory so we don't have to spend a Firebase Read!
     currentUser.dbData.name = name;
     currentUser.dbData.personalDetails = updates.personalDetails;
+    currentUser.dbData.personal_details_last_updated = updates.personal_details_last_updated;
     
     updateNavUI(currentUser, name);
     if (currentPage === 'dashboard') document.getElementById('display-name').textContent = name;
     
     showToast("✅ Profile details saved successfully!");
     toggleProfileEdit(false);
+    openSettingsModal(); // 🚀 Refresh modal to instantly trigger the 30-day UI lock
   } catch (e) {
     showToast("Error saving details: " + e.message);
   }

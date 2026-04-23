@@ -1074,6 +1074,13 @@
       <h3 style="color: var(--brown); margin: 0; font-size: 1.2rem;">🔖 Saved Questions</h3>
       <button onclick="document.getElementById('saved-qs-modal').style.display='none'" style="background: none; border: none; font-size: 2rem; cursor: pointer; color: var(--text-light); line-height: 1;">&times;</button>
     </div>
+    
+    <div class="tabs-nav" style="margin: 0 auto 20px; width: 100%; display: flex; justify-content: center; background: var(--cream-dark); padding: 4px; border-radius: 50px;">
+      <button class="tab-btn sq-tab active" onclick="switchSavedQsTab('all')" style="flex:1; padding:8px; font-size:0.8rem;">All Topics</button>
+      <button class="tab-btn sq-tab" onclick="switchSavedQsTab('paper1')" style="flex:1; padding:8px; font-size:0.8rem;">Paper 1</button>
+      <button class="tab-btn sq-tab" onclick="switchSavedQsTab('sanskrit')" style="flex:1; padding:8px; font-size:0.8rem;">Sanskrit</button>
+    </div>
+
     <div id="saved-qs-container" style="display:flex; flex-direction:column; gap:12px;">
       </div>
   </div>
@@ -1444,8 +1451,10 @@
       <label class="form-label" style="font-size: 0.8rem;">College / University</label>
       <input type="text" id="set-college" class="form-input mb-16" placeholder="Name of your institution" readonly style="background: #f9f9f9;">
       
+      <p id="profile-lock-msg" style="font-size:0.75rem; color: #D32F2F; margin-top:-10px; margin-bottom: 16px; display:none; background: #FFEBEE; padding: 4px 8px; border-radius: 4px;">Locked for X days.</p>
+
       <div id="profile-view-actions" style="display: flex; margin-bottom: 24px;">
-        <button class="btn btn-outline" style="width:100%; justify-content:center;" onclick="toggleProfileEdit(true)">✏️ Edit Personal Details</button>
+        <button id="btn-edit-profile" class="btn btn-outline" style="width:100%; justify-content:center;" onclick="toggleProfileEdit(true)">✏️ Edit Personal Details</button>
       </div>
       <div id="profile-edit-actions" style="display: none; gap: 10px; margin-bottom: 24px;">
         <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="savePersonalDetails()">💾 Save Changes</button>
