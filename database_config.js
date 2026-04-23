@@ -33,20 +33,32 @@ const TEST_DATABASE_URLS = {
 
   // Premium Paper 1 full sets
   // ..................................................................................................
-  'paper1': 'https://script.google.com/macros/s/AKfycbyTOYJSrg6XhQ7bKDSnArkFYr_OyBGo29Wq2k-vIu-5LVFZbeBGXwB1KoslTCqXlfT3eQ/exec',
+  'paper1': [
+    { tabName: 'Set-1', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s1.json' },
+    { tabName: 'Set-2', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s2.json' },
+    { tabName: 'Set-3', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s3.json' },
+    { tabName: 'Set-4', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s4.json' },
+    { tabName: 'Set-5', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s5.json' },
+    { tabName: 'Set-6', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s6.json' },
+    { tabName: 'Set-7', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s7.json' },
+    { tabName: 'Set-8', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s8.json' },
+    { tabName: 'Set-9', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s9.json' },
+    { tabName: 'Set-10', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1s10.json' }
+    
+  ],
   
   // For Encrypted GitHub files, use this bracket format:
   'paper1_topic': [
-    { tabName: 'Teaching Aptitude', url: 'https://sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_teach_8xN3mP.json' },
-    { tabName: 'Research Aptitude', url: 'https://sanskrit-pradeep.github.io/sanskrit-portal/Data/p1_rese_8sdfk45v.json' },
-    { tabName: 'Comprehension', url: '' },
-    { tabName: 'Communication', url: '' },
-    { tabName: 'Mathematical Reasoning', url: '' },
-    { tabName: 'Logical Reasoning', url: '' },
-    { tabName: 'Data Interpretation', url: '' },
-    { tabName: 'ICT', url: '' },
-    { tabName: 'People, Development and Environment', url: '' },
-    { tabName: 'Higher Education System', url: '' }
+    { tabName: 'Teaching Aptitude', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u1.teach.json' },
+    { tabName: 'Research Aptitude', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u2.resea.json' },
+    { tabName: 'Comprehension', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u3.compr.json' },
+    { tabName: 'Communication', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u4.comun.json' },
+    { tabName: 'Mathematical Reasoning', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u5.math.json' },
+    { tabName: 'Logical Reasoning', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u6.logic.json' },
+    { tabName: 'Data Interpretation', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u7.data.json' },
+    { tabName: 'ICT', url: 'https://sanskrit-vartika.github.io/net/Data/ptest/p1p1t.u8.ict.json' },
+    { tabName: 'People, Development and Environment', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u9.peopl.json' },
+    { tabName: 'Higher Education System', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u10.highe.json' }
   ]
 };
 

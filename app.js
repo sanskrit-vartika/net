@@ -812,15 +812,12 @@ async function fetchQuestions(cat) {
       let sheetName = String(row.category || row.Category || "").trim();
       sheetName = sheetName.charAt(0).toUpperCase() + sheetName.slice(1);
 
+      // 🚀 NEW: Forces the test name to be exactly the Tab Name!
       let setKey;
-      if (cat === 'full') {
-        setKey = (sheetName && !sheetName.toLowerCase().startsWith('sheet')) ? sheetName : "Set " + originalSet;
+      if (sheetName && !sheetName.toLowerCase().startsWith('sheet')) {
+        setKey = sheetName; 
       } else {
-        if (sheetName && !sheetName.toLowerCase().startsWith('sheet')) {
-          setKey = sheetName + " - Set " + originalSet;
-        } else {
-          setKey = "Set " + originalSet;
-        }
+        setKey = "Set " + originalSet; // Fallback if you forget to name the tab
       }
 
       if (questionText) {
@@ -1750,8 +1747,9 @@ function updateAIBoosterLimitsUI() {
 
 // 2. The Weakness Analyzer (PHASE 1: Tab-Level Aggregation)
 function getWeakTopics(paperType) {
-  if (!currentUser || !currentUser.dbData || !currentUser.dbData.history) return { topics: [], error: null };
-  const history = currentUser.dbData.history;
+  // 🚀 FIX: Default to an empty array instead of short-circuiting!
+  const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
+  
   let topicStats = {}; 
 
   const reverseCatNames = {};
@@ -3188,7 +3186,7 @@ async function submitReport() {
 // === 📡 GITHUB CDN NOTIFICATIONS ENGINE ===
 // ==========================================
 
-const GITHUB_NOTIFICATIONS_URL = "https://raw.githubusercontent.com/Sanskrit-pradeep/sanskrit-portal/main/notifications.json";
+const GITHUB_NOTIFICATIONS_URL = "https://raw.githubusercontent.com/sanskrit-vartika/net/main/notifications.json";
 let globalAnnouncements = [];
 
 // Advanced Relative Time Calculator (e.g., "5 mins ago", "Yesterday")
