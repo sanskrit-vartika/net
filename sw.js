@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sanskrit-vartika-v2'; // Bumped to v2 to force an update!
+const CACHE_NAME = 'sanskrit-vartika-v3'; // Bumped to v3 for the major upgrade
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,7 +7,7 @@ const ASSETS_TO_CACHE = [
   './manifest.json'
 ];
 
-// 1. Install and activate immediately
+// 1. Install Phase
 self.addEventListener('install', (event) => {
   self.skipWaiting(); // Forces the browser to activate this new version instantly
   event.waitUntil(
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. Delete the old V1 cache so the new code can load
+// 2. Activate Phase (Clean up old caches and take control)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -28,24 +28,39 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // 🚀 UPGRADE: Instantly controls the page on first load
   );
 });
 
-// 3. NETWORK-FIRST STRATEGY (Always gets the freshest updates)
+// 3. 🚀 UPGRADED ENGINE: Stale-While-Revalidate with API Bypass
 self.addEventListener('fetch', (event) => {
+  
+  // Rule 1: Do NOT cache POST requests (Prevents Firebase/API crashes)
+  if (event.request.method !== 'GET') return;
+
+  // Rule 2: Do NOT cache external databases (Google Sheets, Firebase, Analytics)
+  // Only cache files that come from your GitHub origin
+  const url = new URL(event.request.url);
+  if (!url.origin.includes(self.location.origin)) {
+     return; // Let the browser handle Firebase and Google Sheets normally!
+  }
+
+  // Rule 3: Stale-While-Revalidate Strategy for UI Speed
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // If internet works, save the fresh file to cache and show it
-        return caches.open(CACHE_NAME).then((cache) => {
+    caches.match(event.request).then((cachedResponse) => {
+      
+      // Always fetch the newest version in the background
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, networkResponse.clone());
-          return networkResponse;
         });
-      })
-      .catch(() => {
-        // If the internet is down, load the backup from cache
-        return caches.match(event.request);
-      })
+        return networkResponse;
+      }).catch(() => {
+        // Silently ignore network failures (the user will just see the cache)
+      });
+
+      // 🚀 INSTANT LOAD: Return the cache immediately if we have it, otherwise wait for network
+      return cachedResponse || fetchPromise;
+    })
   );
 });
