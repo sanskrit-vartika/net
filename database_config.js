@@ -4,7 +4,7 @@
 // This file ONLY contains your database links. 
 // It is completely isolated from app.js to keep your main engine safe!
 
-const TEST_DATABASE_URLS = {
+window.TEST_DATABASE_URLS = {
   
   
   // Premium Sanskrit full topics
@@ -56,14 +56,14 @@ const TEST_DATABASE_URLS = {
     { tabName: 'Mathematical Reasoning', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u5.math.json' },
     { tabName: 'Logical Reasoning', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u6.logic.json' },
     { tabName: 'Data Interpretation', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u7.data.json' },
-    { tabName: 'ICT', url: 'https://sanskrit-vartika.github.io/net/Data/ptest/p1p1t.u8.ict.json' },
+    { tabName: 'ICT', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u8.ict.json' },
     { tabName: 'People, Development and Environment', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u9.peopl.json' },
     { tabName: 'Higher Education System', url: 'https://sanskrit-vartika.github.io/net/Data/p1test/pp1t.u10.highe.json' }
   ]
 };
 
 // NEW: The Dedicated Free Databases
-const FREE_DATABASE_URLS = {
+window.FREE_DATABASE_URLS = {
   'free_skt_topic': 'https://script.google.com/macros/s/AKfycbz26uL9Q-4BHHiZ6EgMYaefA_Dexzt--HE3RuLCREuQs0YqCcoYbVVSQ0JcldY0vf8_sg/exec',
   'free_skt_full': 'https://script.google.com/macros/s/AKfycbza3-gaz8NJy8HwLOUh_Zhx1RL6t1gorHCvrap7K0FA9ZetxmS6S2j4U3W-3d_q0LJx/exec',
   'free_p1_full': 'https://script.google.com/macros/s/AKfycbwHSPQceByWXMuLZD1JKjotd0S39c2fOqxv2d2VjMadp8r8hNP125ewbmhfX4ZI8IelNw/exec',

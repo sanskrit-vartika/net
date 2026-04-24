@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sanskrit-vartika-v3'; // Bumped to v3 for the major upgrade
+const CACHE_NAME = 'sanskrit-vartika-2026-04-24'; // Bumped to v3 for the major upgrade
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

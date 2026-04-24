@@ -3617,7 +3617,10 @@ function openSettingsModal() {
   const profBtn = document.getElementById('btn-edit-profile');
   
   if (data.personal_details_last_updated) {
-    const daysPassed = (Date.now() - data.personal_details_last_updated) / (1000 * 60 * 60 * 24);
+    // 🚀 FIX: Converts both old numbers and new ISO strings into exact math!
+    const lastEditTime = new Date(data.personal_details_last_updated).getTime();
+    const daysPassed = (Date.now() - lastEditTime) / (1000 * 60 * 60 * 24);
+    
     if (daysPassed < 30) {
       const daysLeft = Math.ceil(30 - daysPassed);
       profMsg.innerHTML = `🔒 <strong>Locked:</strong> You can change this again in ${daysLeft} days.`;
@@ -3643,8 +3646,10 @@ function openSettingsModal() {
   const waBtn = document.getElementById('btn-update-wa');
   
   if (data.whatsapp_last_updated) {
-    // Calculate days passed since last update
-    const daysPassed = (Date.now() - data.whatsapp_last_updated) / (1000 * 60 * 60 * 24);
+    // 🚀 FIX: Converts both old numbers and new ISO strings into exact math!
+    const lastEditTime = new Date(data.whatsapp_last_updated).getTime();
+    const daysPassed = (Date.now() - lastEditTime) / (1000 * 60 * 60 * 24);
+    
     if (daysPassed < 30) {
       const daysLeft = Math.ceil(30 - daysPassed);
       waMsg.innerHTML = `🔒 <strong>Locked:</strong> You can change this again in ${daysLeft} days.`;
@@ -3705,7 +3710,7 @@ async function savePersonalDetails() {
     const updates = {
       name: name,
       personalDetails: { dob, gender, address, college },
-      personal_details_last_updated: Date.now() // 🚀 NEW: Timestamp for the 30-day lock
+      personal_details_last_updated: new Date().toISOString() // 🚀 FIX: ISO String format
     };
     await db.collection('users').doc(currentUser.uid).update(updates);
     
@@ -3733,7 +3738,7 @@ async function updateWhatsAppNumber() {
   try {
     const updates = {
       whatsapp: newWA,
-      whatsapp_last_updated: Date.now() // Save exact millisecond of change
+      whatsapp_last_updated: new Date().toISOString() // 🚀 FIX: ISO String format
     };
     await db.collection('users').doc(currentUser.uid).update(updates);
     
