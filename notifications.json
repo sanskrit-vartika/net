@@ -11,7 +11,7 @@
   {
     "id": "2026-04-21T02:29:04.412Z",
     "title": "Discount on Test Pass",
-    "desc": "Get 20% discount on the purchase of pass.",
+    "desc": "Get 20% discount on the purchase of any pass.",
     "type": "offer",
     "expiresAt": "2026-04-29",
     "btnText": "Buy now",
