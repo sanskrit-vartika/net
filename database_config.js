@@ -20,7 +20,14 @@ window.TEST_DATABASE_URLS = {
 
   // Veda subject tipics
   // .................................................................................................
-  'paid_skt_vedic': 'https://script.google.com/macros/s/AKfycby2KLerDt9aHOKPU2PT3ugptNxoaslcgrmbR0REDn2OMSyVXdV_qpS2fKCuNROmDbQKZA/exec',
+  'paid_skt_vedic': [
+    { tabName: 'वेदानां कालः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1a.json' },
+    { tabName: 'संहितासाहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1b.json' },
+    { tabName: 'संवादसूक्तम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1c.json' },
+    { tabName: 'ब्राह्मणसाहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1d.json' },
+    { tabName: 'आरण्यकसाहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1e.json' }
+    
+  ],
 
   // Grammar subject tipics
   // .................................................................................................
