@@ -40,10 +40,10 @@ const FREE_TRIAL_DAYS = 3; // Change this single number to update the entire web
 const AI_BOOSTER_DAILY_LIMIT = 3; // Change this single number to update the AI limits everywhere!
 
 // 9. CLOUD VAULT SETTINGS: Max saved questions per user (Prevents Firebase crashes)
-const MAX_SAVED_QUESTIONS = 100;
+const MAX_SAVED_QUESTIONS = 150;
 
 // 10. ANALYTICS SETTINGS: How many recent tests to use for the average percentage?
-const ANALYTICS_RECENT_LIMIT = 25;
+const ANALYTICS_RECENT_LIMIT = 10;
 
 
 // --- AUTHENTICATION UI LOGIC ---
@@ -952,7 +952,7 @@ function openPremiumSubView(type) {
       <div class="test-cat-card" onclick="showSets('paid_p1_topic')">
         <div class="test-cat-icon">📚</div>
         <h3>1st Paper Topic-wise</h3>
-        <p>Teaching, Research & Aptitude</p>
+        <p>Teaching, Research & other units</p>
       </div>
     `;
   } else if (type === 'sanskrit') {
@@ -963,7 +963,7 @@ function openPremiumSubView(type) {
       <div class="test-cat-card" onclick="showSets('paid_skt_grammar')"><div class="test-cat-icon">📖</div><h3>व्याकरणम्</h3><p>Sanskrit Grammar</p></div>
       <div class="test-cat-card" onclick="showSets('paid_skt_darshan')"><div class="test-cat-icon">🧘</div><h3>दर्शनम्</h3><p>Philosophy</p></div>
       <div class="test-cat-card" onclick="showSets('paid_skt_sahitya')"><div class="test-cat-icon">🪷</div><h3>साहित्यम्</h3><p>Sanskrit Literature</p></div>
-      <div class="test-cat-card" onclick="showSets('paid_skt_other')"><div class="test-cat-icon">🌺</div><h3>अन्यानि</h3><p>Miscellaneous topics</p></div>
+      <div class="test-cat-card" onclick="showSets('paid_skt_other')"><div class="test-cat-icon">🌺</div><h3>अन्यानि</h3><p>पुराणेतिहासौ, धर्मशास्त्रम्, अभिलेखशास्त्रम्</p></div>
     `;
   } else if (type === 'batch') {
     title.textContent = "Sanskrit Net Class";
