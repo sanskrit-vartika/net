@@ -1170,13 +1170,14 @@ async function openFreeSets(mode) {
           availableSets[setKey].questions.push({
             q: questionText,
             options: [
-              item['Option 1'] || item['option 1'] || item['opta'] || item['Option A'] || "A", 
-              item['Option 2'] || item['option 2'] || item['optb'] || item['Option B'] || "B", 
-              item['Option 3'] || item['option 3'] || item['optc'] || item['Option C'] || "C", 
-              item['Option 4'] || item['option 4'] || item['optd'] || item['Option D'] || "D"
+              item['Option A'] || item['Option a'] || item['Option 1'] || item['option 1'] || item['opta'] || item['opt0'] || item['A'] || item['a'] || "A", 
+              item['Option B'] || item['Option b'] || item['Option 2'] || item['option 2'] || item['optb'] || item['opt1'] || item['B'] || item['b'] || "B", 
+              item['Option C'] || item['Option c'] || item['Option 3'] || item['option 3'] || item['optc'] || item['opt2'] || item['C'] || item['c'] || "C", 
+              item['Option D'] || item['Option d'] || item['Option 4'] || item['option 4'] || item['optd'] || item['opt3'] || item['D'] || item['d'] || "D"
             ],
             answer: convertedAns,
-            explanation: item['Explanation'] || item['explanation'] || "",
+            // Bonus: Added extra fallbacks for the Explanation column just in case!
+            explanation: item['Explanation'] || item['explanation'] || item['Exp'] || item['exp'] || "",
             groupId: String(item['groupid'] || item['GroupID'] || item['group'] || "").trim() 
           });
         }
