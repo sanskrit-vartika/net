@@ -27,7 +27,13 @@ window.TEST_DATABASE_URLS = {
     { tabName: 'ब्राह्मणसाहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1d.json' },
     { tabName: 'आरण्यकसाहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1e.json' },
     { tabName: 'वेदाङ्गानि', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i1f.json' },
-    { tabName: 'वैदिकसूक्तानि', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i21.json' }
+    { tabName: 'वैदिकसूक्तानि', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i21.json' },
+    { tabName: 'ब्राह्मण-साहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i22.json' },
+    { tabName: 'उपनिषद्-साहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.3.json' },
+    { tabName: 'ऋक्प्रातिशाख्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.4a.json' },
+    { tabName: 'निरुक्त (अध्याय 1 तथा 2)', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.4b.json' },
+    { tabName: 'निरुक्त (अध्याय 7)', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.4c.json' },
+    { tabName: 'वैदिक स्वर, व्याख्या ', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.4d.json' }
     
   ],
 
@@ -47,6 +53,8 @@ window.TEST_DATABASE_URLS = {
   // ................................................................................................
   'paid_skt_other': 'https://script.google.com/macros/s/AKfycbwgzQw9hZPBNOznWJUCobVyjN7LYU9-Tf93fZgm4VxWQfKo9Lo9vdYP4HnaqBEgHPU/exec',
 
+  
+  
   // Premium Paper 1 full sets
   // ..................................................................................................
   'paid_p1_full': [
