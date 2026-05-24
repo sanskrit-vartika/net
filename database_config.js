@@ -43,7 +43,21 @@ window.TEST_DATABASE_URLS = {
 
   // Darshan subject tipics
   // .................................................................................................
-  'paid_skt_darshan': 'https://script.google.com/macros/s/AKfycbz99sKN9db97mj3uXgERz-Tzv2bWCuwGKTSGi5WU905OgEOYXGIr4OVR5qtisK8fgCx/exec',
+  'paid_skt_darshan': [
+    { tabName: 'दर्शन-साहित्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i3.a.json' },
+    { tabName: 'सांख्यकारिका', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.a.json' },
+    { tabName: 'वेदान्तसारः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.b.json' },
+    { tabName: 'तर्कसंग्रहः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.c1.json' },
+    { tabName: 'तर्कभाषा', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.c2.json' },
+    { tabName: 'अर्थसंग्रहः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.1.json' },
+    { tabName: 'योगसूत्रम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.2.json' },
+    { tabName: 'ब्रह्मसूत्रम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.4a.json' },
+    { tabName: 'न्यायसिद्धान्तमुक्तावली ', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i21.json' },
+    { tabName: 'जैनदर्शनम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i22.json' },
+    { tabName: 'बौद्धदर्शनम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.3.json' }
+    
+  ],
+
 
   // Sahitya subject tipics
   // .................................................................................................
