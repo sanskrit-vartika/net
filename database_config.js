@@ -51,17 +51,32 @@ window.TEST_DATABASE_URLS = {
     { tabName: 'तर्कभाषा', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.c2.json' },
     { tabName: 'अर्थसंग्रहः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.1.json' },
     { tabName: 'योगसूत्रम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.2.json' },
-    { tabName: 'ब्रह्मसूत्रम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.4a.json' },
-    { tabName: 'न्यायसिद्धान्तमुक्तावली ', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i21.json' },
-    { tabName: 'जैनदर्शनम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i22.json' },
-    { tabName: 'बौद्धदर्शनम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i2.3.json' }
+    { tabName: 'ब्रह्मसूत्रम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.3.json' },
+    { tabName: 'न्यायसिद्धान्तमुक्तावली ', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.4.json' },
+    { tabName: 'जैनदर्शनम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.5a.json' },
+    { tabName: 'बौद्धदर्शनम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i4.5b.json' }
     
   ],
 
 
   // Sahitya subject tipics
   // .................................................................................................
-  'paid_skt_sahitya': 'https://script.google.com/macros/s/AKfycbx84ZIVDvvNG4yX9nOYBaU_GSKYIjtxflfEke5gbBWIr-Uidwa6Vt4yrSajoE13PGJiPw/exec',
+  'paid_skt_sahitya': [
+    { tabName: 'कविपरिचयः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i7.a.json' },
+    { tabName: 'काव्यसम्प्रदायाः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i7.b.json' },
+    { tabName: 'पद्यकाव्यानि', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.a.json' },
+    { tabName: 'गद्यकाव्यानि', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.b.json' },
+    { tabName: 'नाट्यानि', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.c.json' },
+    { tabName: 'चम्पूकाव्यम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.d.json' },
+    { tabName: 'साहित्यदर्पणः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.e.json' },
+    { tabName: 'काव्यप्रकाशः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.f.json' },
+    { tabName: 'ध्वन्यालोकः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.g.json' },
+    { tabName: 'वक्रोक्तिजीवितम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.h.json' },
+    { tabName: 'नाट्यशास्त्रम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.i.json' },
+    { tabName: 'दशरूपकम्', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.j.json' },
+    { tabName: 'छन्दः', url: 'https://sanskrit-vartika.github.io/net/Data/p2test/pp2i8.k.json' }
+    
+  ],
 
   // Other subject topics
   // ................................................................................................
