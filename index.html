@@ -377,6 +377,7 @@
       <h2>My Study Hub </span></h2>
       <div class="divider"></div>
       <p>Your enrolled premium courses and test series</p>
+      <p class="subject-tip-text" style="font-size: 0.85rem; color: #1565C0; margin-top: 8px; font-weight: 600;">💡 Tip: You can switch your Core Subject in <a onclick="openSettingsModal()" style="text-decoration: underline; cursor: pointer;">Account Settings</a>.</p>
     </div>
     
     <div class="test-categories-grid" id="study-hub-gateway">
@@ -395,11 +396,11 @@
         <span class="q-count">General Pass</span>
       </div>
 
-      <div class="test-cat-card" onclick="openPremiumSubView('sanskrit')" data-req="sanskrit">
+      <div class="test-cat-card" onclick="openPremiumSubView('core')" data-req="core" id="hub-core-card">
         <div class="test-cat-icon">🪷</div>
-        <h3>Sanskrit Tests</h3>
+        <h3 id="hub-core-title">Sanskrit Tests</h3>
         <p>Unit-wise & Full Mock Tests</p>
-        <span class="q-count">Sanskrit Pass</span>
+        <span class="q-count" id="hub-core-badge">Sanskrit Pass</span>
       </div>
 
     </div>
@@ -425,6 +426,15 @@
       <h2>Mock Tests</span></h2>
       <div class="divider"></div>
       <p>NTA-pattern MCQ tests with instant scoring & explanations</p>
+      <!-- 🚀 FIX: Added 'subject-tip-text' class so JS can hide this for guests -->
+      <p class="subject-tip-text" style="font-size: 0.85rem; color: #1565C0; margin-top: 8px; font-weight: 600;">💡 Tip: You can switch your Core Subject in <a onclick="openSettingsModal()" style="text-decoration: underline; cursor: pointer;">Account Settings</a>.</p>
+    </div>
+
+    <!-- 🚀 NEW: Guest Mode Subject Filter Tabs -->
+    <div class="guest-mock-tabs tabs-nav" style="display: none; margin-bottom: 32px;">
+      <button class="tab-btn guest-tab active" onclick="filterGuestMocks('sanskrit')">🪷 Sanskrit</button>
+      <button class="tab-btn guest-tab" onclick="filterGuestMocks('bengali')">📖 Bengali</button>
+      <button class="tab-btn guest-tab" onclick="filterGuestMocks('philosophy')">🧘 Philosophy</button>
     </div>
 
     <!-- Category Selection -->
@@ -446,12 +456,12 @@
             </div>
           </div>
 
-          <div class="test-cat-card" style="background: linear-gradient(135deg, #E3F2FD, #FFF); border-color: #1565C0;" onclick="showAIBoosterPopup('sanskrit')" data-req="sanskrit" id="ai-card-sanskrit">
-            <div class="test-cat-icon" style="font-size: 2.2rem; margin-bottom: 8px;">🎯</div>
-            <h3 style="color: #1565C0; font-size: 1.05rem;">AI Booster: Sanskrit</h3>
+          <div class="test-cat-card" style="background: linear-gradient(135deg, #E3F2FD, #FFF); border-color: #1565C0;" onclick="showAIBoosterPopup('core')" data-req="core" id="ai-card-core">
+            <div class="test-cat-icon" id="ai-icon-core" style="font-size: 2.2rem; margin-bottom: 8px;">🎯</div>
+            <h3 style="color: #1565C0; font-size: 1.05rem;" id="ai-title-core">AI Booster: Sanskrit</h3>
             <p style="font-size: 0.8rem; color: var(--text-mid);">Upto 30 Custom questions targeting your weakest topics.</p>
             <div style="margin-top: 14px;">
-              <span id="ai-limit-sanskrit" style="background: #1565C0; color: white; font-size: 0.75rem; padding: 4px 12px; border-radius: 50px; font-weight: 700;">Remaining Today: --/--</span>
+              <span id="ai-limit-core" style="background: #1565C0; color: white; font-size: 0.75rem; padding: 4px 12px; border-radius: 50px; font-weight: 700;">Remaining Today: --/--</span>
             </div>
           </div>
         </div>
@@ -477,42 +487,179 @@
           <p>Teaching, Research & other units</p>
           <span class="q-count">4,000+ Questions</span>
         </div>
-        <div class="test-cat-card" onclick="showSets('paid_skt_full')" data-req="sanskrit">
+        <div class="test-cat-card" data-subject-group="sanskrit" onclick="showSets('paid_skt_full')" data-req="core">
           <div class="test-cat-icon">📋</div>
           <h3>Sanskrit Full Mocks</h3>
           <p>Complete 100-question tests</p>
           <span class="q-count">5,000+ Questions </span>
         </div>
-        <div class="test-cat-card" onclick="showSets('paid_skt_vedic')" data-req="sanskrit">
+        <div class="test-cat-card" data-subject-group="sanskrit" onclick="showSets('paid_skt_vedic')" data-req="core">
           <div class="test-cat-icon">🔱</div>
           <h3>वैदिकसाहित्यम्</h3>
           <p>Vedic Literature</p>
           <span class="q-count">1,200+ Questions</span>
         </div>
-        <div class="test-cat-card" onclick="showSets('paid_skt_grammar')" data-req="sanskrit">
+        <div class="test-cat-card" data-subject-group="sanskrit" onclick="showSets('paid_skt_grammar')" data-req="core">
           <div class="test-cat-icon">📖</div>
           <h3>व्याकरणम्</h3>
           <p>Sanskrit Grammar</p>
           <span class="q-count">1000+ Questions</span>
         </div>
-        <div class="test-cat-card" onclick="showSets('paid_skt_darshan')" data-req="sanskrit">
+        <div class="test-cat-card" data-subject-group="sanskrit" onclick="showSets('paid_skt_darshan')" data-req="core">
           <div class="test-cat-icon">🧘</div>
           <h3>दर्शनम्</h3>
           <p>Philosophy</p>
           <span class="q-count">1,500+ Questions</span>
         </div>
-        <div class="test-cat-card" onclick="showSets('paid_skt_sahitya')" data-req="sanskrit">
+        <div class="test-cat-card" data-subject-group="sanskrit" onclick="showSets('paid_skt_sahitya')" data-req="core">
           <div class="test-cat-icon">🪷</div>
           <h3>साहित्यम्</h3>
           <p>Sanskrit Literature</p>
           <span class="q-count">2,000+ Questions</span>
         </div>
-        <div class="test-cat-card" onclick="showSets('paid_skt_other')" data-req="sanskrit">
+        <div class="test-cat-card" data-subject-group="sanskrit" onclick="showSets('paid_skt_other')" data-req="core">
           <div class="test-cat-icon">🌺</div>
           <h3>अन्यानि</h3>
           <p>पुराणेतिहासौ, धर्मशास्त्रम्, अभिलेखशास्त्रम्</p>
           <span class="q-count">1000+ Questions</span>
         </div>
+
+        <!-- 🚀 BENGALI CARDS (Code 19) -->
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_full')" data-req="core">
+          <div class="test-cat-icon">📋</div>
+          <h3>Bengali Full Mocks</h3>
+          <p>Complete 100-question tests</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u1')" data-req="core">
+          <div class="test-cat-icon">🗣️</div>
+          <h3>Unit 1</h3>
+          <p>History of Language</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u2')" data-req="core">
+          <div class="test-cat-icon">📜</div>
+          <h3>Unit 2</h3>
+          <p>History of Literature</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u3')" data-req="core">
+          <div class="test-cat-icon">✒️</div>
+          <h3>Unit 3</h3>
+          <p>Poetry</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u4')" data-req="core">
+          <div class="test-cat-icon">📖</div>
+          <h3>Unit 4</h3>
+          <p>Fiction</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u5')" data-req="core">
+          <div class="test-cat-icon">📄</div>
+          <h3>Unit 5</h3>
+          <p>Prose</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u6')" data-req="core">
+          <div class="test-cat-icon">🎭</div>
+          <h3>Unit 6</h3>
+          <p>Drama</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u7')" data-req="core">
+          <div class="test-cat-icon">🌾</div>
+          <h3>Unit 7</h3>
+          <p>Folk Literature</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u8')" data-req="core">
+          <div class="test-cat-icon">🖋️</div>
+          <h3>Unit 8</h3>
+          <p>Rabindra Sahitya</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u9')" data-req="core">
+          <div class="test-cat-icon">🎼</div>
+          <h3>Unit 9</h3>
+          <p>Prosody & Rhetoric</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="showSets('paid_ben_u10')" data-req="core">
+          <div class="test-cat-icon">💡</div>
+          <h3>Unit 10</h3>
+          <p>Poetics</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+
+        <!-- 🚀 PHILOSOPHY CARDS (Code 03) -->
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_full')" data-req="core">
+          <div class="test-cat-icon">📋</div>
+          <h3>Philosophy Full Mocks</h3>
+          <p>Complete 100-question tests</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u1')" data-req="core">
+          <div class="test-cat-icon">🛕</div>
+          <h3>Unit 1</h3>
+          <p>Classical Indian</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u2')" data-req="core">
+          <div class="test-cat-icon">🏛️</div>
+          <h3>Unit 2</h3>
+          <p>Classical Western</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u3')" data-req="core">
+          <div class="test-cat-icon">🪔</div>
+          <h3>Unit 3</h3>
+          <p>Indian Ethics</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u4')" data-req="core">
+          <div class="test-cat-icon">⚖️</div>
+          <h3>Unit 4</h3>
+          <p>Western Ethics</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u5')" data-req="core">
+          <div class="test-cat-icon">🇮🇳</div>
+          <h3>Unit 5</h3>
+          <p>Contemporary Indian</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u6')" data-req="core">
+          <div class="test-cat-icon">🌍</div>
+          <h3>Unit 6</h3>
+          <p>Recent Western</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u7')" data-req="core">
+          <div class="test-cat-icon">🤝</div>
+          <h3>Unit 7</h3>
+          <p>Social & Political (Indian)</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u8')" data-req="core">
+          <div class="test-cat-icon">🏛️</div>
+          <h3>Unit 8</h3>
+          <p>Social & Political (Western)</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u9')" data-req="core">
+          <div class="test-cat-icon">🧠</div>
+          <h3>Unit 9</h3>
+          <p>Logic</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+        <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="showSets('paid_phil_u10')" data-req="core">
+          <div class="test-cat-icon">🌿</div>
+          <h3>Unit 10</h3>
+          <p>Applied Ethics</p>
+          <span class="q-count">Coming Soon</span>
+        </div>
+
       </div>
       </div>      
       
@@ -543,6 +690,8 @@
       <p>100% free resources for all aspiring UGC NET candidates</p>
     </div>
 
+    
+
     <div class="tabs-container">
       <div class="tabs-nav">
         <button class="tab-btn active" onclick="switchTab('tests')">📝 Mocks</button>
@@ -553,37 +702,37 @@
 
       <div id="tab-notes" class="tab-content">
         <div class="notes-grid" id="notes-main-grid">
-          <div class="note-card" onclick="showNotesTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
             <h4>वेदः</h4>
             <p>Complete notes on Vedic literature — Rig, Sam, Yajur & Atharva Veda.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
           </div>
-          <div class="note-card" onclick="showNotesTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
             <h4>व्याकरणम्</h4>
             <p>Panini's Ashtadhyayi, Mahabhashya, Vakyapadiya and analysis.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
           </div>
-          <div class="note-card" onclick="showNotesTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
             <h4>दर्शनम्</h4>
             <p>Six Darshanas — Nyaya, Samkhya, Yoga, Mimamsa, and Vedanta.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
           </div>
-          <div class="note-card" onclick="showNotesTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
             <h4>साहित्यम्</h4>
             <p>Sanskrit literary tradition — Kavya, Natya, and Rasa theory.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
           </div>
-          <div class="note-card" onclick="showNotesTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
             <h4>पुराणम्</h4>
             <p>Major Puranas, Panchalakshana, and philosophical significance.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
           </div>
-          <div class="note-card" onclick="showNotesTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
             <h4>धर्मशास्त्रम्</h4>
             <p>Manusmriti, Yajnavalkyasmriti, and concepts of Hindu law.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
           </div>
-          <div class="note-card" onclick="showNotesTopic('other')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showNotesTopic('other')" style="cursor:pointer; border-color:var(--gold);">
             <h4>अन्यानि</h4>
             <p>Miscellaneous topics, manuscripts, and script traditions.</p>
             <button class="btn btn-gold btn-sm">View Topics 📂</button>
@@ -621,17 +770,51 @@
             <p>Teaching, Research & other units</p>
             <span class="q-count">Free Access</span>
           </div>
-          <div class="test-cat-card" onclick="openFreeSets('free_skt_full')" style="position: relative;">
+          <!-- 🚀 FIX: Tagged with data-subject-group so the router hides them for Bengali/Philosophy students! -->
+          <div class="test-cat-card" data-subject-group="sanskrit" onclick="openFreeSets('free_skt_full')" style="position: relative;">
             <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
             <div class="test-cat-icon">📋</div>
             <h3>Sanskrit Full sets</h3>
             <p>Complete 100-question sets</p>
             <span class="q-count">Free Access</span>
           </div>
-          <div class="test-cat-card" onclick="openFreeSets('free_skt_topic')" style="position: relative;">
+          
+          <div class="test-cat-card" data-subject-group="sanskrit" onclick="openFreeSets('free_skt_topic')" style="position: relative;">
             <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
             <div class="test-cat-icon">🪷</div>
             <h3>Sanskrit Topic-wise</h3>
+            <p>Subject-specific practice</p>
+            <span class="q-count">Free Access</span>
+          </div>
+
+          <!-- 🚀 FREE BENGALI -->
+          <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="openFreeSets('free_ben_full')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📋</div>
+            <h3>Bengali Full Sets</h3>
+            <p>Complete 100-question mock test</p>
+            <span class="q-count">Free Access</span>
+          </div>
+          <div class="test-cat-card" data-subject-group="bengali" style="display:none;" onclick="openFreeSets('free_ben_topic')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📚</div>
+            <h3>Bengali Topic-wise</h3>
+            <p>Subject-specific practice</p>
+            <span class="q-count">Free Access</span>
+          </div>
+
+          <!-- 🚀 FREE PHILOSOPHY -->
+          <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="openFreeSets('free_phil_full')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📋</div>
+            <h3>Philosophy Full Sets</h3>
+            <p>Complete 100-question mock test</p>
+            <span class="q-count">Free Access</span>
+          </div>
+          <div class="test-cat-card" data-subject-group="philosophy" style="display:none;" onclick="openFreeSets('free_phil_topic')" style="position: relative;">
+            <div style="position: absolute; top: 12px; left: 12px;"><span class="badge badge-free">Free</span></div>
+            <div class="test-cat-icon">📚</div>
+            <h3>Philosophy Topic-wise</h3>
             <p>Subject-specific practice</p>
             <span class="q-count">Free Access</span>
           </div>
@@ -640,37 +823,37 @@
 
       <div id="tab-videos" class="tab-content">
         <div class="notes-grid" id="videos-main-grid">
-          <div class="note-card" onclick="showVideosTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('veda')" style="cursor:pointer; border-color:var(--gold);">
             <h4>वेदः</h4>
             <p>Video lectures covering Vedic literature and texts.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
           </div>
-          <div class="note-card" onclick="showVideosTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('vyakarana')" style="cursor:pointer; border-color:var(--gold);">
             <h4>व्याकरणम्</h4>
             <p>Detailed video analysis of Sanskrit grammar.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
           </div>
-          <div class="note-card" onclick="showVideosTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('darshan')" style="cursor:pointer; border-color:var(--gold);">
             <h4>दर्शनम्</h4>
             <p>Video explanations of the six Darshanas.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
           </div>
-          <div class="note-card" onclick="showVideosTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('sahitya')" style="cursor:pointer; border-color:var(--gold);">
             <h4>साहित्यम्</h4>
             <p>Lectures on Kavya, Natya, and Rasa theory.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
           </div>
-          <div class="note-card" onclick="showVideosTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('purana')" style="cursor:pointer; border-color:var(--gold);">
             <h4>पुराणम्</h4>
             <p>Video series on Puranic literature.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
           </div>
-          <div class="note-card" onclick="showVideosTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('dharma')" style="cursor:pointer; border-color:var(--gold);">
             <h4>धर्मशास्त्रम्</h4>
             <p>Lectures on Hindu law and ethics.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
           </div>
-          <div class="note-card" onclick="showVideosTopic('other')" style="cursor:pointer; border-color:var(--gold);">
+          <div class="note-card" data-subject-group="sanskrit" onclick="showVideosTopic('other')" style="cursor:pointer; border-color:var(--gold);">
             <h4>अन्यानि</h4>
             <p>Miscellaneous topics and exam strategies.</p>
             <button class="btn btn-gold btn-sm">View Videos ▶</button>
@@ -797,12 +980,12 @@
         <h3 style="color:var(--brown); font-size:1.05rem; margin: 0;">📈 Performance Analysis</h3>
         <div class="analytics-tabs">
           <button class="a-tab active" onclick="switchAnalytics('paper1')">Paper 1</button>
-          <button class="a-tab" onclick="switchAnalytics('sanskrit')">Sanskrit</button>
+          <button class="a-tab" id="tab-btn-core" onclick="switchAnalytics('core')">Sanskrit</button>
         </div>
       </div>
       <div style="background: var(--white); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--cream-dark);">
         <div id="analytics-paper1"></div>
-        <div id="analytics-sanskrit" style="display: none;"></div>
+        <div id="analytics-core" style="display: none;"></div>
       </div>
     </div>
 
@@ -1080,7 +1263,7 @@
     <div class="tabs-nav" style="margin: 0 auto 20px; width: 100%; display: flex; justify-content: center; background: var(--cream-dark); padding: 4px; border-radius: 50px;">
       <button class="tab-btn sq-tab active" onclick="switchSavedQsTab('all')" style="flex:1; padding:8px; font-size:0.8rem;">All Topics</button>
       <button class="tab-btn sq-tab" onclick="switchSavedQsTab('paper1')" style="flex:1; padding:8px; font-size:0.8rem;">Paper 1</button>
-      <button class="tab-btn sq-tab" onclick="switchSavedQsTab('sanskrit')" style="flex:1; padding:8px; font-size:0.8rem;">Sanskrit</button>
+      <button class="tab-btn sq-tab" id="sq-tab-core" onclick="switchSavedQsTab('core')" style="flex:1; padding:8px; font-size:0.8rem;">Sanskrit</button>
     </div>
 
     <div id="saved-qs-container" style="display:flex; flex-direction:column; gap:12px;">
@@ -1258,6 +1441,18 @@
 
     <input type="text" id="auth-name" class="form-input mb-16" placeholder="Full Name" style="display:none;">
     <input type="text" id="auth-whatsapp" class="form-input mb-16" placeholder="WhatsApp Number" style="display:none;">
+    
+    <!-- 🚀 NEW: Subject Selection during Sign-up -->
+     <!-- Can use as a switch for disable other subjects. switch adminswitch -->
+      <!-- Switch for subject option for sanskrit, bengali & philo -->
+
+
+    <select id="auth-core-subject" class="form-input mb-16" style="display:none;">
+      <option value="sanskrit">Target Subject: Sanskrit (Code 25)</option>
+      <!--<option value="bengali">Target Subject: Bengali (Code 19)</option>
+      <option value="philosophy">Target Subject: Philosophy (Code 03)</option>-->
+    </select>
+
     <input type="email" id="auth-email" class="form-input mb-16" placeholder="Email Address">
     <input type="password" id="auth-password" class="form-input mb-16" placeholder="Password">
 
@@ -1284,6 +1479,29 @@
   </div>
 </div>
 
+
+<!-- ==================== GUEST TRIAL PROMO MODAL ==================== -->
+<div id="guest-trial-modal" class="modal-overlay" style="z-index: 3600;">
+  <div class="modal-content" style="text-align: center; max-width: 400px; border-top: 6px solid var(--saffron); position: relative;">
+    <button onclick="document.getElementById('guest-trial-modal').style.display='none'" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light);">&times;</button>
+    
+    <div style="font-size: 3.5rem; margin-bottom: 8px;">🎁</div>
+    <h3 style="color: var(--brown); margin-bottom: 12px; font-size: 1.4rem;">Unlock Your Free Trial!</h3>
+    
+    <p style="color: var(--text-mid); margin-bottom: 24px; line-height: 1.6; font-size: 0.95rem;">
+      Get <strong style="color: var(--saffron);">2 Days of VIP Access</strong> completely free. Practice thousands of Premium Sanskrit and Paper 1 mock tests instantly!
+    </p>
+    
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <button class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 1rem;" onclick="document.getElementById('guest-trial-modal').style.display='none'; showAuthModal('signup');">
+        ✨ Create Free Account
+      </button>
+      <button class="btn btn-outline" style="width: 100%; justify-content: center;" onclick="document.getElementById('guest-trial-modal').style.display='none'; showAuthModal('login');">
+        Log In to Existing Account
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- ==================== EXPIRY WARNING MODAL ==================== -->
 <div id="expiry-modal" class="modal-overlay" style="z-index: 3600;">
@@ -1431,12 +1649,35 @@
       <button class="tab-btn s-tab" onclick="switchSettingsTab('data')" style="flex:1; padding:8px; font-size:0.8rem;">💾 Data Storage</button>
     </div>
 
+    
     <div id="set-tab-account" style="display: block;">
-      
-      <label class="form-label" style="font-size: 0.8rem;">Display Name</label>
-      <input type="text" id="set-name" class="form-input mb-16" readonly style="background: #f9f9f9;">
+        
+
+      <!-- 🚀 NEW: CORE SUBJECT SELECTOR -->
+      <h4 style="margin: 20px 0 10px; color: var(--brown); font-size:0.9rem; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">Academic Profile</h4>
+      <label class="form-label" style="font-size: 0.8rem;">Core Subject (Paper 2) - Can change once every 1 day</label>
+      <div style="display:flex; gap:8px;" class="mb-16">
+
+        <!-- Can use as a switch for disable other subjects. switch adminswitch -->
+      <!-- Switch for subject option for sanskrit, bengali & philo -->
+
+         <select id="set-core-subject" class="form-input" style="flex:1; background: #f9f9f9;" disabled>
+           <option value="sanskrit">Sanskrit (Code 25)</option>
+           <option value="bengali">Bengali (Code 19)</option>
+           <option value="philosophy">Philosophy (Code 03)</option>
+         </select>
+         <button id="btn-edit-subject" class="btn btn-outline" style="padding: 0 16px;" onclick="toggleSubjectEdit(true)">✏️ Edit</button>
+         <button id="btn-update-subject" class="btn btn-primary" style="padding: 0 16px; display:none;" onclick="updateCoreSubject()">Save</button>
+         <button id="btn-cancel-subject" class="btn btn-outline" style="padding: 0 16px; display:none;" onclick="toggleSubjectEdit(false)">Cancel</button>
+      </div>
+      <p id="subject-lock-msg" style="font-size:0.75rem; color: #D32F2F; margin-top:-10px; margin-bottom: 16px; display:none; background: #FFEBEE; padding: 4px 8px; border-radius: 4px;">Locked for X days.</p>
+      <!-- ----------------------------- -->
 
       <h4 style="margin: 20px 0 10px; color: var(--brown); font-size:0.9rem; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">Personal Details</h4>
+
+      <label class="form-label" style="font-size: 0.8rem;">Display Name</label>
+      <input type="text" id="set-name" class="form-input mb-16" readonly style="background: #f9f9f9;">
+      
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;" class="mb-16">
          <div>
            <label class="form-label" style="font-size: 0.8rem;">Date of Birth</label>

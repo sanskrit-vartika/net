@@ -19,9 +19,107 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// 3. Global App Data
+// 3. Global App Data & Subject Engine
+const CORE_SUBJECTS = {
+  'sanskrit': { name: 'Sanskrit', code: '25', icon: '🪷', badge: 'Sanskrit Pass' },
+  'bengali': { name: 'Bengali', code: '19', icon: '📖', badge: 'Bengali Pass' },
+  'philosophy': { name: 'Philosophy', code: '03', icon: '🧘', badge: 'Philosophy Pass' }
+};
+
+// Change this to show all or only sanskrit in guest mode switch
+let currentCoreSubject = localStorage.getItem('vartika_core_subject') || 'sanskrit';
+
 let currentUser = null;
 let isSignUpMode = false;
+
+// 🚀 NEW: Guest Mode Visual Filter Engine
+function filterGuestMocks(subject) {
+  // 1. Update active tab styling
+  document.querySelectorAll('.guest-tab').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll(`.guest-tab[onclick*="${subject}"]`).forEach(btn => btn.classList.add('active'));
+
+  // 2. 🚀 FIX: Hide/Show the relevant cards ONLY on the Mock Tests page!
+  document.querySelectorAll('#page-mocktest [data-subject-group]').forEach(el => {
+    el.style.display = (el.getAttribute('data-subject-group') === subject) ? '' : 'none';
+  });
+
+  // 3. Update the AI Booster dynamic titles in Guest Mode
+  if (CORE_SUBJECTS[subject]) {
+     const aiTitle = document.getElementById('ai-title-core');
+     const aiIcon = document.getElementById('ai-icon-core');
+     if (aiTitle) aiTitle.textContent = `AI Booster: ${CORE_SUBJECTS[subject].name}`;
+     if (aiIcon) aiIcon.textContent = CORE_SUBJECTS[subject].icon;
+  }
+}
+
+
+// 🚀 MASTER UI ROUTER: Instantly repaints the entire website to match the selected subject!
+function applyCoreSubjectUI(subjectKey) {
+  const guestTabs = document.querySelectorAll('.guest-mock-tabs');
+  const tipTexts = document.querySelectorAll('.subject-tip-text');
+  
+  // 🚀 GUEST VIEW: Unlocks Tabs!
+  if (subjectKey === 'all') {
+    // Show the filter tabs, hide the settings tips
+    guestTabs.forEach(el => el.style.display = 'flex');
+    tipTexts.forEach(el => el.style.display = 'none');
+    
+    // Automatically collapse the Mock Tests page down to just Sanskrit initially
+    filterGuestMocks('sanskrit');
+    
+    // 🚀 FIX: Ensure ALL cards on the Free Content page are completely visible!
+    document.querySelectorAll('#page-free [data-subject-group]').forEach(el => el.style.display = '');
+
+    // Set generic fallback texts for standard UI elements
+    if (document.getElementById('hub-core-title')) document.getElementById('hub-core-title').textContent = "Paper 2 Tests";
+    if (document.getElementById('hub-core-badge')) document.getElementById('hub-core-badge').textContent = "Core Pass";
+    if (document.getElementById('tab-btn-core')) document.getElementById('tab-btn-core').textContent = "Paper 2";
+    if (document.getElementById('sq-tab-core')) document.getElementById('sq-tab-core').textContent = "Paper 2";
+    
+    if (typeof renderCourses === 'function') renderCourses(); 
+    return; // Stop here!
+  }
+
+  // 🚀 NORMAL STUDENT VIEW: Locks to 1 Subject!
+  // Hide the filter tabs, show the settings tips
+  guestTabs.forEach(el => el.style.display = 'none');
+  tipTexts.forEach(el => el.style.display = 'block');
+
+  if (!CORE_SUBJECTS[subjectKey]) subjectKey = 'sanskrit';
+  const subjData = CORE_SUBJECTS[subjectKey];
+
+  // A. Hide/Show specific Subject Cards
+  document.querySelectorAll('[data-subject-group]').forEach(el => {
+      el.style.display = (el.getAttribute('data-subject-group') === subjectKey) ? '' : 'none';
+  });
+
+  // B. Update Dynamic Texts
+  const hubTitle = document.getElementById('hub-core-title');
+  const hubBadge = document.getElementById('hub-core-badge');
+  const hubIcon = document.querySelector('#hub-core-card .test-cat-icon');
+  if (hubTitle) hubTitle.textContent = `${subjData.name} Tests`;
+  if (hubBadge) hubBadge.textContent = subjData.badge;
+  if (hubIcon) hubIcon.textContent = subjData.icon;
+
+  const aiTitle = document.getElementById('ai-title-core');
+  const aiIcon = document.getElementById('ai-icon-core');
+  if (aiTitle) aiTitle.textContent = `AI Booster: ${subjData.name}`;
+  if (aiIcon) aiIcon.textContent = subjData.icon;
+
+  const tabCore = document.getElementById('tab-btn-core');
+  const sqTabCore = document.getElementById('sq-tab-core');
+  if (tabCore) tabCore.textContent = subjData.name;
+  if (sqTabCore) sqTabCore.textContent = subjData.name;
+
+  // C. Update Sales Page
+  if (typeof renderCourses === 'function') renderCourses();
+}
+
+// Call it immediately on load for Guests
+document.addEventListener('DOMContentLoaded', () => {
+    applyCoreSubjectUI(currentCoreSubject);
+});
+
 
 // 4. The "Master Launch Switch" (Change this date to your actual Launch Day + 7 days)
 const LAUNCH_PROMO_END_DATE = new Date("2030-05-01T00:00:00Z"); 
@@ -34,7 +132,7 @@ const WHATSAPP_NUMBER = "918172063129";
 const REQUIRE_EMAIL_VERIFICATION = false; // Change to true before official public launch!
 
 // 7. TRIAL SETTINGS: How many days free?
-const FREE_TRIAL_DAYS = 3; // Change this single number to update the entire website
+const FREE_TRIAL_DAYS = 2; // Change this single number to update the entire website
 
 // 8. AI BOOSTER SETTINGS: How many custom tests per day?
 const AI_BOOSTER_DAILY_LIMIT = 3; // Change this single number to update the AI limits everywhere!
@@ -73,6 +171,7 @@ function toggleAuthMode() {
   const subtitle = document.getElementById('auth-subtitle');
   const nameInput = document.getElementById('auth-name');
   const whatsappInput = document.getElementById('auth-whatsapp');
+  const subjectInput = document.getElementById('auth-core-subject'); // 🚀 NEW
   const actionBtn = document.getElementById('auth-action-btn');
   const switchText = document.getElementById('auth-switch-text');
   const forgotPassBox = document.getElementById('forgot-password-box');
@@ -82,13 +181,14 @@ function toggleAuthMode() {
     
     // 🚀 DYNAMIC UX FIX: Only show the trial text if the Master Switch is > 0
     if (FREE_TRIAL_DAYS > 0) {
-      subtitle.textContent = `Start your ${FREE_TRIAL_DAYS}-Day Combo Pass Trial!`;
+      subtitle.textContent = `🎁 Start your ${FREE_TRIAL_DAYS}-Day Free Combo Pass Trial! 🎉`;
     } else {
       subtitle.textContent = "Create a free account to track your progress.";
     }
     
     nameInput.style.display = 'block';
     if(whatsappInput) whatsappInput.style.display = 'block';
+    if(subjectInput) subjectInput.style.display = 'block'; // 🚀 NEW
     if(forgotPassBox) forgotPassBox.style.display = 'none';
     actionBtn.textContent = "Sign Up";
     // 🚀 BUG FIX: Changed href='#' to href='javascript:void(0);' to prevent the pop-up closer from triggering!
@@ -98,6 +198,7 @@ function toggleAuthMode() {
     subtitle.textContent = "Log in to track your scores.";
     nameInput.style.display = 'none';
     if(whatsappInput) whatsappInput.style.display = 'none';
+    if(subjectInput) subjectInput.style.display = 'none'; // 🚀 NEW
     if(forgotPassBox) forgotPassBox.style.display = 'block';
     actionBtn.textContent = "Log In";
     // 🚀 BUG FIX: Changed href='#' to href='javascript:void(0);' to prevent the pop-up closer from triggering!
@@ -140,6 +241,7 @@ async function handleAuthAction() {
   const password = document.getElementById('auth-password').value;
   const name = document.getElementById('auth-name').value.trim();
   const whatsapp = document.getElementById('auth-whatsapp').value.trim();
+  const selectedSubject = document.getElementById('auth-core-subject') ? document.getElementById('auth-core-subject').value : 'sanskrit'; // 🚀 NEW
   const errorBox = document.getElementById('auth-error');
   
   if (!email || !password || (isSignUpMode && (!name || !whatsapp))) {
@@ -175,20 +277,20 @@ async function handleAuthAction() {
         try { await user.sendEmailVerification(); } catch(e) {}
       }
       
-      // === NEW MULTI-PASS TRIAL LOGIC ===
-      let initialPasses = {
-        batch: null,
-        sanskrit: null,
-        general: null,
-        combo: null
-      };
+      // 🚀 DYNAMIC TRIAL PASS LOGIC (No more 'combo')
+      currentCoreSubject = selectedSubject; 
+      localStorage.setItem('vartika_core_subject', currentCoreSubject);
+      applyCoreSubjectUI(currentCoreSubject);
 
-      // Launch Promo: Give them a free Combo Pass for a few days to hook them!
+      let initialPasses = { batch: null, general: null };
+      Object.keys(CORE_SUBJECTS).forEach(sub => initialPasses[sub] = null); // Add all known subjects securely
+
       let initialAccessLevel = "basic";
       if (new Date() < LAUNCH_PROMO_END_DATE) {
         let d = new Date();
         d.setDate(d.getDate() + FREE_TRIAL_DAYS);
-        initialPasses.combo = d.toISOString();
+        initialPasses.general = d.toISOString(); // Trial for Paper 1
+        initialPasses[currentCoreSubject] = d.toISOString(); // Trial for specific subject
         initialAccessLevel = "premium";
       }
 
@@ -199,6 +301,7 @@ async function handleAuthAction() {
         whatsapp: whatsapp,
         passes: initialPasses, 
         accessLevel: initialAccessLevel,
+        coreSubject: currentCoreSubject,
         createdAt: new Date().toISOString()
       });
       
@@ -324,12 +427,21 @@ auth.onAuthStateChanged(async (user) => {
     db.collection("users").doc(user.uid).get().then((doc) => {
       if (doc.exists) {
         currentUser.dbData = doc.data();
+        
+        // 🚀 SYNC WORKSPACE FROM CLOUD
+        if (currentUser.dbData.coreSubject) {
+            currentCoreSubject = currentUser.dbData.coreSubject;
+            localStorage.setItem('vartika_core_subject', currentCoreSubject);
+            applyCoreSubjectUI(currentCoreSubject);
+        }
+        
         // === NEW: AUTO-HEALING ACCESS LEVEL ===
         let hasActivePass = false;
         const now = new Date();
         const p = currentUser.dbData.passes || {};
         
-        ['combo', 'batch', 'sanskrit', 'general'].forEach(pass => {
+        // 🚀 FIX: Check all passes dynamically without hardcoding!
+        Object.keys(p).forEach(pass => {
           if (p[pass] && new Date(p[pass]) > now) hasActivePass = true;
         });
 
@@ -394,7 +506,7 @@ auth.onAuthStateChanged(async (user) => {
                 name: "Student",
                 email: user.email,
                 whatsapp: "",
-                passes: { batch: null, sanskrit: null, general: null, combo: null },
+                passes: { batch: null, general: null, sanskrit: null, bengali: null, philosophy: null },
                 accessLevel: "basic",
                 createdAt: new Date().toISOString()
               };
@@ -423,6 +535,23 @@ auth.onAuthStateChanged(async (user) => {
     
     // FIX: This must be OUTSIDE the if-statement so it runs for brand new guests!
     updateTestCardLocks(); 
+
+    // 🚀 NEW: The 12-Second Guest Promo Engine
+    if (!sessionStorage.getItem('guest_promo_shown')) {
+      setTimeout(() => {
+        // Double-check that they didn't log in during the 12-second wait!
+        if (!currentUser) {
+          // Dynamically fetch the name of the subject they are currently looking at
+          const subjName = currentCoreSubject === 'all' ? 'Core Subject' : CORE_SUBJECTS[currentCoreSubject].name;
+          const promoNameEl = document.getElementById('promo-subject-name');
+          if (promoNameEl) promoNameEl.textContent = subjName;
+          
+          // Show the modal and mark it as shown for this session
+          document.getElementById('guest-trial-modal').style.display = 'flex';
+          sessionStorage.setItem('guest_promo_shown', 'true');
+        }
+      }, 12000); // 12000 milliseconds = 12 seconds
+    }
   }
 });
 
@@ -506,7 +635,7 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
   const topNavMap = {
     'home': 'Home', 'study': 'Study', 'mocktest': 'Test',
     'courses': 'Courses', 'free': 'Free Content', 'dashboard': 'Dashboard',
-    'about': 'About Us', 'contact': 'Contact', 'admin': '👑 Admin'
+    'about': 'About Us', 'contact': 'Contact'
   };
   
   let activeText = topNavMap[page];
@@ -688,9 +817,10 @@ function toggleMobileDrawer() {
 
 // === STUDY TABS ===
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  const btn = document.querySelector(`.tab-btn[onclick*="${tab}"]`);
+  // 🚀 FIX: Isolate the tab logic to the Free Content page so it doesn't break the Mock Tests tabs!
+  document.querySelectorAll('#page-free .tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#page-free .tab-content').forEach(c => c.classList.remove('active'));
+  const btn = document.querySelector(`#page-free .tab-btn[onclick*="${tab}"]`);
   const content = document.getElementById('tab-' + tab);
   if (btn) btn.classList.add('active');
   if (content) content.classList.add('active');
@@ -726,18 +856,19 @@ let testState = {
 };
 
 const catNames = {
-  paid_skt_full: 'Sanskrit Full Mocks',
-  paid_skt_vedic: 'वैदिकसाहित्यम्',
-  paid_skt_grammar: 'व्याकरणम्',
-  paid_skt_darshan: 'दर्शनम्',
-  paid_skt_sahitya: 'साहित्यम्',
-  paid_skt_other: 'अन्यानि',
-  paid_p1_full: '1st Paper Full sets',
-  paid_p1_topic: '1st Paper Topic-wise',
-  free_skt_full: 'Free Sanskrit Full Mocks',
-  free_skt_topic: 'Free Sanskrit Topic-wise',
-  free_p1_full: 'Free Paper 1 Full Sets',
-  free_p1_topic: 'Free Paper 1 Topic-wise'
+  // Sanskrit
+  paid_skt_full: 'Sanskrit Full Mocks', paid_skt_vedic: 'वैदिकसाहित्यम्', paid_skt_grammar: 'व्याकरणम्', paid_skt_darshan: 'दर्शनम्', paid_skt_sahitya: 'साहित्यम्', paid_skt_other: 'अन्यानि',
+  // Bengali
+  paid_ben_full: 'Bengali Full Mocks', paid_ben_u1: 'Unit 1: History of Language', paid_ben_u2: 'Unit 2: History of Literature', paid_ben_u3: 'Unit 3: Poetry', paid_ben_u4: 'Unit 4: Fiction', paid_ben_u5: 'Unit 5: Prose', paid_ben_u6: 'Unit 6: Drama', paid_ben_u7: 'Unit 7: Folk Literature', paid_ben_u8: 'Unit 8: Rabindra Sahitya', paid_ben_u9: 'Unit 9: Prosody & Rhetoric', paid_ben_u10: 'Unit 10: Poetics',
+  // Philosophy
+  paid_phil_full: 'Philosophy Full Mocks', paid_phil_u1: 'Unit 1: Classical Indian', paid_phil_u2: 'Unit 2: Classical Western', paid_phil_u3: 'Unit 3: Indian Ethics', paid_phil_u4: 'Unit 4: Western Ethics', paid_phil_u5: 'Unit 5: Contemporary Indian', paid_phil_u6: 'Unit 6: Recent Western', paid_phil_u7: 'Unit 7: Social & Political (Indian)', paid_phil_u8: 'Unit 8: Social & Political (Western)', paid_phil_u9: 'Unit 9: Logic', paid_phil_u10: 'Unit 10: Applied Ethics',
+  // Paper 1
+  paid_p1_full: '1st Paper Full sets', paid_p1_topic: '1st Paper Topic-wise',
+  // Free
+  free_skt_full: 'Free Sanskrit Full Mocks', free_skt_topic: 'Free Sanskrit Topic-wise',
+  free_ben_full: 'Free Bengali Full Mocks', free_ben_topic: 'Free Bengali Topic-wise',
+  free_phil_full: 'Free Philosophy Full Mocks', free_phil_topic: 'Free Philosophy Topic-wise',
+  free_p1_full: 'Free Paper 1 Full Sets', free_p1_topic: 'Free Paper 1 Topic-wise'
 };
 
 // 2. THE CENTRAL DATA FETCHER (Upgraded with Smart Decryption & Timeout)
@@ -882,18 +1013,18 @@ function hasAccess(requiredPass) {
   const passes = currentUser.dbData.passes;
   const now = new Date();
 
-  // Helper function to check if a specific pass date is valid
   const isValid = (passDateStr) => {
     if (!passDateStr) return false;
     return new Date(passDateStr) > now;
   };
 
-  // Logic: Check the requested pass OR the ultimate Combo Pass
-  if (requiredPass === 'sanskrit') {
-    return isValid(passes.sanskrit) || isValid(passes.combo);
+  // 🚀 DYNAMIC ROUTING: If clicking a core test, map the lock to their specific core subject pass!
+  if (requiredPass === 'core') {
+    return isValid(passes[currentCoreSubject]);
   }
+  
   if (requiredPass === 'general') {
-    return isValid(passes.general) || isValid(passes.combo);
+    return isValid(passes.general);
   }
   if (requiredPass === 'batch') {
     return isValid(passes.batch);
@@ -920,7 +1051,14 @@ function updateTestCardLocks() {
 // === PREMIUM STUDY HUB ENGINE ===
 // ==========================================
 function openPremiumSubView(type) {
-  let reqPass = 'sanskrit';
+  // 🚀 FIX: Catch guests before checking locks!
+  if (!currentUser) {
+    showToast("⚠️ Please create a free account to unlock practice tests!");
+    showAuthModal('signup');
+    return;
+  }
+
+  let reqPass = 'core'; 
   if (type === 'paper1') reqPass = 'general';
   if (type === 'batch') reqPass = 'batch';
 
@@ -940,33 +1078,11 @@ function openPremiumSubView(type) {
 
   const grid = document.getElementById('study-sub-grid');
   const title = document.getElementById('study-sub-title');
+  
+  grid.innerHTML = ''; // Clear previous
 
-  if (type === 'paper1') {
-    title.textContent = "1st Paper Tests";
-    grid.innerHTML = `
-      <div class="test-cat-card" onclick="showSets('paid_p1_full')">
-        <div class="test-cat-icon">📊</div>
-        <h3>1st Paper Full sets</h3>
-        <p>Complete 50-question mocks</p>
-      </div>
-      <div class="test-cat-card" onclick="showSets('paid_p1_topic')">
-        <div class="test-cat-icon">📚</div>
-        <h3>1st Paper Topic-wise</h3>
-        <p>Teaching, Research & other units</p>
-      </div>
-    `;
-  } else if (type === 'sanskrit') {
-    title.textContent = "Sanskrit Tests";
-    grid.innerHTML = `
-      <div class="test-cat-card" onclick="showSets('paid_skt_full')"><div class="test-cat-icon">📋</div><h3>Full Mock Test</h3><p>Complete 100-question tests</p></div>
-      <div class="test-cat-card" onclick="showSets('paid_skt_vedic')"><div class="test-cat-icon">🔱</div><h3>वैदिकसाहित्यम्</h3><p>Vedic Literature</p></div>
-      <div class="test-cat-card" onclick="showSets('paid_skt_grammar')"><div class="test-cat-icon">📖</div><h3>व्याकरणम्</h3><p>Sanskrit Grammar</p></div>
-      <div class="test-cat-card" onclick="showSets('paid_skt_darshan')"><div class="test-cat-icon">🧘</div><h3>दर्शनम्</h3><p>Philosophy</p></div>
-      <div class="test-cat-card" onclick="showSets('paid_skt_sahitya')"><div class="test-cat-icon">🪷</div><h3>साहित्यम्</h3><p>Sanskrit Literature</p></div>
-      <div class="test-cat-card" onclick="showSets('paid_skt_other')"><div class="test-cat-icon">🌺</div><h3>अन्यानि</h3><p>पुराणेतिहासौ, धर्मशास्त्रम्, अभिलेखशास्त्रम्</p></div>
-    `;
-  } else if (type === 'batch') {
-    title.textContent = "Sanskrit Net Class";
+  if (type === 'batch') {
+    title.textContent = "Net Class";
     grid.innerHTML = `
       <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: var(--cream); border-radius: var(--radius); border: 2px dashed var(--saffron);">
         <div style="font-size: 3rem; margin-bottom: 16px;">🚧</div>
@@ -974,6 +1090,26 @@ function openPremiumSubView(type) {
         <p style="color: var(--text-mid);">We are setting up the live streaming and PDF infrastructure for the Complete Batch.</p>
       </div>
     `;
+  } else {
+    // 🚀 THE CLONE ENGINE!
+    // Grab cards directly from the Mock Tests section so you never have to duplicate HTML!
+    const premiumTestSection = document.getElementById('Premium-test-section');
+    let cardsToClone = [];
+    
+    if (type === 'paper1') {
+      title.textContent = "1st Paper Tests";
+      cardsToClone = premiumTestSection.querySelectorAll('.test-cat-card[data-req="general"]');
+    } else if (type === 'core') {
+      title.textContent = `${CORE_SUBJECTS[currentCoreSubject].name} Tests`;
+      cardsToClone = premiumTestSection.querySelectorAll(`.test-cat-card[data-req="core"][data-subject-group="${currentCoreSubject}"]`);
+    }
+
+    cardsToClone.forEach(card => {
+      const clone = card.cloneNode(true);
+      // Ensure cloned card is visible even if it was hidden in the main view
+      clone.style.display = ''; 
+      grid.appendChild(clone);
+    });
   }
 }
 
@@ -994,7 +1130,7 @@ async function showSets(cat) {
   }
 
   // 2. SCENARIO B: Logged in, but Missing the Required Pass -> Prompt Upgrade
-  const reqPass = (cat === 'paid_p1_full' || cat === 'paid_p1_topic') ? 'general' : 'sanskrit';
+  const reqPass = (cat === 'paid_p1_full' || cat === 'paid_p1_topic') ? 'general' : 'core'; // 🚀 FIX: Was 'sanskrit'
   if (!hasAccess(reqPass)) {
     document.getElementById('premium-lock-modal').style.display = 'flex';
     return; 
@@ -1066,6 +1202,10 @@ async function openFreeSets(mode) {
   const modeConfigs = {
     'free_skt_full': { title: "Free Sanskrit Full Mocks", catTitle: catNames['free_skt_full'], descFallback: "Complete 100-question mock test" },
     'free_skt_topic': { title: "Free Sanskrit Topic-wise", catTitle: catNames['free_skt_topic'], descFallback: "Subject-specific practice" },
+    'free_ben_full': { title: "Free Bengali Full Mocks", catTitle: catNames['free_ben_full'], descFallback: "Complete 100-question mock test" },
+    'free_ben_topic': { title: "Free Bengali Topic-wise", catTitle: catNames['free_ben_topic'], descFallback: "Subject-specific practice" },
+    'free_phil_full': { title: "Free Philosophy Full Mocks", catTitle: catNames['free_phil_full'], descFallback: "Complete 100-question mock test" },
+    'free_phil_topic': { title: "Free Philosophy Topic-wise", catTitle: catNames['free_phil_topic'], descFallback: "Subject-specific practice" },
     'free_p1_full': { title: "Free Paper 1 Full Sets", catTitle: catNames['free_p1_full'], descFallback: "Complete 50-question mock test" },
     'free_p1_topic': { title: "Free Paper 1 Topic-wise", catTitle: catNames['free_p1_topic'], descFallback: "General Paper 1 practice" }
   };
@@ -1819,15 +1959,20 @@ function shuffleArray(array) {
 // 1. UI Sync for Daily Limits (0 Firebase Reads)
 function updateAIBoosterLimitsUI() {
   const today = new Date().toLocaleDateString('en-IN');
-  ['paper1', 'sanskrit'].forEach(type => {
-    // 🚀 DYNAMIC FIX: Uses the Master Switch for the default count!
+  
+  // 🚀 FIX: Automatically grab the student's Core Subject
+  ['paper1', currentCoreSubject].forEach(type => {
     let limitData = JSON.parse(localStorage.getItem(`ai_booster_limit_${type}`) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
     
     if (limitData.date !== today) {
-      limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT }; // Reset to Master Switch on a new day
+      limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT }; 
       localStorage.setItem(`ai_booster_limit_${type}`, JSON.stringify(limitData));
     }
-    const limitEl = document.getElementById(`ai-limit-${type}`);
+    
+    // 🚀 FIX: Route the ID properly because the HTML ID is 'ai-limit-core'
+    let elementId = type === 'paper1' ? 'ai-limit-paper1' : 'ai-limit-core';
+    const limitEl = document.getElementById(elementId);
+    
     if (limitEl) limitEl.textContent = `Remaining Today: ${limitData.count}/${AI_BOOSTER_DAILY_LIMIT}`;
   });
 }
@@ -1857,7 +2002,14 @@ function getWeakTopics(paperType) {
 
     // Filter out the papers we don't care about right now
     if (paperType === 'paper1' && cat !== 'paid_p1_topic') return;
-  if (paperType === 'sanskrit' && !['paid_skt_vedic', 'paid_skt_grammar', 'paid_skt_darshan', 'paid_skt_sahitya', 'paid_skt_other'].includes(cat)) return;
+    
+    // 🚀 FIX: Dynamic AI subject targeting!
+    if (paperType === 'core') {
+        const subjectKeyMap = { 'sanskrit': 'skt', 'bengali': 'ben', 'philosophy': 'phil' };
+        const sKey = subjectKeyMap[currentCoreSubject];
+        // Only allow topic-wise tests from the current subject
+        if (!cat.includes(`paid_${sKey}_`) || cat.includes('_full')) return;
+    }
 
     // 🚀 PHASE 1: Extract the broad tab name! (Slices off " - Set 1")
     let topicName = fullSetKey;
@@ -1886,23 +2038,24 @@ function getWeakTopics(paperType) {
     if (averages.length < 2) return { topics: [], error: "⚠️ Not enough data! Take tests in at least 2 DIFFERENT topics (e.g., Teaching Aptitude and Research) to unlock the AI Booster." };
     return { topics: averages.slice(0, 3), error: null }; // Returns 2 or 3 topics
   } else {
-    if (averages.length < 4) return { topics: [], error: "⚠️ Not enough data! Take tests in at least 4 DIFFERENT Sanskrit topics (e.g., तर्कसंग्रहः, यजुर्वेदः) to unlock the AI Booster." };
+    if (averages.length < 4) return { topics: [], error: `⚠️ Not enough data! Take tests in at least 4 DIFFERENT ${CORE_SUBJECTS[currentCoreSubject].name} topics to unlock the AI Booster.` };
     return { topics: averages.slice(0, 6), error: null }; // Returns 4, 5, or 6 topics
   }
 }
 
 // 3. The Master Generator (PHASE 2: Dynamic Pool Assembly)
 async function generateAIBooster(paperType) {
-  // A. Check Premium Pass Access
-  const reqPass = paperType === 'paper1' ? 'general' : 'sanskrit';
+  // 🚀 FIX: Check dynamic Core Pass Access
+  const reqPass = paperType === 'paper1' ? 'general' : 'core';
   if (!hasAccess(reqPass)) {
     document.getElementById('premium-lock-modal').style.display = 'flex';
     return;
   }
 
-  // B. Check Daily Limits
+  // 🚀 FIX: Check Daily Limits using the actual Subject Name
   const today = new Date().toLocaleDateString('en-IN');
-  const limitKey = `ai_booster_limit_${paperType}`;
+  const storageKeyType = paperType === 'paper1' ? 'paper1' : currentCoreSubject;
+  const limitKey = `ai_booster_limit_${storageKeyType}`;
   let limitData = JSON.parse(localStorage.getItem(limitKey) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
 
   if (limitData.date !== today) limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT };
@@ -2019,7 +2172,7 @@ async function generateAIBooster(paperType) {
   testState.finished = false;
   
   testState.timeLeft = assembledQuestions.length * 72;
-  testState.testName = paperType === 'paper1' ? "AI Booster: Paper 1" : "AI Booster: Sanskrit";
+  testState.testName = paperType === 'paper1' ? "AI Booster: Paper 1" : `AI Booster: ${CORE_SUBJECTS[currentCoreSubject].name}`;
 
   document.body.classList.add('test-mode-active');
   document.getElementById('test-categories').style.display = 'none';
@@ -2282,10 +2435,18 @@ async function loadPYQsFromSheet() {
       const year = row.year || row.Year || "";
       const desc = row.description || row.Description || row.desc || "";
       const link = row.link || row.Link || "#";
+      
+      // 🚀 NEW: Grab the Subject from the Google Sheet (Defaults to 'sanskrit' to protect your old data!)
+      let subject = String(row.subject || row.Subject || "sanskrit").toLowerCase().trim();
 
       if (year && link) {
+        // 🚀 NEW: If it's Paper 1, it gets no tag so everyone sees it. Otherwise, tag it with the core subject!
+        const subjectTag = (subject.includes('paper 1') || subject.includes('paper1') || subject === 'general') 
+                           ? '' 
+                           : `data-subject-group="${subject}"`;
+
         grid.innerHTML += `
-          <div class="pyq-card">
+          <div class="pyq-card" ${subjectTag}>
             <span class="year" style="font-family: var(--font-sans);">${escapeHTML(year)}</span>
             <p>${escapeHTML(desc)}</p>
             <a href="${encodeURI(link)}" target="_blank" class="btn btn-primary btn-sm">📥 Download</a>
@@ -2293,6 +2454,9 @@ async function loadPYQsFromSheet() {
         `;
       }
     });
+
+    // 🚀 NEW: Instantly hide any PYQs that don't belong to the student's active workspace!
+    applyCoreSubjectUI(currentCoreSubject);
   } catch (error) { 
     console.error("Could not load PYQs:", error); 
     showToast("⚠️ Could not load PYQs. Please check your internet connection.");
@@ -2408,8 +2572,8 @@ async function toggleSaveQuestion(qIndex) {
       return; 
     }
     
-    // Detect if the current test is Paper 1 or Sanskrit
-    let currentPaperType = 'sanskrit';
+    // 🚀 FIX: Dynamically tag saved questions with the active Core Subject
+    let currentPaperType = currentCoreSubject;
     const p1Cats = ['paid_p1_full', 'paid_p1_topic', 'free_p1_full', 'free_p1_topic'];
     if (p1Cats.includes(testState.category) || (testState.category === 'ai_booster' && testState.currentSet === 'paper1')) {
         currentPaperType = 'paper1';
@@ -2453,11 +2617,16 @@ function renderSavedQuestions() {
     // Backwards Compatibility: If an old question has no paperType, assume it is Sanskrit
     const pType = sq.paperType || 'sanskrit';
     
-    // If we are filtering, skip questions that don't match the active tab
-    if (currentSavedQsTab !== 'all' && pType !== currentSavedQsTab) return;
+    // 🚀 FIX: Handle the 'core' tab filter dynamically!
+    let matchTab = currentSavedQsTab === 'core' ? currentCoreSubject : currentSavedQsTab;
+    if (currentSavedQsTab !== 'all' && pType !== matchTab) return;
     
     displayCount++;
-    const badgeName = pType === 'paper1' ? 'Paper 1' : 'Sanskrit';
+    
+    // 🚀 FIX: Dynamic badge names!
+    let badgeName = 'Core Subject';
+    if (pType === 'paper1') badgeName = 'Paper 1';
+    else if (CORE_SUBJECTS[pType]) badgeName = CORE_SUBJECTS[pType].name;
     
     // 🚀 BACKWARD COMPATIBILITY: Handles both new optimized saves and old saves
     const correctText = sq.correctAnswerText || (sq.options ? sq.options[sq.answer] : "N/A");
@@ -2566,11 +2735,11 @@ function loadDashboard() {
     let minDaysLeft = Infinity;
     let expiringPassName = "Premium Pass";
 
-    // Define the visual style for each pass type (Minimalist Pill with SVG Icons)
+    // 🚀 DYNAMIC WALLET FIX: No more Combo, explicitly shows active Core Subject!
+    const activeCore = CORE_SUBJECTS[currentCoreSubject];
     const passDetails = [
-      { id: 'combo', name: 'Combo Pass', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>', color: '#9C27B0', bg: '#F3E5F5' },
       { id: 'batch', name: 'Complete Batch', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>', color: '#E65100', bg: '#FFF3E0' },
-      { id: 'sanskrit', name: 'Sanskrit Mocks', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>', color: '#1565C0', bg: '#E3F2FD' },
+      { id: currentCoreSubject, name: activeCore.badge, icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>', color: '#1565C0', bg: '#E3F2FD' },
       { id: 'general', name: 'Paper 1 Mocks', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>', color: '#2E7D32', bg: '#E8F5E9' }
     ];
 
@@ -2734,58 +2903,95 @@ function switchAnalytics(tab) {
   document.querySelector(`.a-tab[onclick*="${tab}"]`).classList.add('active');
   
   document.getElementById('analytics-paper1').style.display = tab === 'paper1' ? 'block' : 'none';
-  document.getElementById('analytics-sanskrit').style.display = tab === 'sanskrit' ? 'block' : 'none';
+  document.getElementById('analytics-core').style.display = tab === 'core' ? 'block' : 'none'; // 🚀 FIX: Dynamic Core ID
   
   // Re-trigger the progress bar animations!
   setTimeout(() => {
     const activeContainer = document.getElementById(`analytics-${tab}`);
-    const fills = activeContainer.querySelectorAll('.progress-fill');
-    fills.forEach(fill => fill.style.width = fill.getAttribute('data-target'));
+    if (activeContainer) { // 🚀 FIX: Failsafe check
+      const fills = activeContainer.querySelectorAll('.progress-fill');
+      fills.forEach(fill => fill.style.width = fill.getAttribute('data-target'));
+    }
   }, 50);
 }
 
 function renderAnalytics() {
   const containerP1 = document.getElementById('analytics-paper1');
-  const containerSkt = document.getElementById('analytics-sanskrit');
-  if (!containerP1 || !containerSkt) return;
+  const containerCore = document.getElementById('analytics-core'); // 🚀 FIX ID
+  if (!containerP1 || !containerCore) return;
 
   const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
   
   if (history.length === 0) {
     containerP1.innerHTML = '<div style="text-align:center; color:var(--text-light); font-size:0.85rem;">Take Paper 1 tests to generate your analysis.</div>';
-    containerSkt.innerHTML = '<div style="text-align:center; color:var(--text-light); font-size:0.85rem;">Take Sanskrit tests to generate your analysis.</div>';
+    containerCore.innerHTML = `<div style="text-align:center; color:var(--text-light); font-size:0.85rem;">Take ${CORE_SUBJECTS[currentCoreSubject].name} tests to generate your analysis.</div>`;
     return;
   }
 
   // ===================================
-  // 1. BUILD THE SANSKRIT TAB (Static)
+  // 1. BUILD THE CORE SUBJECT TAB (Dynamic)
   // ===================================
-  const sktSubjects = [
-    // 🚀 NEW: Updated 'Full Mock Test' to 'Sanskrit Full Mocks' to match our new IDs!
-    { name: 'Sanskrit Full Mocks', icon: '📋' }, { name: 'वैदिकसाहित्यम्', icon: '🔱' },
-    { name: 'व्याकरणम्', icon: '📖' }, { name: 'दर्शनम्', icon: '🧘' },
-    { name: 'साहित्यम्', icon: '🪷' }, { name: 'अन्यानि', icon: '🌺' }
-  ];
+  let coreHtml = ''; 
+  let hasCoreData = false;
+  let coreTopicsStats = {};
+  const activeCoreName = CORE_SUBJECTS[currentCoreSubject].name;
 
-  let sktHtml = ''; let hasSktData = false;
-  sktSubjects.forEach(sub => {
-    const subjectTests = history.filter(h => h.name && h.name.startsWith(sub.name));
-    if (subjectTests.length > 0) {
-      hasSktData = true;
-      const recent = subjectTests.slice(0, ANALYTICS_RECENT_LIMIT);
-      const avgPct = Math.round(recent.reduce((sum, h) => sum + h.pct, 0) / recent.length);
-      let colorClass = avgPct >= 75 ? 'fill-green' : (avgPct >= 50 ? 'fill-orange' : 'fill-red');
-      sktHtml += `
-        <div class="analytics-item">
-          <div class="analytics-header">
-            <span>${sub.icon} <span style="font-family: var(--font-skt);">${sub.name}</span> <span style="font-size:0.75rem; color:var(--text-light); font-weight:400; margin-left:4px;">(${subjectTests.length} tests)</span></span>
-            <span class="pct" title="Last ${ANALYTICS_RECENT_LIMIT} attempts">${avgPct}%</span>
-          </div>
-          <div class="progress-track"><div class="progress-fill ${colorClass}" style="width: 0%" data-target="${avgPct}%"></div></div>
-        </div>`;
+  // 🚀 FIX: Build an array of valid test names for THIS workspace only
+  const subjectKeyMap = { 'sanskrit': 'skt', 'bengali': 'ben', 'philosophy': 'phil' };
+  const activeCode = subjectKeyMap[currentCoreSubject];
+  let validPrefixes = [];
+  Object.keys(catNames).forEach(k => {
+    if (k.includes(`_${activeCode}_`)) {
+      validPrefixes.push(catNames[k]);
     }
   });
-  containerSkt.innerHTML = hasSktData ? sktHtml : '<div style="text-align:center; color:var(--text-light); font-size:0.85rem; padding: 10px;">No Sanskrit tests taken yet.</div>';
+
+  // Dynamically group all tests that belong to the ACTIVE workspace
+  history.forEach(h => {
+    if (!h.name) return;
+    if (h.name.includes('1st Paper') || h.name.includes('Paper 1')) return; // Skip P1
+    if (h.name.includes('AI Booster')) return; // Skip AI tests for topic analytics
+
+    // Extract the topic name (e.g. from "Sanskrit Full Mocks - Set 1" -> "Sanskrit Full Mocks")
+    let parts = h.name.split(' - ');
+    let topicName = parts[0].trim();
+
+    // 🚀 FIX: Instantly discard tests from other subjects!
+    if (!validPrefixes.includes(topicName)) return;
+
+    if (!coreTopicsStats[topicName]) {
+      coreTopicsStats[topicName] = { tests: [], icon: '📚' };
+    }
+    coreTopicsStats[topicName].tests.push(h);
+  });
+
+  Object.keys(coreTopicsStats).forEach(topic => {
+    hasCoreData = true;
+    const tests = coreTopicsStats[topic].tests;
+    const recent = tests.slice(0, ANALYTICS_RECENT_LIMIT);
+    const avgPct = Math.round(recent.reduce((sum, t) => sum + t.pct, 0) / recent.length);
+    let colorClass = avgPct >= 75 ? 'fill-green' : (avgPct >= 50 ? 'fill-orange' : 'fill-red');
+    
+    // Assign dynamic icons based on known names, fallback to default
+    let icon = '📚';
+    if (topic.includes('Full')) icon = '📋';
+    else if (topic.includes('वैदिक') || topic.includes('Classical')) icon = '🏛️';
+    else if (topic.includes('व्याकरण') || topic.includes('Poetry')) icon = '📖';
+    else if (topic.includes('दर्शन') || topic.includes('Logic')) icon = '🧠';
+    else if (topic.includes('साहित्य') || topic.includes('Fiction')) icon = '🪷';
+    else if (topic.includes('अन्यानि') || topic.includes('Ethics')) icon = '⚖️';
+
+    coreHtml += `
+      <div class="analytics-item">
+        <div class="analytics-header">
+          <span>${icon} <span style="font-family: var(--font-skt);">${topic}</span> <span style="font-size:0.75rem; color:var(--text-light); font-weight:400; margin-left:4px;">(${tests.length} tests)</span></span>
+          <span class="pct" title="Last ${ANALYTICS_RECENT_LIMIT} attempts">${avgPct}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill ${colorClass}" style="width: 0%" data-target="${avgPct}%"></div></div>
+      </div>`;
+  });
+
+  containerCore.innerHTML = hasCoreData ? coreHtml : `<div style="text-align:center; color:var(--text-light); font-size:0.85rem; padding: 10px;">No ${activeCoreName} tests taken yet.</div>`;
 
   // ===================================
   // 2. BUILD THE PAPER 1 TAB (Sanskrit-Style Order)
@@ -2849,7 +3055,7 @@ function renderAnalytics() {
 
   // Trigger animation for the currently active tab
   setTimeout(() => {
-    const activeContainer = document.getElementById('analytics-paper1').style.display !== 'none' ? containerP1 : containerSkt;
+    const activeContainer = document.getElementById('analytics-paper1').style.display !== 'none' ? containerP1 : containerCore;
     const fills = activeContainer.querySelectorAll('.progress-fill');
     fills.forEach(fill => fill.style.width = fill.getAttribute('data-target'));
   }, 100);
@@ -2943,6 +3149,8 @@ const myCourses = [
     btnText: "Launching soon",
     // link: "text=Hello! I want to buy the Complete Batch Pass."
   },
+
+
   {
     title: "Combo Mock Test Pass",
     subtitle: "1st Paper + Sanskrit Paper 2",
@@ -2966,6 +3174,8 @@ const myCourses = [
     btnText: "Get Combo Pass",
     link: "text=Hello! I want to buy the Combo Mock Test Pass."
   },
+
+
   {
     title: "Sanskrit Mock Test Pass",
     subtitle: "Topic-wise & Full Mock Tests",
@@ -2989,6 +3199,32 @@ const myCourses = [
     btnText: "Get Sanskrit Pass",
     link: "text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
+
+  {
+    title: "Bengali Mock Test Pass",
+    subtitle: "Topic-wise & Full Mock Tests",
+    isFree: false,
+    duration: "6 Months",
+    level: "All Levels",
+    videos: "10,000+ Questions",
+    desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
+    features: [
+      "✅ Unlimited access to ALL Bengali (Code 19) Tests, Which includes 10,000+ questions (50+ full sets, 250+ topic-wise sets)",
+      "✅ Topic-wise tests for All 10 Units",
+      "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
+      "✅ Save difficult questions to your Cloud Vault",
+      "✅ Subject-wise Performance Analytics",
+      "✅ Practice Official UGC NET Previous Year Questions",
+      "✅ Pass validity- 6 months (180 days)",
+      "✅ You will get access to all questions over a period of six months."
+    ],
+    price: "₹89",
+    originalPrice: "₹149",
+    btnText: "Launching soon",
+    //link: "text=Hello! I want to buy the Bengali Mock Test Pass."
+  },
+
+
   {
     title: "General Paper 1 Mock Pass",
     subtitle: "All 10 units, Topic-wise & Full Mock Tests",
@@ -3012,6 +3248,8 @@ const myCourses = [
     btnText: "Get General Pass",
     link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
   },
+
+
   {
     title: "Free Foundation Course",
     subtitle: "Start your journey | No payment needed",
@@ -3052,11 +3290,11 @@ function purchaseCourse(index) {
 function renderCourses() {
   let htmlOutput = '';
   
-  // Note: We added 'index' here to uniquely identify each course when clicking "Details"
   myCourses.forEach((course, index) => {
     const badge = course.isFree ? '<span class="badge badge-free">Free</span>' : '<span class="badge badge-paid">Paid</span>';
     const headerBg = course.isFree ? 'background:linear-gradient(135deg,#1B5E20,#2E7D32);' : '';
     
+        
     let priceDisplay = '';
     if (course.isFree) {
       priceDisplay = '<div class="course-price free-price">FREE</div>';
@@ -3606,6 +3844,37 @@ function openSettingsModal() {
   
   // 1. Populate Account Data
   document.getElementById('set-name').value = data.name || '';
+  
+  // 🚀 FIX: Pull the saved Core Subject from Firebase
+  document.getElementById('set-core-subject').value = data.coreSubject || currentCoreSubject;
+  
+  // 🚀 FIX: Apply the 1-Day Lock UI to the Subject Dropdown
+  const subjMsg = document.getElementById('subject-lock-msg');
+  const subjBtn = document.getElementById('btn-edit-subject');
+  
+  if (data.core_subject_last_updated) {
+    const lastEditTime = new Date(data.core_subject_last_updated).getTime();
+    const daysPassed = (Date.now() - lastEditTime) / (1000 * 60 * 60 * 24);
+    
+    if (daysPassed < 1) {
+      const daysLeft = Math.ceil(1 - daysPassed);
+      subjMsg.innerHTML = `🔒 <strong>Locked:</strong> You can change this again in ${daysLeft} days.`;
+      subjMsg.style.display = 'block';
+      subjBtn.disabled = true;
+      subjBtn.style.opacity = '0.5';
+      subjBtn.style.cursor = 'not-allowed';
+    } else {
+      subjMsg.style.display = 'none';
+      subjBtn.disabled = false;
+      subjBtn.style.opacity = '1';
+      subjBtn.style.cursor = 'pointer';
+    }
+  } else {
+      subjMsg.style.display = 'none';
+      subjBtn.disabled = false;
+      subjBtn.style.opacity = '1';
+  }
+
   const pd = data.personalDetails || {}; // The Single JSON Object
   document.getElementById('set-dob').value = pd.dob || '';
   document.getElementById('set-gender').value = pd.gender || '';
@@ -3840,5 +4109,46 @@ function toggleWhatsAppEdit(isEditing) {
   // If they click cancel, revert to DB value
   if (!isEditing && currentUser && currentUser.dbData) {
     document.getElementById('set-whatsapp').value = currentUser.dbData.whatsapp || '';
+  }
+}
+
+// 🚀 Toggle Core Subject Edit Mode
+function toggleSubjectEdit(isEditing) {
+  const subj = document.getElementById('set-core-subject');
+  if (isEditing) { subj.removeAttribute('disabled'); subj.style.background = '#fff'; subj.focus(); }
+  else { subj.setAttribute('disabled', 'true'); subj.style.background = '#f9f9f9'; }
+
+  document.getElementById('btn-edit-subject').style.display = isEditing ? 'none' : 'block';
+  document.getElementById('btn-update-subject').style.display = isEditing ? 'block' : 'none';
+  document.getElementById('btn-cancel-subject').style.display = isEditing ? 'block' : 'none';
+
+  if (!isEditing && currentUser && currentUser.dbData) {
+    document.getElementById('set-core-subject').value = currentUser.dbData.coreSubject || currentCoreSubject;
+  }
+}
+
+// 🚀 Update Core Subject & Lock it!
+async function updateCoreSubject() {
+  const newSubject = document.getElementById('set-core-subject').value;
+  if (!newSubject) return;
+
+  try {
+    const updates = {
+      coreSubject: newSubject,
+      core_subject_last_updated: new Date().toISOString()
+    };
+    await db.collection('users').doc(currentUser.uid).update(updates);
+
+    currentUser.dbData.coreSubject = newSubject;
+    currentUser.dbData.core_subject_last_updated = updates.core_subject_last_updated;
+
+    currentCoreSubject = newSubject;
+    localStorage.setItem('vartika_core_subject', newSubject);
+    
+    applyCoreSubjectUI(newSubject); // Instantly rebuild website UI!
+    showToast(`✅ Workspace changed to ${CORE_SUBJECTS[newSubject].name}!`);
+    openSettingsModal(); // Refresh the modal to trigger the 30-day lock
+  } catch(e) {
+    showToast("Error updating subject: " + e.message);
   }
 }
