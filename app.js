@@ -27,7 +27,7 @@ const CORE_SUBJECTS = {
 };
 
 // Change this to show all or only sanskrit in guest mode switch
-let currentCoreSubject = localStorage.getItem('vartika_core_subject') || 'sanskrit';
+let currentCoreSubject = localStorage.getItem('vartika_core_subject') || 'all';
 
 let currentUser = null;
 let isSignUpMode = false;
@@ -1808,14 +1808,14 @@ function confirmSubmit() {
     // 2. The Categorizer: Figure out the broad subject
     let subjectGroup = "Other Topics";
     
-    // 🚀 FIX: Uses "Full" to catch both "Full Mocks" and "Full sets"
+    // 🚀 GA4 DATA FIX: Now catches ALL 10 Units for Bengali & Philosophy!
     if (tName.includes("Full")) subjectGroup = "Full Mocks";
+    else if (tName.includes("Unit")) subjectGroup = "Unit Wise Practice"; // Catches Ben/Phil Units!
     else if (tName.includes("वैदिकसाहित्यम्")) subjectGroup = "Vedic Sahitya";
     else if (tName.includes("व्याकरणम्")) subjectGroup = "Grammar";
     else if (tName.includes("दर्शनम्")) subjectGroup = "Darshan";
     else if (tName.includes("साहित्यम्")) subjectGroup = "Sahitya";
     else if (tName.includes("अन्यानि")) subjectGroup = "Anyani";
-    // 🚀 FIX: Catches both "1st Paper" (Paid) and "Paper 1" (Free)
     else if (tName.includes("1st Paper") || tName.includes("Paper 1")) subjectGroup = "Paper 1";
 
     // 3. Send all data layers to GA4
@@ -4149,6 +4149,10 @@ async function updateCoreSubject() {
     localStorage.setItem('vartika_core_subject', newSubject);
     
     applyCoreSubjectUI(newSubject); // Instantly rebuild website UI!
+    
+    // 🚀 DASHBOARD FIX: Force the Analytics chart to recalculate for the new subject instantly!
+    if (currentPage === 'dashboard') loadDashboard(); 
+    
     showToast(`✅ Workspace changed to ${CORE_SUBJECTS[newSubject].name}!`);
     openSettingsModal(); // Refresh the modal to trigger the 30-day lock
   } catch(e) {
