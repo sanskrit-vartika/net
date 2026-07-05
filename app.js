@@ -2965,12 +2965,14 @@ function renderAnalytics() {
     coreTopicsStats[topicName].tests.push(h);
   });
 
-  Object.keys(coreTopicsStats).forEach(topic => {
-    hasCoreData = true;
-    const tests = coreTopicsStats[topic].tests;
-    const recent = tests.slice(0, ANALYTICS_RECENT_LIMIT);
-    const avgPct = Math.round(recent.reduce((sum, t) => sum + t.pct, 0) / recent.length);
-    let colorClass = avgPct >= 75 ? 'fill-green' : (avgPct >= 50 ? 'fill-orange' : 'fill-red');
+  // 🚀 FIX: Iterate over validPrefixes to enforce STRICT master syllabus order!
+  validPrefixes.forEach(topic => {
+    if (coreTopicsStats[topic]) {
+      hasCoreData = true;
+      const tests = coreTopicsStats[topic].tests;
+      const recent = tests.slice(0, ANALYTICS_RECENT_LIMIT);
+      const avgPct = Math.round(recent.reduce((sum, t) => sum + t.pct, 0) / recent.length);
+      let colorClass = avgPct >= 75 ? 'fill-green' : (avgPct >= 50 ? 'fill-orange' : 'fill-red');
     
     // Assign dynamic icons based on known names, fallback to default
     let icon = '📚';
@@ -2989,6 +2991,7 @@ function renderAnalytics() {
         </div>
         <div class="progress-track"><div class="progress-fill ${colorClass}" style="width: 0%" data-target="${avgPct}%"></div></div>
       </div>`;
+    }
   });
 
   containerCore.innerHTML = hasCoreData ? coreHtml : `<div style="text-align:center; color:var(--text-light); font-size:0.85rem; padding: 10px;">No ${activeCoreName} tests taken yet.</div>`;
