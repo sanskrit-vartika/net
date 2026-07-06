@@ -3163,8 +3163,8 @@ const myCourses = [
     videos: "15,000+ Questions",
     desc: "Ultimate practice bundle. Get full access to both General Paper 1 and Sanskrit Paper 2 mock tests, PYQs, and analytics.",
     features: [
-      "✅ Unlimited access to ALL 1st Paper Tests, Which includes 6,500+ questions (80+ full sets, 150+ topic-wise sets)",
-      "✅ Unlimited access to ALL Sanskrit (Code 25) Tests, Which includes 10,000+ questions (50+ full sets, 250+ topic-wise sets)",
+      "✅ Unlimited access to ALL 1st Paper Tests, Which includes 5,000+ questions (40+ full sets, 150+ topic-wise sets)",
+      "✅ Unlimited access to ALL Sanskrit (Code 25) Tests, Which includes 10,000+ questions (30+ full sets, 350+ topic-wise sets)",
       "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
       "✅ Save difficult questions to your Cloud Vault",
       "✅ Subject-wise Performance Analytics",
@@ -3180,6 +3180,31 @@ const myCourses = [
 
 
   {
+    title: "General Paper 1 Mock Pass",
+    subtitle: "All 10 units, Topic-wise & Full Mock Tests",
+    isFree: false,
+    duration: "6 Months",
+    level: "All Levels",
+    videos: "5,000+ Questions",
+    desc: "Dedicated mock tests for UGC NET Paper 1. Practice Teaching Aptitude, Research, DI, and Logical Reasoning.",
+    features: [
+      "✅ Unlimited access to ALL 1st Paper Tests, Which includes 5,000+ questions (40+ full sets, 150+ topic-wise sets)",
+      "✅ Topic-wise tests for All 10 Units with explanation.",
+      "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
+      "✅ Save difficult questions to your Cloud Vault",
+      "✅ Subject-wise Performance Analytics",
+      "✅ Practice Official UGC NET Previous Year Questions",
+      "✅ Pass validity- 6 months (180 days)",
+      "✅ You will get access to all questions over a period of six months."
+    ],
+    price: "₹59",
+    originalPrice: "₹99",
+    btnText: "Get General Pass",
+    link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
+  },
+
+
+  {
     title: "Sanskrit Mock Test Pass",
     subtitle: "Topic-wise & Full Mock Tests",
     isFree: false,
@@ -3188,7 +3213,7 @@ const myCourses = [
     videos: "10,000+ Questions",
     desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
     features: [
-      "✅ Unlimited access to ALL Sanskrit (Code 25) Tests, Which includes 10,000+ questions (50+ full sets, 250+ topic-wise sets)",
+      "✅ Unlimited access to ALL Sanskrit (Code 25) Tests, Which includes 10,000+ questions (30+ full sets, 350+ topic-wise sets)",
       "✅ Topic-wise tests for All 10 Units",
       "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
       "✅ Save difficult questions to your Cloud Vault",
@@ -3209,10 +3234,10 @@ const myCourses = [
     isFree: false,
     duration: "6 Months",
     level: "All Levels",
-    videos: "10,000+ Questions",
+    videos: "7,000+ Questions",
     desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
     features: [
-      "✅ Unlimited access to ALL Bengali (Code 19) Tests, Which includes 10,000+ questions (50+ full sets, 250+ topic-wise sets)",
+      "✅ Unlimited access to ALL Bengali (Code 19) Tests, Which includes 7,000+ questions (30+ full sets, 250+ topic-wise sets)",
       "✅ Topic-wise tests for All 10 Units",
       "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
       "✅ Save difficult questions to your Cloud Vault",
@@ -3228,30 +3253,7 @@ const myCourses = [
   },
 
 
-  {
-    title: "General Paper 1 Mock Pass",
-    subtitle: "All 10 units, Topic-wise & Full Mock Tests",
-    isFree: false,
-    duration: "6 Months",
-    level: "All Levels",
-    videos: "5,000+ Questions",
-    desc: "Dedicated mock tests for UGC NET Paper 1. Practice Teaching Aptitude, Research, DI, and Logical Reasoning.",
-    features: [
-      "✅ Unlimited access to ALL 1st Paper Tests, Which includes 6,500+ questions (80+ full sets, 150+ topic-wise sets)",
-      "✅ Topic-wise tests for All 10 Units with explanation.",
-      "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
-      "✅ Save difficult questions to your Cloud Vault",
-      "✅ Subject-wise Performance Analytics",
-      "✅ Practice Official UGC NET Previous Year Questions",
-      "✅ Pass validity- 6 months (180 days)",
-      "✅ You will get access to all questions over a period of six months."
-    ],
-    price: "₹59",
-    originalPrice: "₹99",
-    btnText: "Get General Pass",
-    link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
-  },
-
+  
 
   {
     title: "Free Foundation Course",
@@ -3550,10 +3552,15 @@ async function initializeNotifications() {
     let rawData = await response.json();
     const now = new Date();
     
-    // Filter out expired notifications automatically!
+    // Filter out expired & mistargeted notifications automatically!
     globalAnnouncements = rawData.filter(notif => {
-      if (!notif.expiresAt) return true; // Keep if no expiry is set
-      return new Date(notif.expiresAt) > now;
+      // 1. Expiry Check
+      if (notif.expiresAt && new Date(notif.expiresAt) < now) return false;
+      
+      // 2. 🚀 Target Audience Check
+      if (notif.target && notif.target !== 'all' && notif.target !== currentCoreSubject) return false;
+      
+      return true; // Keep if it passes both checks!
     });
 
     checkRedDot();
