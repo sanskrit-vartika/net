@@ -107,7 +107,17 @@ window.TEST_DATABASE_URLS = {
 
   // Other subject topics
   // ................................................................................................
-  'paid_skt_other': 'https://script.google.com/macros/s/AKfycbwgzQw9hZPBNOznWJUCobVyjN7LYU9-Tf93fZgm4VxWQfKo9Lo9vdYP4HnaqBEgHPU/exec',
+  'paid_skt_other': [
+    { tabName: 'रामायणम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i9.a.json' },
+    { tabName: 'महाभारतम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i9.b.json' },
+    { tabName: 'पुराणानि', url: 'https://sanskritvartika.in/Data/p2test/pp2i9.c.json' },
+    { tabName: 'लिपिः', url: 'https://sanskritvartika.in/Data/p2test/pp2i9.d.json' },
+    { tabName: 'अर्थशास्त्रम् ', url: 'https://sanskritvartika.in/Data/p2test/pp2i10.a.json' },
+    { tabName: 'मनुस्मृतिः ', url: 'https://sanskritvartika.in/Data/p2test/pp2i10.b.json' },
+    { tabName: 'याज्ञवल्क्यस्मृतिः ', url: 'https://sanskritvartika.in/Data/p2test/pp2i10.c.json' },
+    { tabName: 'लिपि तथा अभिलेख ', url: 'https://sanskritvartika.in/Data/p2test/pp2i10.d.json' }
+    
+  ],
 
   
 
@@ -115,6 +125,7 @@ window.TEST_DATABASE_URLS = {
 
 
   // 🚀 Premium Bengali (Code 19) - GitHub JSON Links
+  // ......................................................................................................................
   'paid_ben_full': [
     { tabName: 'Set-1', url: 'PASTE_YOUR_BENGALI_FULL_MOCK_1_LINK_HERE' },
     { tabName: 'Set-2', url: 'PASTE_YOUR_BENGALI_FULL_MOCK_2_LINK_HERE' }
