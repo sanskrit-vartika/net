@@ -168,7 +168,17 @@ window.TEST_DATABASE_URLS = {
     { tabName: 'Set-7', url: 'https://sanskritvartika.in/Data/p1test/pp1s7.json' },
     { tabName: 'Set-8', url: 'https://sanskritvartika.in/Data/p1test/pp1s8.json' },
     { tabName: 'Set-9', url: 'https://sanskritvartika.in/Data/p1test/pp1s9.json' },
-    { tabName: 'Set-10', url: 'https://sanskritvartika.in/Data/p1test/pp1s10.json' }
+    { tabName: 'Set-10', url: 'https://sanskritvartika.in/Data/p1test/pp1s10.json' },
+    { tabName: 'Set-11', url: 'https://sanskritvartika.in/Data/p1test/pp1s11.json' },
+    { tabName: 'Set-12', url: 'https://sanskritvartika.in/Data/p1test/pp1s12.json' },
+    { tabName: 'Set-13', url: 'https://sanskritvartika.in/Data/p1test/pp1s13.json' },
+    { tabName: 'Set-14', url: 'https://sanskritvartika.in/Data/p1test/pp1s14.json' },
+    { tabName: 'Set-15', url: 'https://sanskritvartika.in/Data/p1test/pp1s15.json' },
+    { tabName: 'Set-16', url: 'https://sanskritvartika.in/Data/p1test/pp1s16.json' },
+    { tabName: 'Set-17', url: 'https://sanskritvartika.in/Data/p1test/pp1s17.json' },
+    { tabName: 'Set-18', url: 'https://sanskritvartika.in/Data/p1test/pp1s18.json' },
+    { tabName: 'Set-19', url: 'https://sanskritvartika.in/Data/p1test/pp1s19.json' },
+    { tabName: 'Set-20', url: 'https://sanskritvartika.in/Data/p1test/pp1s20.json' }
     
   ],
   
