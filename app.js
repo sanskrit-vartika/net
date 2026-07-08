@@ -3139,7 +3139,7 @@ const myCourses = [
     duration: "6 Months",
     level: "All Levels",
     videos: "150+ Videos",
-    desc: "Complete coverage of all 10 units. Weekly live sessions, 100+ MCQs, mock tests, and personalized doubt clearing.",
+    desc: "Complete coverage of all 10 units. Weekly live sessions, 100+ mock tests, and personalized doubt clearing.",
     features: [
       "✅ Live Interactive Classes & Full Recordings",
       "✅ Comprehensive PDF Study Notes (Downloadable)",
@@ -3147,8 +3147,8 @@ const myCourses = [
       "✅ 100+ Topic-wise Mock Tests & Full Mocks",
       "✅ 24/7 Dedicated WhatsApp Doubt Clearing"
     ],
-    price: "₹2,999",
-    originalPrice: "₹5,999",
+    price: "₹x,xxx",
+    originalPrice: "₹x,xxx",
     btnText: "Launching soon",
     // link: "text=Hello! I want to buy the Complete Batch Pass."
   },
