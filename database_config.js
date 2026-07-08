@@ -10,11 +10,19 @@ window.TEST_DATABASE_URLS = {
   // Premium Sanskrit full topics
   // .................................................................................................
   'paid_skt_full': [
+    { tabName: 'PYQ 2026 Jan', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq26jan.json' },
+    { tabName: 'PYQ 2025 Jun', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq25jun.json' },
+    { tabName: 'PYQ 2025 Jan', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq25jan.json' },
+    { tabName: 'PYQ 2024 Aug', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq24aug.json' },
+    { tabName: 'PYQ 2023 Dec', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq23dec.json' },
+
+
     { tabName: 'Set-1', url: 'https://sanskritvartika.in/Data/p2test/pp2s1.json' },
     { tabName: 'Set-2', url: 'https://sanskritvartika.in/Data/p2test/pp2s2.json' },
     { tabName: 'Set-3', url: 'https://sanskritvartika.in/Data/p2test/pp2s3.json' },
     { tabName: 'Set-4', url: 'https://sanskritvartika.in/Data/p2test/pp2s4.json' },
-    { tabName: 'Set-5', url: 'https://sanskritvartika.in/Data/p2test/pp2s5.json' }
+    { tabName: 'Set-5', url: 'https://sanskritvartika.in/Data/p2test/pp2s5.json' },
+    { tabName: 'Set-6', url: 'https://sanskritvartika.in/Data/p2test/pp2s6.json' }
     
   ],
 
@@ -39,7 +47,26 @@ window.TEST_DATABASE_URLS = {
 
   // Grammar subject tipics
   // .................................................................................................
-  'paid_skt_grammar': 'https://script.google.com/macros/s/AKfycbyZItA0HY3SpL_d5QRJ3aoqWvOQ6W29MFmlSHBTJiX-kflkEe6bdiyuA1eJGMpSNgbb/exec',
+  'paid_skt_grammar': [
+    { tabName: 'वैयाकरणाः', url: 'https://sanskritvartika.in/Data/p2test/pp2i5.a.json' },
+    { tabName: 'पाणिनीयशिक्षा', url: 'https://sanskritvartika.in/Data/p2test/pp2i5.b.json' },
+    { tabName: 'भाषाविज्ञानम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i5.c.json' },
+    { tabName: 'परिभाषा', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.a.json' },
+    { tabName: 'सन्धिः', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.b.json' },
+    { tabName: 'सुबन्त', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.c.json' },
+    { tabName: 'समासः', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.d.json' },
+    { tabName: 'तद्धितः', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.e.json' },
+    { tabName: 'तिङ्गन्त', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.f.json' },
+    { tabName: 'प्रत्ययान्ताः', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.g.json' },
+    { tabName: 'कृदन्त', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.h.json' },
+    { tabName: 'स्त्रीप्रत्ययाः', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.i.json' },
+    { tabName: 'कारकम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.j.json' },
+    { tabName: 'परस्मैपदम् आत्मनेपदम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.k.json' },
+    { tabName: 'महाभाष्यम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.l.json' },
+    { tabName: 'वाक्यपदीयम्', url: 'https://sanskritvartika.in/Data/p2test/pp2i6.m.json' }
+    
+  ],
+
 
   // Darshan subject tipics
   // .................................................................................................
