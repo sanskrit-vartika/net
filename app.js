@@ -27,7 +27,7 @@ const CORE_SUBJECTS = {
 };
 
 // Change this to show all or only sanskrit in guest mode switch
-let currentCoreSubject = localStorage.getItem('vartika_core_subject') || 'all';
+let currentCoreSubject = localStorage.getItem('vartika_core_subject') || 'sanskrit';
 
 let currentUser = null;
 let isSignUpMode = false;
