@@ -427,6 +427,32 @@ auth.onAuthStateChanged(async (user) => {
     db.collection("users").doc(user.uid).get().then((doc) => {
       if (doc.exists) {
         currentUser.dbData = doc.data();
+
+        // 🛡️ SECURITY GATEKEEPER 1: SUSPENSION CHECK
+        const susp = currentUser.dbData.suspension;
+        if (susp && susp.active) {
+           const isPermanent = susp.expiresAt === 'permanent';
+           const isExpired = !isPermanent && new Date(susp.expiresAt) <= new Date();
+           
+           if (isPermanent || !isExpired) {
+               document.getElementById('suspended-reason-text').textContent = "Reason: " + (susp.reason || "Violating Terms of Service");
+               let dur = isPermanent ? "This ban is permanent." : "Suspension expires on: " + new Date(susp.expiresAt).toLocaleDateString('en-IN');
+               document.getElementById('suspended-duration-text').textContent = dur;
+               document.getElementById('suspended-modal').style.display = 'flex';
+               auth.signOut();
+               return; // 🛑 INSTANT KILL: Stop loading the app!
+           } else {
+               // Ban naturally expired, silently lift it
+               db.collection("users").doc(user.uid).update({ "suspension.active": false });
+               currentUser.dbData.suspension.active = false;
+           }
+        }
+        
+        // 🛡️ SECURITY GATEKEEPER 2: WARNING CHECK
+        if (currentUser.dbData.warningMessage) {
+           document.getElementById('warning-msg-text').textContent = currentUser.dbData.warningMessage;
+           document.getElementById('warning-modal').style.display = 'flex';
+        }
         
         // 🚀 SYNC WORKSPACE FROM CLOUD
         if (currentUser.dbData.coreSubject) {
@@ -454,6 +480,7 @@ auth.onAuthStateChanged(async (user) => {
         
         // 1. Tell the app Firebase is ready!
         isFirebaseReady = true;
+        logDeviceActivity();
 
         // 2. Update the Navbar with their real name
         updateNavUI(user, currentUser.dbData.name);
@@ -4164,5 +4191,65 @@ async function updateCoreSubject() {
     openSettingsModal(); // Refresh the modal to trigger the 30-day lock
   } catch(e) {
     showToast("Error updating subject: " + e.message);
+  }
+}
+
+// ==========================================
+// === 🛡️ GATEKEEPER & SECURITY ENGINE ===
+// ==========================================
+
+function getDeviceUUID() {
+  let uuid = localStorage.getItem('vartika_device_uuid');
+  if (!uuid) {
+    uuid = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    localStorage.setItem('vartika_device_uuid', uuid);
+  }
+  return uuid;
+}
+
+function getBrowserSummary() {
+  const ua = navigator.userAgent;
+  let browser = "Web Browser"; let os = "Unknown OS";
+  if (ua.includes("Firefox")) browser = "Firefox"; 
+  else if (ua.includes("Chrome")) browser = "Chrome";
+  else if (ua.includes("Safari")) browser = "Safari";
+  if (ua.includes("Android")) os = "Android";
+  else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+  else if (ua.includes("Windows")) os = "Windows";
+  else if (ua.includes("Mac")) os = "Mac";
+  return `${os} | ${browser}`;
+}
+
+async function logDeviceActivity() {
+  if (!currentUser || !currentUser.dbData) return;
+  const uuid = getDeviceUUID();
+  const info = getBrowserSummary();
+  const now = new Date().toISOString();
+
+  let logs = currentUser.dbData.deviceLogs || [];
+  // Anti-Spam: Don't log if the same device was logged less than 60 mins ago
+  if (logs.length > 0 && logs[0].uuid === uuid) {
+     const diff = (new Date() - new Date(logs[0].timestamp)) / 1000 / 60;
+     if (diff < 60) return; 
+  }
+
+  logs.unshift({ uuid, info, timestamp: now });
+  if (logs.length > 10) logs.pop(); // Keep array light (Max 10 logs)
+
+  currentUser.dbData.deviceLogs = logs;
+  try { await db.collection("users").doc(currentUser.uid).update({ deviceLogs: logs }); } catch(e) {}
+}
+
+async function dismissWarning() {
+  const btn = document.getElementById('warning-dismiss-btn');
+  btn.textContent = "Clearing..."; btn.disabled = true;
+  try {
+     await db.collection("users").doc(currentUser.uid).update({ warningMessage: firebase.firestore.FieldValue.delete() });
+     document.getElementById('warning-modal').style.display = 'none';
+     if(currentUser && currentUser.dbData) delete currentUser.dbData.warningMessage;
+  } catch(e) {
+     alert("Error clearing warning: " + e.message);
+  } finally {
+     btn.textContent = "I Understand"; btn.disabled = false;
   }
 }

@@ -1591,6 +1591,29 @@
   </div>
 </div>
 
+
+<!-- ==================== GATEKEEPER MODALS ==================== -->
+<!-- ACCOUNT SUSPENDED MODAL -->
+<div id="suspended-modal" class="modal-overlay" style="z-index: 9999; display:none; background: #B71C1C;">
+  <div class="modal-content" style="text-align: center; max-width: 400px; padding: 40px 24px;">
+    <div style="font-size: 4rem; margin-bottom: 16px;">🛑</div>
+    <h2 style="color: #D32F2F; margin-bottom: 12px;">Account Suspended</h2>
+    <p id="suspended-reason-text" style="color: var(--text-mid); margin-bottom: 16px; font-weight: bold;"></p>
+    <p id="suspended-duration-text" style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5;"></p>
+    <button class="btn btn-outline" style="width: 100%; justify-content: center; border-color: #D32F2F; color: #D32F2F;" onclick="contactSupport()">Contact Support</button>
+  </div>
+</div>
+
+<!-- WARNING MODAL -->
+<div id="warning-modal" class="modal-overlay" style="z-index: 9998; display:none; background: rgba(0,0,0,0.8);">
+  <div class="modal-content" style="text-align: center; max-width: 400px; border-top: 6px solid #F57F17;">
+    <div style="font-size: 3rem; margin-bottom: 12px;">⚠️</div>
+    <h3 style="color: #F57F17; margin-bottom: 12px;">Official Warning</h3>
+    <p id="warning-msg-text" style="color: var(--text-mid); margin-bottom: 24px; line-height: 1.6; font-size: 0.95rem; background: #FFF9C4; padding: 12px; border-radius: 8px; border: 1px solid #FBC02D;"></p>
+    <button id="warning-dismiss-btn" class="btn btn-primary" style="width: 100%; justify-content: center; background: #F57F17;" onclick="dismissWarning()">I Understand</button>
+  </div>
+</div>
+
 <!-- Course detial model -->
 <div id="course-details-modal" class="modal-overlay" style="z-index: 3900;">
   <div class="modal-content" style="max-width: 500px; text-align: left; padding: 0; overflow: hidden; background: var(--cream);">
