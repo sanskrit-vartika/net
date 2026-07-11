@@ -1079,7 +1079,7 @@
 <div id="page-contact" class="page">
   <div class="section">
     <div class="section-title">
-      <h2>Contact Us <span class="skt">सम्पर्कः</span></h2>
+      <h2>Contact Us</h2>
       <div class="divider"></div>
       <p>We'd love to hear from you!</p>
     </div>
@@ -1097,7 +1097,7 @@
         <div class="contact-item">
           <div class="contact-item-icon">💬</div>
           <div class="contact-item-text">
-            <strong>WhatsApp</strong><span>[WHATSAPP_NUMBER]</span>
+            <strong>WhatsApp</strong><span id="ui-whatsapp-display">Loading...</span>
           </div>
         </div>
         <div class="contact-item">
@@ -1454,7 +1454,12 @@
     </select>
 
     <input type="email" id="auth-email" class="form-input mb-16" placeholder="Email Address">
-    <input type="password" id="auth-password" class="form-input mb-16" placeholder="Password">
+    
+    <!-- 🚀 NEW: Password box with Toggle Icon -->
+    <div style="position: relative; width: 100%;" class="mb-16">
+      <input type="password" id="auth-password" class="form-input" style="width: 100%; padding-right: 40px; margin-bottom: 0;" placeholder="Password">
+      <span id="toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 1.2rem; user-select: none;" title="Show/Hide Password">👁️</span>
+    </div>
 
     <div id="legal-checkbox-container" style="display:none; margin-bottom: 16px; text-align: left;">
       <label style="font-size: 0.8rem; color: var(--text-mid); display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
@@ -1489,7 +1494,7 @@
     <h3 style="color: var(--brown); margin-bottom: 12px; font-size: 1.4rem;">Unlock Your Free Trial!</h3>
     
     <p style="color: var(--text-mid); margin-bottom: 24px; line-height: 1.6; font-size: 0.95rem;">
-      Get <strong style="color: var(--saffron);">2 Days of VIP Access</strong> completely free. Practice thousands of Premium Sanskrit and Paper 1 mock tests instantly!
+      Get <strong style="color: var(--saffron);"><span id="ui-trial-days-display">2</span> Days of Pass Access</strong> completely free. Practice thousands of Premium Sanskrit and Paper 1 mock tests instantly!
     </p>
     
     <div style="display: flex; flex-direction: column; gap: 12px;">

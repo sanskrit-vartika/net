@@ -130,9 +130,10 @@ const WHATSAPP_NUMBER = "918172063129";
 
 // 6. TESTING SWITCH: Require Email Verification?
 const REQUIRE_EMAIL_VERIFICATION = false; // Change to true before official public launch!
+const ENFORCE_VERIFICATION_AFTER_DATE = "2026-07-10"; // Old users created before this date will bypass verification!
 
 // 7. TRIAL SETTINGS: How many days free?
-const FREE_TRIAL_DAYS = 2; // Change this single number to update the entire website
+const FREE_TRIAL_DAYS = 3; // Change this single number to update the entire website
 
 // 8. AI BOOSTER SETTINGS: How many custom tests per day?
 const AI_BOOSTER_DAILY_LIMIT = 3; // Change this single number to update the AI limits everywhere!
@@ -339,8 +340,8 @@ async function handleAuthAction() {
       
       await user.reload(); 
       
-      // DEV SWITCH LOGIC: Check verification only if required
-      if (REQUIRE_EMAIL_VERIFICATION && !user.emailVerified) {
+            // DEV SWITCH LOGIC: Check verification only if required (with Old User Bypass)
+      if (REQUIRE_EMAIL_VERIFICATION && !user.emailVerified && new Date(user.metadata.creationTime) >= new Date(ENFORCE_VERIFICATION_AFTER_DATE)) {
         await auth.signOut();
         errorBox.textContent = "⚠️ Please verify your email before logging in. Check your inbox & spam folder!";
         errorBox.style.display = 'block';
@@ -414,8 +415,8 @@ auth.onAuthStateChanged(async (user) => {
     // Check verification safely on page load
     try { await user.reload(); } catch(e) {}
     
-    // DEV SWITCH LOGIC: Only kick them out if verification is strictly required
-    if (REQUIRE_EMAIL_VERIFICATION && !user.emailVerified) {
+        // DEV SWITCH LOGIC: Only kick them out if verification is strictly required (with Old User Bypass)
+    if (REQUIRE_EMAIL_VERIFICATION && !user.emailVerified && new Date(user.metadata.creationTime) >= new Date(ENFORCE_VERIFICATION_AFTER_DATE)) {
       await auth.signOut();
       return; 
     }
@@ -563,21 +564,38 @@ auth.onAuthStateChanged(async (user) => {
     // FIX: This must be OUTSIDE the if-statement so it runs for brand new guests!
     updateTestCardLocks(); 
 
-    // 🚀 NEW: The 12-Second Guest Promo Engine
-    if (!sessionStorage.getItem('guest_promo_shown')) {
+        // 🚀 NEW: The "Polite" 20-Second Guest Promo Engine
+    // (SMART FIX: It will completely disable itself if FREE_TRIAL_DAYS is 0!)
+    if (!sessionStorage.getItem('guest_promo_shown') && FREE_TRIAL_DAYS > 0) {
+      // Wait the initial 20 seconds...
       setTimeout(() => {
-        // Double-check that they didn't log in during the 12-second wait!
-        if (!currentUser) {
-          // Dynamically fetch the name of the subject they are currently looking at
-          const subjName = currentCoreSubject === 'all' ? 'Core Subject' : CORE_SUBJECTS[currentCoreSubject].name;
-          const promoNameEl = document.getElementById('promo-subject-name');
-          if (promoNameEl) promoNameEl.textContent = subjName;
+        
+        // Now, check the screen every 2 seconds until it's clear
+        const promoInterval = setInterval(() => {
+          // 1. If they successfully logged in while waiting, kill the timer forever!
+          if (currentUser) {
+            clearInterval(promoInterval);
+            return;
+          }
           
-          // Show the modal and mark it as shown for this session
-          document.getElementById('guest-trial-modal').style.display = 'flex';
-          sessionStorage.setItem('guest_promo_shown', 'true');
-        }
-      }, 12000); // 12000 milliseconds = 12 seconds
+          // 2. Check if ANY pop-up is open, or if they are taking a mock test
+          const openModals = Array.from(document.querySelectorAll('.modal-overlay')).filter(m => m.style.display === 'flex');
+          const isTestRunning = document.body.classList.contains('test-mode-active');
+          
+          // 3. ONLY show the promo if the screen is completely clear!
+          if (openModals.length === 0 && !isTestRunning) {
+            clearInterval(promoInterval); // Stop checking
+            
+            const subjName = currentCoreSubject === 'all' ? 'Core Subject' : CORE_SUBJECTS[currentCoreSubject].name;
+            const promoNameEl = document.getElementById('promo-subject-name');
+            if (promoNameEl) promoNameEl.textContent = subjName;
+            
+            document.getElementById('guest-trial-modal').style.display = 'flex';
+            sessionStorage.setItem('guest_promo_shown', 'true');
+          }
+        }, 2000); // Checks every 2 seconds
+
+      }, 20000); // 20000 milliseconds = 20 seconds
     }
   }
 });
@@ -1198,6 +1216,10 @@ async function showSets(cat) {
 
   // Fetch data + smooth 400ms artificial delay for a premium feel
   const [success] = await Promise.all([fetchQuestions(cat), new Promise(r => setTimeout(r, 400))]);
+  
+  // 🚀 BUG FIX: If the user clicked "Back" while loading, silently abort!
+  if (document.getElementById('test-sets-view').style.display === 'none') return;
+
   if (success) {
     renderSetsUI(cat);
   } else {
@@ -1263,6 +1285,9 @@ async function openFreeSets(mode) {
     
     // Wait for both the fetch (if needed) AND the 400ms delay to finish
     const [data] = await Promise.all([fetchPromise, delayPromise]);
+    
+    // 🚀 BUG FIX: If the user clicked "Back" while loading, silently abort!
+    if (document.getElementById('test-sets-view').style.display === 'none') return;
     
     if (data) {
       availableSets = {};
@@ -2809,7 +2834,7 @@ function loadDashboard() {
       if (minDaysLeft <= 5) {
         if (!sessionStorage.getItem('expiry_warned')) {
           setTimeout(() => {
-            document.getElementById('expiry-pass-name').textContent = expiringPassName + " Pass is expiring soon!"; // <-- NEW: Updates the modal title!
+            document.getElementById('expiry-pass-name').textContent = expiringPassName + " is expiring soon!"; // <-- NEW: Updates the modal title!
             document.getElementById('expiry-days-text').textContent = minDaysLeft;
             document.getElementById('expiry-modal').style.display = 'flex';
             sessionStorage.setItem('expiry_warned', 'true');
@@ -4252,4 +4277,41 @@ async function dismissWarning() {
   } finally {
      btn.textContent = "I Understand"; btn.disabled = false;
   }
+}
+
+// ==========================================
+// 🚀 NEW: PASSWORD VISIBILITY TOGGLE
+// ==========================================
+const togglePasswordBtn = document.getElementById('toggle-password');
+if (togglePasswordBtn) {
+  togglePasswordBtn.addEventListener('click', function () {
+    const passwordInput = document.getElementById('auth-password');
+    
+    // If it's a password (dots), change it to text. Otherwise, change it back to password.
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      this.textContent = '🙈'; // Change icon to the "hide" monkey
+    } else {
+      passwordInput.type = 'password';
+      this.textContent = '👁️'; // Change icon back to the eye
+    }
+  });
+}
+
+// ==========================================
+// 🚀 NEW: AUTO-UPDATE WHATSAPP IN HTML
+// ==========================================
+// This grabs your Master WhatsApp number from the top of the file and puts it on the Contact page
+const waDisplay = document.getElementById('ui-whatsapp-display');
+if (waDisplay) {
+  // Adds a plus sign for formatting: +918172063129
+  waDisplay.textContent = "+" + WHATSAPP_NUMBER; 
+}
+
+// ==========================================
+// 🚀 NEW: AUTO-UPDATE FREE TRIAL DAYS IN HTML
+// ==========================================
+const trialDisplay = document.getElementById('ui-trial-days-display');
+if (trialDisplay) {
+  trialDisplay.textContent = FREE_TRIAL_DAYS;
 }
