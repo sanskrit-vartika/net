@@ -51,9 +51,14 @@ self.addEventListener('fetch', (event) => {
       
       // Always fetch the newest version in the background
       const fetchPromise = fetch(event.request).then((networkResponse) => {
+        
+        // 🚀 BUG FIX: Clone the response instantly before the browser eats it!
+        const responseToCache = networkResponse.clone();
+        
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
+          cache.put(event.request, responseToCache);
         });
+        
         return networkResponse;
       }).catch(() => {
         // Silently ignore network failures (the user will just see the cache)
