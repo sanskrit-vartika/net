@@ -251,8 +251,30 @@ async function handleAuthAction() {
     return;
   }
 
-  // 🚀 NEW: The Legal Gatekeeper
   if (isSignUpMode) {
+    // 🚀 NEW: Strict Email Whitelist to destroy Fake/Temporary Accounts
+    const allowedDomains = ['@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@icloud.com'];
+    const emailLower = email.toLowerCase();
+    
+    // Check if the email ends with any of our trusted domains
+    const isValidDomain = allowedDomains.some(domain => emailLower.endsWith(domain));
+    
+    if (!isValidDomain) {
+      errorBox.textContent = "⚠️ Please use a valid Google, Yahoo, Microsoft, or Apple email address to register.";
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    // 🚀 NEW: WhatsApp Smart Formatter (Indian 10-Digit Standard)
+    // ^[6-9] means it must start with 6,7,8,or 9. \d{9}$ means exactly 9 more digits.
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(whatsapp)) {
+      errorBox.textContent = "⚠️ Please enter a valid 10-digit WhatsApp number (without +91).";
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    // 🚀 The Legal Gatekeeper
     const isAgreed = document.getElementById('legal-agree-checkbox').checked;
     if (!isAgreed) {
       errorBox.textContent = "⚠️ You must agree to the Terms & Privacy Policy to create an account.";
@@ -264,6 +286,9 @@ async function handleAuthAction() {
   const btn = document.getElementById('auth-action-btn');
   btn.textContent = "Please wait...";
   btn.disabled = true;
+
+  // 🚀 NEW: Give them a VIP pass to bypass the Bouncer since they used a password!
+  window.isFreshLogin = true;
 
   try {
     if (isSignUpMode) {
@@ -439,10 +464,17 @@ auth.onAuthStateChanged(async (user) => {
                document.getElementById('suspended-reason-text').textContent = "Reason: " + (susp.reason || "Violating Terms of Service");
                let dur = isPermanent ? "This ban is permanent." : "Suspension expires on: " + new Date(susp.expiresAt).toLocaleDateString('en-IN');
                document.getElementById('suspended-duration-text').textContent = dur;
+               
+               // 🚀 BUG FIX: Save their details in a safe temporary vault before we wipe their session!
+               window.tempSuspendedUser = {
+                 name: currentUser.dbData.name || 'N/A',
+                 email: currentUser.email || 'N/A',
+                 phone: currentUser.dbData.whatsapp || 'N/A'
+               };
+               
                document.getElementById('suspended-modal').style.display = 'flex';
-               auth.signOut();
+               auth.signOut(); // Memory wiped here!
                return; // 🛑 INSTANT KILL: Stop loading the app!
-           } else {
                // Ban naturally expired, silently lift it
                db.collection("users").doc(user.uid).update({ "suspension.active": false });
                currentUser.dbData.suspension.active = false;
@@ -453,6 +485,28 @@ auth.onAuthStateChanged(async (user) => {
         if (currentUser.dbData.warningMessage) {
            document.getElementById('warning-msg-text').textContent = currentUser.dbData.warningMessage;
            document.getElementById('warning-modal').style.display = 'flex';
+        }
+
+        // 🚀 NEW SECURITY GATEKEEPER 3: THE DEVICE BOUNCER (Anti-Sharing)
+        const myUUID = getDeviceUUID();
+        const myCategory = getDeviceCategory(); // Checks if Mobile or Desktop
+        
+        // If they don't have a VIP pass, and their device slot is taken by someone else...
+        if (!window.isFreshLogin && currentUser.dbData.activeDevices && currentUser.dbData.activeDevices[myCategory]) {
+           if (currentUser.dbData.activeDevices[myCategory] !== myUUID) {
+               // 🛑 TRAP TRIGGERED! Kick them out!
+               const modalTitle = document.querySelector('#suspended-modal h2');
+               if (modalTitle) modalTitle.textContent = "Session Expired";
+               
+               document.getElementById('suspended-reason-text').textContent = "Account accessed on another " + (myCategory === 'mobile' ? "Phone" : "Computer") + ".";
+               document.getElementById('suspended-duration-text').textContent = "For security, you can only use 1 phone and 1 computer at a time. Please log in again to use this device.";
+               
+               window.tempSuspendedUser = { name: currentUser.dbData.name || 'N/A', email: currentUser.email || 'N/A', phone: currentUser.dbData.whatsapp || 'N/A' };
+               document.getElementById('suspended-modal').style.display = 'flex';
+               
+               auth.signOut();
+               return; // INSTANT KILL!
+           }
         }
         
         // 🚀 SYNC WORKSPACE FROM CLOUD
@@ -4066,6 +4120,12 @@ async function updateWhatsAppNumber() {
   const newWA = document.getElementById('set-whatsapp').value.trim();
   if(!newWA) return showToast("⚠️ WhatsApp number cannot be empty");
   
+  // 🚀 NEW: Protect the Settings Page from fake numbers too!
+  const phoneRegex = /^[6-9]\d{9}$/;
+  if (!phoneRegex.test(newWA)) {
+    return showToast("⚠️ Please enter a valid 10-digit WhatsApp number.");
+  }
+  
   try {
     const updates = {
       whatsapp: newWA,
@@ -4245,24 +4305,49 @@ function getBrowserSummary() {
   return `${os} | ${browser}`;
 }
 
+// 🚀 NEW: Helper to classify the device
+function getDeviceCategory() {
+  const ua = navigator.userAgent;
+  if (ua.includes("Android") || ua.includes("iPhone") || ua.includes("iPad")) return "mobile";
+  return "desktop";
+}
+
 async function logDeviceActivity() {
   if (!currentUser || !currentUser.dbData) return;
   const uuid = getDeviceUUID();
   const info = getBrowserSummary();
+  const category = getDeviceCategory(); // "mobile" or "desktop"
   const now = new Date().toISOString();
 
-  let logs = currentUser.dbData.deviceLogs || [];
-  // Anti-Spam: Don't log if the same device was logged less than 60 mins ago
-  if (logs.length > 0 && logs[0].uuid === uuid) {
-     const diff = (new Date() - new Date(logs[0].timestamp)) / 1000 / 60;
-     if (diff < 60) return; 
+  let updates = {};
+  
+  // 🚀 BOUNCER: Claim this device slot in the database!
+  if (!currentUser.dbData.activeDevices || currentUser.dbData.activeDevices[category] !== uuid) {
+     updates[`activeDevices.${category}`] = uuid;
+     if (!currentUser.dbData.activeDevices) currentUser.dbData.activeDevices = {};
+     currentUser.dbData.activeDevices[category] = uuid;
   }
 
-  logs.unshift({ uuid, info, timestamp: now });
-  if (logs.length > 10) logs.pop(); // Keep array light (Max 10 logs)
+  let logs = currentUser.dbData.deviceLogs || [];
+  
+  // Anti-Spam: Don't log history if the same device was logged less than 60 mins ago
+  let shouldLogHistory = true;
+  if (logs.length > 0 && logs[0].uuid === uuid) {
+     const diff = (new Date() - new Date(logs[0].timestamp)) / 1000 / 60;
+     if (diff < 60) shouldLogHistory = false;
+  }
 
-  currentUser.dbData.deviceLogs = logs;
-  try { await db.collection("users").doc(currentUser.uid).update({ deviceLogs: logs }); } catch(e) {}
+  if (shouldLogHistory) {
+     logs.unshift({ uuid, info, timestamp: now });
+     if (logs.length > 10) logs.pop(); // Keep array light (Max 10 logs)
+     currentUser.dbData.deviceLogs = logs;
+     updates.deviceLogs = logs;
+  }
+
+  // Only ping Firebase if something actually changed! (Protects Free Tier)
+  if (Object.keys(updates).length > 0) {
+     try { await db.collection("users").doc(currentUser.uid).update(updates); } catch(e) {}
+  }
 }
 
 async function dismissWarning() {
@@ -4314,4 +4399,27 @@ if (waDisplay) {
 const trialDisplay = document.getElementById('ui-trial-days-display');
 if (trialDisplay) {
   trialDisplay.textContent = FREE_TRIAL_DAYS;
+}
+
+// ==========================================
+// 🚀 NEW: SUSPENDED ACCOUNT SUPPORT (SMART MESSAGE)
+// ==========================================
+function contactSupportSuspended() {
+  let userDetails = "\n\nMy Details:\nName: N/A\nEmail: N/A\nReg. Phone: N/A";
+  
+  // Grab the exact details we saved in the vault right before kicking them out!
+  if (window.tempSuspendedUser) {
+    userDetails = `\n\nMy Details:\nName: ${window.tempSuspendedUser.name}\nEmail: ${window.tempSuspendedUser.email}\nReg. Phone: ${window.tempSuspendedUser.phone}`;
+  } 
+  // Backup fallback just in case
+  else if (currentUser) {
+    const name = (currentUser.dbData && currentUser.dbData.name) ? currentUser.dbData.name : "N/A";
+    const email = currentUser.email || "N/A";
+    const phone = (currentUser.dbData && currentUser.dbData.whatsapp) ? currentUser.dbData.whatsapp : "N/A";
+    userDetails = `\n\nMy Details:\nName: ${name}\nEmail: ${email}\nReg. Phone: ${phone}`;
+  }
+  
+  const baseMsg = "Hello, my account has been suspended. I would like to request a review." + userDetails;
+  
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(baseMsg)}`, '_blank');
 }

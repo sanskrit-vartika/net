@@ -1605,7 +1605,12 @@
     <h2 style="color: #D32F2F; margin-bottom: 12px;">Account Suspended</h2>
     <p id="suspended-reason-text" style="color: var(--text-mid); margin-bottom: 16px; font-weight: bold;"></p>
     <p id="suspended-duration-text" style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 24px; line-height: 1.5;"></p>
-    <button class="btn btn-outline" style="width: 100%; justify-content: center; border-color: #D32F2F; color: #D32F2F;" onclick="contactSupport()">Contact Support</button>
+    
+    <!-- 🚀 NEW: Direct WhatsApp support bypasses the locked website! -->
+    <button class="btn btn-primary" style="width: 100%; justify-content: center; background: #25D366; border-color: #25D366; margin-bottom: 12px; color: white;" onclick="contactSupportSuspended()">💬 WhatsApp Support</button>
+    
+    <!-- 🚀 NEW: Return to home button to escape the red screen -->
+    <button class="btn btn-outline" style="width: 100%; justify-content: center; border-color: #9E9E9E; color: #757575;" onclick="document.getElementById('suspended-modal').style.display='none'; navigate('home');">Return to Homepage</button>
   </div>
 </div>
 
