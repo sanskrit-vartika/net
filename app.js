@@ -461,6 +461,12 @@ auth.onAuthStateChanged(async (user) => {
            const isExpired = !isPermanent && new Date(susp.expiresAt) <= new Date();
            
            if (isPermanent || !isExpired) {
+               // 🚀 FIX: Ensure it looks like a real ban
+               const modalTitle = document.querySelector('#suspended-modal h2');
+               if (modalTitle) modalTitle.textContent = "Account Suspended";
+               const waBtn = document.getElementById('suspended-whatsapp-btn');
+               if (waBtn) waBtn.style.display = 'flex'; // Show WhatsApp button
+               
                document.getElementById('suspended-reason-text').textContent = "Reason: " + (susp.reason || "Violating Terms of Service");
                let dur = isPermanent ? "This ban is permanent." : "Suspension expires on: " + new Date(susp.expiresAt).toLocaleDateString('en-IN');
                document.getElementById('suspended-duration-text').textContent = dur;
@@ -497,6 +503,10 @@ auth.onAuthStateChanged(async (user) => {
                // 🛑 TRAP TRIGGERED! Kick them out!
                const modalTitle = document.querySelector('#suspended-modal h2');
                if (modalTitle) modalTitle.textContent = "Session Expired";
+               
+               // 🚀 FIX: Hide the WhatsApp button because they just need to log back in!
+               const waBtn = document.getElementById('suspended-whatsapp-btn');
+               if (waBtn) waBtn.style.display = 'none'; 
                
                document.getElementById('suspended-reason-text').textContent = "Account accessed on another " + (myCategory === 'mobile' ? "Phone" : "Computer") + ".";
                document.getElementById('suspended-duration-text').textContent = "For security, you can only use 1 phone and 1 computer at a time. Please log in again to use this device.";
