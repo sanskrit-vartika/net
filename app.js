@@ -1446,7 +1446,13 @@ async function openFreeSets(mode) {
     document.getElementById('sets-category-title').textContent = config.title;
     if (setsDesc) setsDesc.style.display = 'block';
 
-    const history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
+    let history = (currentUser && currentUser.dbData && currentUser.dbData.history) ? currentUser.dbData.history : [];
+    
+    // 🚀 BUG FIX: Merge local storage history so Free Tests get their green checkmarks!
+    try {
+      const localHistory = JSON.parse(localStorage.getItem('vartika_free_history') || '[]');
+      history = history.concat(localHistory);
+    } catch(e) {}
 
     // Clear Skeletons
     grid.innerHTML = '';
