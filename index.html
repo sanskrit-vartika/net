@@ -126,7 +126,14 @@
           <a onclick="openSettingsModal()"><span style="font-size: 1.2rem; margin-right: 8px;">⚙️</span> Settings</a>
           <a onclick="contactSupport()"><span style="font-size: 1.2rem; margin-right: 8px;">🎧</span> Help & Support</a>
           <a id="install-app-btn" onclick="installApp()" style="display: none; color: var(--saffron); font-weight: bold;">
-        <span style="margin-right: 8px; font-size: 1.1rem;"><i class="fa-brands fa-google-play"></i></span> Install App
+        <span style="margin-right: 8px; font-size: 1.1rem; display: inline-flex; align-items: center;">
+          <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style="vertical-align: middle;">
+            <path d="M2.38 1.488c-.221.23-.38.56-.38 1.012v19c0 .453.159.782.38 1.012l.065.064 10.638-10.638V12l-10.638-10.576-.065.064z" fill="#4285F4"/>
+            <path d="M16.586 16.035L12.983 12.43 2.38 23.033c.312.336.816.398 1.4.066l12.806-7.064z" fill="#EA4335"/>
+            <path d="M16.586 7.965l-12.806-7.064c-.584-.332-1.088-.27-1.4.066L12.983 11.57l3.603-3.605z" fill="#34A853"/>
+            <path d="M16.586 16.035l3.523-1.944c1.002-.553 1.002-1.464 0-2.017l-3.523-1.944-3.603 3.605 3.603 3.605z" fill="#FBBC05"/>
+          </svg>
+        </span> Install App
       </a>
           <a onclick="openCustomLogout()" style="color: #D32F2F;"><span style="font-size: 1.2rem; margin-right: 8px;">🚪</span> Log Out</a>
         </div>
@@ -174,7 +181,7 @@
       </div>
       <h1 class="hero-heading">Sanskrit-Vartika</h1>
       <p class="hero-tagline">ज्ञानञ्च शङ्करादिच्छेत्</p>
-      <p class="hero-sub">Your complete guide for UGC NTA NET Paper 1 & Sanskrit preparation<br></p>
+      <p class="hero-sub">Your complete guide for UGC NTA NET & SET Paper 1 & Sanskrit preparation<br></p>
       
     </div>
   </section>
@@ -265,7 +272,7 @@
       <div class="section-title">
         <h2>Why Choose Us? </span></h2>
         <div class="divider"></div>
-        <p>Everything you need to crack UGC NTA NET Sanskrit</p>
+        <p>Everything you need to crack UGC NTA NET</p>
       </div>
       <div class="features-grid">
         
@@ -338,7 +345,7 @@
   <section class="about-banner">
     <p>
       <strong>🪔 Why संस्कृत-वर्तिका?</strong><br>
-      Due to the lack of free and affordable study materials for UGC NET, we started this initiative. You will find Paper 1 & Paper 2 mock tests for UGC NET or SET exams. We regularly upload completely <strong>free UGC NET Paper-2 (Sanskrit)</strong> study materials and videos on our YouTube channel — making quality education accessible to all.
+      Due to the lack of free and affordable study materials for UGC NET, we started this initiative. You will find Paper 1 & Paper 2 mock tests for UGC NET & SET exams. We regularly upload completely <strong>free UGC NET Paper-2 (Sanskrit)</strong> study materials and videos on our YouTube channel — making quality education accessible to all.
     </p>
   </section>
 
@@ -1010,7 +1017,7 @@
     <div class="about-story">
       <div class="about-story-text">
         <h2>🪔 Our Story</h2>
-        <p>Due to the lack of free and affordable study materials for UGC NET, we started this initiative. You will find Paper 1 & Paper 2 mock tests for UGC NET or SET exams. We regularly upload completely free UGC NET Paper-2 (Sanskrit) study materials and videos on our YouTube channel — making quality education accessible to all..</p>
+        <p>Due to the lack of free and affordable study materials for UGC NET, we started this initiative. You will find Paper 1 & Paper 2 mock tests for UGC NET & SET exams. We regularly upload completely free UGC NET Paper-2 (Sanskrit) study materials and videos on our YouTube channel — making quality education accessible to all..</p>
         <p>Our mission is simple: democratize education so that every student in West Bengal and all over India can access world-class preparation resources for UGC NET — regardless of their economic background.</p>
         <p>संस्कृत-वर्तिका (Sanskrit-Vartika) means "the wick (lamp) of Sanskrit" — we aim to illuminate the path of learning for everyone.</p>
       </div>
@@ -1158,7 +1165,7 @@
       <div class="footer-brand">
         <div class="site-name">संस्कृत-वर्तिका</div>
         <div class="tagline">ज्ञानञ्च शङ्करादिच्छेत्</div>
-        <p>Your complete guide for UGC NTA NET Paper 1 & Sanskrit preparation. Free resources, mock tests, and video lectures — available to all.</p>
+        <p>Your complete guide for UGC NTA NET & SET Paper 1 & Sanskrit preparation. Free resources, mock tests, and video lectures — available to all.</p>
       </div>
       
       <div class="footer-col">
@@ -1697,8 +1704,8 @@
 
          <select id="set-core-subject" class="form-input" style="flex:1; background: #f9f9f9;" disabled>
            <option value="sanskrit">Sanskrit (Code 25)</option>
-           <option value="bengali">Bengali (Code 19)</option>
-           <option value="philosophy">Philosophy (Code 03)</option>
+           <!-- <option value="bengali">Bengali (Code 19)</option>
+           <option value="philosophy">Philosophy (Code 03)</option> -->
          </select>
          <button id="btn-edit-subject" class="btn btn-outline" style="padding: 0 16px;" onclick="toggleSubjectEdit(true)">✏️ Edit</button>
          <button id="btn-update-subject" class="btn btn-primary" style="padding: 0 16px; display:none;" onclick="updateCoreSubject()">Save</button>
