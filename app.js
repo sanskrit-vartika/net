@@ -3274,7 +3274,7 @@ const myCourses = [
       "✅ You will get access to all questions over a period of six months."
     ],
     price: "₹119",
-    originalPrice: "₹239",
+    originalPrice: "₹339",
     btnText: "Get Combo Pass",
     link: "text=Hello! I want to buy the Combo Mock Test Pass."
   },
@@ -3299,7 +3299,7 @@ const myCourses = [
       "✅ You will get access to all questions over a period of six months."
     ],
     price: "₹59",
-    originalPrice: "₹99",
+    originalPrice: "₹149",
     btnText: "Get General Pass",
     link: "text=Hello! I want to buy the General Paper 1 Mock Pass."
   },
@@ -3324,7 +3324,7 @@ const myCourses = [
       "✅ You will get access to all questions over a period of six months."
     ],
     price: "₹89",
-    originalPrice: "₹149",
+    originalPrice: "₹199",
     btnText: "Get Sanskrit Pass",
     link: "text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
