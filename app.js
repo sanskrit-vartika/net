@@ -4070,6 +4070,23 @@ function openSettingsModal() {
       waBtn.style.opacity = '1';
   }
 
+    // 🚀 NEW: Load Email and check the 30-Day Email Lock
+  document.getElementById('set-email').value = currentUser.email || '';
+  
+  const lastEmailUpdate = currentUser.dbData.email_last_updated;
+  if (lastEmailUpdate) {
+    const daysSinceEmailUpdate = (new Date() - new Date(lastEmailUpdate)) / (1000 * 60 * 60 * 24);
+    if (daysSinceEmailUpdate < 30) {
+      document.getElementById('btn-edit-email').style.display = 'none';
+      const emailMsg = document.getElementById('email-lock-msg');
+      emailMsg.textContent = `Locked for ${Math.ceil(30 - daysSinceEmailUpdate)} more days.`;
+      emailMsg.style.display = 'block';
+    } else {
+      document.getElementById('btn-edit-email').style.display = 'block';
+      document.getElementById('email-lock-msg').style.display = 'none';
+    }
+  }
+
   // 3. Populate Data Vault Status
   const savedLength = data.saved_qs ? data.saved_qs.length : 0;
   document.getElementById('set-vault-text').textContent = `${savedLength} / ${MAX_SAVED_QUESTIONS}`;
@@ -4157,6 +4174,65 @@ async function updateWhatsAppNumber() {
   } catch(e) {
     showToast("Error updating WhatsApp: " + e.message);
   }
+}
+
+// ==========================================
+// === 🚀 NEW: SECURE EMAIL UPDATE ENGINE ===
+// ==========================================
+
+function toggleEmailEdit(isEditing) {
+  const input = document.getElementById('set-email');
+  input.readOnly = !isEditing;
+  input.style.background = isEditing ? '#fff' : '#f9f9f9';
+  if (isEditing) input.focus();
+  
+  document.getElementById('btn-edit-email').style.display = isEditing ? 'none' : 'block';
+  document.getElementById('btn-update-email').style.display = isEditing ? 'block' : 'none';
+  document.getElementById('btn-cancel-email').style.display = isEditing ? 'block' : 'none';
+}
+
+async function updateLoginEmail() {
+  const newEmail = document.getElementById('set-email').value.trim().toLowerCase();
+  
+  if (!newEmail || !newEmail.includes('@')) {
+    return showToast("⚠️ Please enter a valid email address.");
+  }
+  if (newEmail === currentUser.email) {
+    return toggleEmailEdit(false);
+  }
+
+  // Double check our Strict Whitelist
+  const allowedDomains = ['@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@icloud.com'];
+  if (!allowedDomains.some(domain => newEmail.endsWith(domain))) {
+    return showToast("⚠️ Please use a valid Google, Yahoo, Microsoft, or Apple email.");
+  }
+
+  const btn = document.getElementById('btn-update-email');
+  btn.textContent = "Saving..."; btn.disabled = true;
+
+  try {
+    // 1. Tell Firebase Auth to change the core login identity
+    await auth.currentUser.updateEmail(newEmail);
+    
+    // 2. If successful, lock it for 30 days in the database
+    const updates = { email_last_updated: new Date().toISOString() };
+    await db.collection('users').doc(currentUser.uid).update(updates);
+    
+    currentUser.dbData.email_last_updated = updates.email_last_updated;
+    showToast("✅ Login Email updated securely!");
+    
+    openSettingsModal(); // Refresh UI to trigger the lock
+  } catch(e) {
+    // 🛑 THE SECURITY TRAP: If their login session is too old, Firebase blocks it!
+    if (e.code === 'auth/requires-recent-login') {
+      showToast("🔒 Security Alert: Please Log Out and Log Back In to change your email.");
+    } else {
+      showToast("Error updating email: " + e.message);
+    }
+  }
+  
+  btn.textContent = "Save"; btn.disabled = false;
+  toggleEmailEdit(false);
 }
 
 async function sendPasswordResetFromSettings() {

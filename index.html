@@ -1752,6 +1752,17 @@
 
       <h4 style="margin: 20px 0 10px; color: var(--brown); font-size:0.9rem; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">Security & Contact</h4>
       
+      <!-- 🚀 NEW: The Email Edit UI -->
+      <label class="form-label" style="font-size: 0.8rem;">Login Email (Can change once every 30 days)</label>
+      <div style="display:flex; gap:8px;" class="mb-16">
+         <input type="text" id="set-email" class="form-input" style="flex:1; background: #f9f9f9;" readonly>
+         <button id="btn-edit-email" class="btn btn-outline" style="padding: 0 16px;" onclick="toggleEmailEdit(true)">✏️ Edit</button>
+         <button id="btn-update-email" class="btn btn-primary" style="padding: 0 16px; display:none;" onclick="updateLoginEmail()">Save</button>
+         <button id="btn-cancel-email" class="btn btn-outline" style="padding: 0 16px; display:none;" onclick="toggleEmailEdit(false)">Cancel</button>
+      </div>
+      <p id="email-lock-msg" style="font-size:0.75rem; color: #D32F2F; margin-top:-10px; margin-bottom: 16px; display:none; background: #FFEBEE; padding: 4px 8px; border-radius: 4px;"></p>
+
+      <!-- The WhatsApp UI stays exactly where it is -->
       <label class="form-label" style="font-size: 0.8rem;">WhatsApp Number (Can change once every 30 days)</label>
       
       <div style="display:flex; gap:8px;" class="mb-16">
