@@ -3254,28 +3254,7 @@ function submitContactForm() {
 // === COURSES ENGINE (SINGLE SOURCE OF TRUTH) ===
 // ==========================================
 const myCourses = [
-  {
-    title: "NTA NET Sanskrit Complete Batch",
-    subtitle: "Full syllabus | Live sessions | Doubt clearing",
-    isFree: false,
-    duration: "6 Months",
-    level: "All Levels",
-    videos: "150+ Videos",
-    desc: "Complete coverage of all 10 units. Weekly live sessions, 100+ mock tests, and personalized doubt clearing.",
-    features: [
-      "✅ Live Interactive Classes & Full Recordings",
-      "✅ Comprehensive PDF Study Notes (Downloadable)",
-      "✅ Beginner to Advanced levels",
-      "✅ 100+ Topic-wise Mock Tests & Full Mocks",
-      "✅ 24/7 Dedicated WhatsApp Doubt Clearing"
-    ],
-    price: "₹x,xxx",
-    originalPrice: "₹x,xxx",
-    btnText: "Launching soon",
-    // link: "text=Hello! I want to buy the Complete Batch Pass."
-  },
-
-
+  
   {
     title: "Combo Mock Test Pass",
     subtitle: "1st Paper + Sanskrit Paper 2",
@@ -3303,12 +3282,12 @@ const myCourses = [
 
   {
     title: "General Paper 1 Mock Pass",
-    subtitle: "All 10 units, Topic-wise & Full Mock Tests",
+    subtitle: "Topic-wise & Full Mock Tests For Sanskrit, Bengali, Philosophy and all other arts subjects",
     isFree: false,
     duration: "6 Months",
     level: "All Levels",
     videos: "5,000+ Questions",
-    desc: "Dedicated mock tests for UGC NET Paper 1. Practice Teaching Aptitude, Research, DI, and Logical Reasoning.",
+    desc: "Dedicated mock tests for UGC NET Paper 1. For Sanskrit, Bengali, Philosophy and all other arts subjects.",
     features: [
       "✅ Unlimited access to ALL 1st Paper Tests, Which includes 5,000+ questions (40+ full sets, 150+ topic-wise sets)",
       "✅ Topic-wise tests for All 10 Units with explanation.",
@@ -3350,29 +3329,50 @@ const myCourses = [
     link: "text=Hello! I want to buy the Sanskrit Mock Test Pass."
   },
 
-  {
-    title: "Bengali Mock Test Pass",
-    subtitle: "Topic-wise & Full Mock Tests",
-    isFree: false,
-    duration: "6 Months",
-    level: "All Levels",
-    videos: "7,000+ Questions",
-    desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
-    features: [
-      "✅ Unlimited access to ALL Bengali (Code 19) Tests, Which includes 7,000+ questions (30+ full sets, 250+ topic-wise sets)",
-      "✅ Topic-wise tests for All 10 Units",
-      "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
-      "✅ Save difficult questions to your Cloud Vault",
-      "✅ Subject-wise Performance Analytics",
-      "✅ Practice Official UGC NET Previous Year Questions",
-      "✅ Pass validity- 6 months (180 days)",
-      "✅ You will get access to all questions over a period of six months."
-    ],
-    price: "₹89",
-    originalPrice: "₹149",
-    btnText: "Launching soon",
-    //link: "text=Hello! I want to buy the Bengali Mock Test Pass."
-  },
+  // {
+  //   title: "NTA NET Sanskrit Complete Batch",
+  //   subtitle: "Full syllabus | Live sessions | Doubt clearing",
+  //   isFree: false,
+  //   duration: "6 Months",
+  //   level: "All Levels",
+  //   videos: "150+ Videos",
+  //   desc: "Complete coverage of all 10 units. Weekly live sessions, 100+ mock tests, and personalized doubt clearing.",
+  //   features: [
+  //     "✅ Live Interactive Classes & Full Recordings",
+  //     "✅ Comprehensive PDF Study Notes (Downloadable)",
+  //     "✅ Beginner to Advanced levels",
+  //     "✅ 100+ Topic-wise Mock Tests & Full Mocks",
+  //     "✅ 24/7 Dedicated WhatsApp Doubt Clearing"
+  //   ],
+  //   price: "₹x,xxx",
+  //   originalPrice: "₹x,xxx",
+  //   btnText: "Launching soon",
+  //   // link: "text=Hello! I want to buy the Complete Batch Pass."
+  // },
+
+  // {
+  //   title: "Bengali Mock Test Pass",
+  //   subtitle: "Topic-wise & Full Mock Tests",
+  //   isFree: false,
+  //   duration: "6 Months",
+  //   level: "All Levels",
+  //   videos: "7,000+ Questions",
+  //   desc: "Comprehensive test series covering all 10 units of Paper 2. Includes detailed explanations and performance analytics.",
+  //   features: [
+  //     "✅ Unlimited access to ALL Bengali (Code 19) Tests, Which includes 7,000+ questions (30+ full sets, 250+ topic-wise sets)",
+  //     "✅ Topic-wise tests for All 10 Units",
+  //     "🤖 Get access to our special 🧠 AI Booster Mock Engine. Which analyses your weakest topics and generates a set of custom questions targeting your weakest topics.",
+  //     "✅ Save difficult questions to your Cloud Vault",
+  //     "✅ Subject-wise Performance Analytics",
+  //     "✅ Practice Official UGC NET Previous Year Questions",
+  //     "✅ Pass validity- 6 months (180 days)",
+  //     "✅ You will get access to all questions over a period of six months."
+  //   ],
+  //   price: "₹89",
+  //   originalPrice: "₹149",
+  //   btnText: "Launching soon",
+  //   //link: "text=Hello! I want to buy the Bengali Mock Test Pass."
+  // },
 
 
   
