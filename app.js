@@ -810,6 +810,15 @@ window.addEventListener('popstate', function(event) {
     toggleMobileDrawer(); 
     return; 
   }
+
+  // 🚀 1.5 NEW: Check if the Student Dropdown is open
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show'); // Close the dropdown
+    // Artificially restore the URL so the browser doesn't accidentally change the page!
+    history.pushState({ page: currentPage, isFree: isFreeMode }, '', '#' + currentPage);
+    return; 
+  }
   
   // 2. Check if the Mobile Question Palette is open
   const paletteDrawer = document.getElementById('mobile-palette-drawer');
