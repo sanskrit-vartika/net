@@ -3912,7 +3912,16 @@ function timeAgo(dateString) {
 
 // 1. Dropdown Toggle Logic
 function toggleUserDropdown() {
-  document.getElementById("user-dropdown").classList.toggle("show");
+  const dropdown = document.getElementById("user-dropdown");
+  const isOpening = !dropdown.classList.contains("show");
+  
+  dropdown.classList.toggle("show");
+
+  // 🚀 NEW: If it's opening on the very first page, trap the back button!
+  if (isOpening && !hasNavigated) {
+    history.pushState({ page: currentPage, isFree: isFreeMode }, '', '#' + currentPage);
+    hasNavigated = true; 
+  }
 }
 
 // Close dropdown if user clicks anywhere else on the screen
