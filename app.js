@@ -685,8 +685,10 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
     return; // Stop the navigation instantly!
   }
 
-  hasNavigated = true; // 🚀 NEW: Tell the app they are no longer on the first page!
-
+  // 🚀 THE FIX: Only mark as navigated if we are actually adding a new page to history
+  if (addToHistory) {
+    hasNavigated = true; 
+  }
 
   // 🚨 PERMANENT FIX: CLOSE ALL OVERLAYS ON TAB SWITCH 🚨
   // If a user clicks a nav link while looking at Sets or Results, instantly hide the overlays!
