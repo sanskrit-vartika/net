@@ -15,6 +15,12 @@ window.TEST_DATABASE_URLS = {
     { tabName: 'PYQ 2025 Jan', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq25jan.json' },
     { tabName: 'PYQ 2024 Aug', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq24aug.json' },
     { tabName: 'PYQ 2023 Dec', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq23dec.json' },
+    { tabName: 'PYQ 2023 Jun', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq23jun.json' },
+    { tabName: 'PYQ 2023 Mar', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq23mar.json' },
+    { tabName: 'PYQ 2022 Jul', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq22jul.json' },
+    { tabName: 'PYQ 2021 Dec', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq21dec.json' },
+    { tabName: 'PYQ 2020 Sep', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq20sep.json' },
+    { tabName: 'PYQ 2019 Jun', url: 'https://sanskritvartika.in/Data/p2test/pp2pyq19jun.json' },
 
 
     { tabName: 'Set-1', url: 'https://sanskritvartika.in/Data/p2test/pp2s1.json' },
@@ -22,7 +28,21 @@ window.TEST_DATABASE_URLS = {
     { tabName: 'Set-3', url: 'https://sanskritvartika.in/Data/p2test/pp2s3.json' },
     { tabName: 'Set-4', url: 'https://sanskritvartika.in/Data/p2test/pp2s4.json' },
     { tabName: 'Set-5', url: 'https://sanskritvartika.in/Data/p2test/pp2s5.json' },
-    { tabName: 'Set-6', url: 'https://sanskritvartika.in/Data/p2test/pp2s6.json' }
+    { tabName: 'Set-6', url: 'https://sanskritvartika.in/Data/p2test/pp2s6.json' },
+    { tabName: 'Set-7', url: 'https://sanskritvartika.in/Data/p2test/pp2s7.json' },
+    { tabName: 'Set-8', url: 'https://sanskritvartika.in/Data/p2test/pp2s8.json' },
+    { tabName: 'Set-9', url: 'https://sanskritvartika.in/Data/p2test/pp2s9.json' },
+    { tabName: 'Set-10', url: 'https://sanskritvartika.in/Data/p2test/pp2s10.json' },
+    { tabName: 'Set-11', url: 'https://sanskritvartika.in/Data/p2test/pp2s11.json' },
+    { tabName: 'Set-12', url: 'https://sanskritvartika.in/Data/p2test/pp2s12.json' },
+    { tabName: 'Set-13', url: 'https://sanskritvartika.in/Data/p2test/pp2s13.json' },
+    { tabName: 'Set-14', url: 'https://sanskritvartika.in/Data/p2test/pp2s14.json' },
+    { tabName: 'Set-15', url: 'https://sanskritvartika.in/Data/p2test/pp2s15.json' },
+    { tabName: 'Set-16', url: 'https://sanskritvartika.in/Data/p2test/pp2s16.json' },
+    { tabName: 'Set-17', url: 'https://sanskritvartika.in/Data/p2test/pp2s17.json' },
+    { tabName: 'Set-18', url: 'https://sanskritvartika.in/Data/p2test/pp2s18.json' },
+    { tabName: 'Set-19', url: 'https://sanskritvartika.in/Data/p2test/pp2s19.json' },
+    { tabName: 'Set-20', url: 'https://sanskritvartika.in/Data/p2test/pp2s20.json' }
     
   ],
 
