@@ -674,7 +674,8 @@ auth.onAuthStateChanged(async (user) => {
 // === NAVIGATION & UI ===
 let isFreeMode = false;
 let currentPage = 'home';
-let pendingNavigation = null; // NEW: Remembers where the user wanted to go
+let pendingNavigation = null;
+let hasNavigated = false; // 🚀 NEW: Tracks if they have moved past the first page
 
 function navigate(page, addToHistory = true, keepFreeMode = false) {
   // --- NEW: INTERCEPT NAVIGATION IF TEST IS RUNNING ---
@@ -683,6 +684,9 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
     document.getElementById('exit-modal').style.display = 'flex';
     return; // Stop the navigation instantly!
   }
+
+  hasNavigated = true; // 🚀 NEW: Tell the app they are no longer on the first page!
+
 
   // 🚨 PERMANENT FIX: CLOSE ALL OVERLAYS ON TAB SWITCH 🚨
   // If a user clicks a nav link while looking at Sets or Results, instantly hide the overlays!
@@ -808,6 +812,8 @@ window.addEventListener('popstate', function(event) {
   const drawer = document.getElementById('mobileDrawer');
   if (drawer && drawer.classList.contains('open')) {
     toggleMobileDrawer(); 
+    // 🚀 NEW: Restore the URL so the browser doesn't get confused!
+    history.pushState({ page: currentPage, isFree: isFreeMode }, '', '#' + currentPage);
     return; 
   }
 
@@ -929,8 +935,17 @@ function getSkeletonGrid(count = 6, type = 'test') {
 }
 
 function toggleMobileDrawer() {
-  document.getElementById('mobileDrawer').classList.toggle('open');
+  const drawer = document.getElementById('mobileDrawer');
+  const isOpening = !drawer.classList.contains('open'); // Check if it's opening
+  
+  drawer.classList.toggle('open');
   document.getElementById('mobileDrawerOverlay').classList.toggle('open');
+
+  // 🚀 NEW: If it's opening on the very first page, trap the back button!
+  if (isOpening && !hasNavigated) {
+    history.pushState({ page: currentPage, isFree: isFreeMode }, '', '#' + currentPage);
+    hasNavigated = true; 
+  }
 }
 
 // === STUDY TABS ===
