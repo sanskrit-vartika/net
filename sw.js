@@ -1,4 +1,6 @@
-const CACHE_NAME = 'sanskrit-vartika-v2'; // Bumped to v3 for the major upgrade
+const CACHE_NAME = 'sanskrit-vartika-v1'; // You can leave this as v1 forever. The engine handles the rest!
+const CURRENT_VERSION = 1;  // Bump this every time you make ANY change.
+const CRITICAL_VERSION = 1; // Bump this ONLY for massive changes to force a reload.
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -29,6 +31,18 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => self.clients.claim()) // 🚀 UPGRADE: Instantly controls the page on first load
+      .then(() => {
+        // 🚀 NEW: The Integer Engine Postman!
+        return self.clients.matchAll({ type: 'window' }).then(windowClients => {
+          windowClients.forEach(windowClient => {
+            windowClient.postMessage({
+              type: 'NEW_VERSION_ACTIVATED',
+              criticalVersion: CRITICAL_VERSION,
+              latestVersion: CURRENT_VERSION
+            });
+          });
+        });
+      })
   );
 });
 

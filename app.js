@@ -3580,7 +3580,28 @@ if ('serviceWorker' in navigator) {
         .then((reg) => console.log('PWA Engine Active!', reg.scope))
         .catch((err) => console.error('PWA Engine Failed!', err));
     });
-  }
+
+    // 🚀 NEW: The Integer Engine Receiver
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'NEW_VERSION_ACTIVATED') {
+        // Get the student's current version (default to 0 if brand new)
+        const studentVersion = parseInt(localStorage.getItem('vartika_app_version') || '0');
+        const criticalVersion = event.data.criticalVersion;
+        const latestVersion = event.data.latestVersion;
+
+        // Upgrade the student's tracker to the newest version
+        localStorage.setItem('vartika_app_version', latestVersion.toString());
+
+        // The Engine Check
+        if (studentVersion > 0 && studentVersion < criticalVersion) {
+          console.log("🔥 CRITICAL UPDATE DETECTED! Forcing screen refresh...");
+          window.location.reload();
+        } else {
+          console.log("✅ Minor background update complete. Will apply naturally.");
+        }
+      }
+    });
+}
 
 // ==========================================
 // === REPORT ERROR ENGINE ===
