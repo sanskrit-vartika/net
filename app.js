@@ -2390,7 +2390,7 @@ async function loadNotesFromSheet() {
 // --- PDF NOTES UI LOGIC ---
 const notesSubjectNames = {
   'veda': 'वेदः', 'vyakarana': 'व्याकरणम्', 'darshan': 'दर्शनम्',
-  'sahitya': 'साहित्यम्', 'purana': 'पुराणम्', 'dharma': 'धर्मशास्त्रम्', 'other': 'अन्यानि'
+  'sahitya': 'साहित्यम्', 'other': 'अन्यानि'
 };
 
 async function showNotesTopic(subjectKey) {
