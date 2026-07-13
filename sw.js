@@ -1,6 +1,6 @@
 const CACHE_NAME = 'sanskrit-vartika-v1'; // You can leave this as v1 forever. The engine handles the rest!
-const CURRENT_VERSION = 3;  // Bump this every time you make ANY change.
-const CRITICAL_VERSION = 3; // Bump this ONLY for massive changes to force a reload.
+const CURRENT_VERSION = 4;  // Bump this every time you make ANY change.
+const CRITICAL_VERSION = 4; // Bump this ONLY for massive changes to force a reload.
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
