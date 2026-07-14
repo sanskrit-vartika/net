@@ -1031,8 +1031,8 @@ footer {
   .more-drawer {
     display: block; position: fixed; left: 0; right: 0;
     
-    /* 🚀 NEW: Attaches exactly to the top of the nav bar! */
-    bottom: calc(70px + env(safe-area-inset-bottom, 12px)); 
+    /* 🚀 PROACTIVE FIX: Hard-lock it to the exact height of the nav bar */
+    bottom: 70px;  
     
     background: var(--white); border-radius: 24px 24px 0 0;
     
