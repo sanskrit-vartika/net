@@ -139,7 +139,7 @@ const FREE_TRIAL_DAYS = 3; // Change this single number to update the entire web
 const AI_BOOSTER_DAILY_LIMIT = 3; // Change this single number to update the AI limits everywhere!
 
 // 9. CLOUD VAULT SETTINGS: Max saved questions per user (Prevents Firebase crashes)
-const MAX_SAVED_QUESTIONS = 150;
+const MAX_SAVED_QUESTIONS = 200;
 
 // 10. ANALYTICS SETTINGS: How many recent tests to use for the average percentage?
 const ANALYTICS_RECENT_LIMIT = 10;
