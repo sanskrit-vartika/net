@@ -692,6 +692,18 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
 
   // 🚨 PERMANENT FIX: CLOSE ALL OVERLAYS ON TAB SWITCH 🚨
   // If a user clicks a nav link while looking at Sets or Results, instantly hide the overlays!
+
+  // 🚀 NEW: Close the mobile drawer and student dropdown if they are open!
+  const drawer = document.getElementById('mobileDrawer');
+  if (drawer && drawer.classList.contains('open')) {
+    drawer.classList.remove('open');
+    document.getElementById('mobileDrawerOverlay').classList.remove('open');
+  }
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown && dropdown.classList.contains('show')) {
+    dropdown.classList.remove('show');
+  }
+  
   const setsView = document.getElementById('test-sets-view');
   const testInterface = document.getElementById('test-interface');
   const testResults = document.getElementById('test-results');
@@ -2511,7 +2523,7 @@ async function showVideosTopic(subjectKey) {
 
   // 🚀 NEW: Trap the back button!
   history.pushState({ page: 'free' }, '', '#free');
-  
+
   document.getElementById('videos-topic-title').textContent = (notesSubjectNames[subjectKey] || subjectKey) + " — Video Lectures";
 
   const grid = document.getElementById('videos-links-grid');
