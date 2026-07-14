@@ -44,7 +44,62 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
+<!-- ==================== 🚀 IN-APP BROWSER DETECTOR & REDIRECT ENGINE ==================== -->
+<script>
+  (function() {
+    var ua = navigator.userAgent || navigator.vendor || window.opera;
+    // Check for Instagram, Facebook, LinkedIn, Twitter, Line Webview signatures
+    var isEmbedded = (ua.indexOf('Instagram') > -1) || 
+                     (ua.indexOf('FBAN') > -1) || 
+                     (ua.indexOf('FBAV') > -1) || 
+                     (ua.indexOf('LinkedInApp') > -1) || 
+                     (ua.indexOf('Twitter') > -1) ||
+                     (ua.indexOf('Line') > -1);
+    
+    if (isEmbedded) {
+      // 1. If Android, attempt the Magic Intent Redirect to force Chrome
+      var isAndroid = /android/i.test(ua);
+      if (isAndroid) {
+        var currentUrl = window.location.href.replace(/^https?:\/\//, '');
+        var intentUrl = 'intent://' + currentUrl + '#Intent;scheme=https;package=com.android.chrome;end';
+        window.location.href = intentUrl;
+      }
+      
+      // 2. We always show the Intercept UI as a fallback (for iOS or if Android trick fails)
+      document.addEventListener("DOMContentLoaded", function() {
+        var overlay = document.getElementById('in-app-browser-overlay');
+        if (overlay) {
+           overlay.style.display = 'flex';
+           // Lock scrolling
+           document.body.style.overflow = 'hidden'; 
+        }
+      });
+    }
+  })();
+</script>
 </head><body>
+
+<!-- ==================== 🛡️ IN-APP BROWSER OVERLAY ==================== -->
+<div id="in-app-browser-overlay" style="display: none;">
+  <div class="in-app-card">
+    <div class="in-app-icon">⚠️</div>
+    <h2>Embedded Browser Detected</h2>
+    <p>To prevent data loss and experience the full app, please open this site in your main browser.</p>
+    
+    <div class="in-app-instructions">
+      <div class="instruction-step">
+        <span class="step-num">1</span>
+        <span>Tap the <strong>3 dots (⋮)</strong> in the top right corner.</span>
+      </div>
+      <div class="instruction-step">
+        <span class="step-num">2</span>
+        <span>Select <strong>"Open in Browser"</strong> or <strong>"Open in Chrome/Safari"</strong>.</span>
+      </div>
+    </div>
+    
+    <p class="in-app-footnote">If you don't see the 3 dots, copy the link and paste it directly into Chrome or Safari.</p>
+  </div>
+</div>
 
 <!-- ==================== NAVBAR ==================== -->
 <nav id="navbar">

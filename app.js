@@ -54,7 +54,14 @@ const CORE_SUBJECTS = {
 };
 
 // Change this to show all or only sanskrit in guest mode switch
-let currentCoreSubject = localStorage.getItem('vartika_core_subject') || 'sanskrit';
+// 🚀 SAFE STORAGE ENGINE: Prevents fatal crashes in Incognito mode
+function safeGetLocal(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function safeSetLocal(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) { console.warn("Storage blocked by browser security settings."); }
+}
+let currentCoreSubject = safeGetLocal('vartika_core_subject') || 'sanskrit';
 
 let currentUser = null;
 let isSignUpMode = false;
@@ -332,7 +339,7 @@ async function handleAuthAction() {
       
       // 🚀 DYNAMIC TRIAL PASS LOGIC (No more 'combo')
       currentCoreSubject = selectedSubject; 
-      localStorage.setItem('vartika_core_subject', currentCoreSubject);
+      safeSetLocal('vartika_core_subject', currentCoreSubject);
       applyCoreSubjectUI(currentCoreSubject);
 
       let initialPasses = { batch: null, general: null };
@@ -554,7 +561,7 @@ auth.onAuthStateChanged(async (user) => {
         // 🚀 SYNC WORKSPACE FROM CLOUD
         if (currentUser.dbData.coreSubject) {
             currentCoreSubject = currentUser.dbData.coreSubject;
-            localStorage.setItem('vartika_core_subject', currentCoreSubject);
+            safeSetLocal('vartika_core_subject', currentCoreSubject);
             applyCoreSubjectUI(currentCoreSubject);
         }
         
@@ -717,13 +724,25 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
     return; // Stop the navigation instantly!
   }
 
-  // 🚀 THE FIX: Only mark as navigated if we are actually adding a new page to history
+  // 🚀 THE FIX: Prevent duplicate history spam if they click the same tab rapidly!
+  if (addToHistory && currentPage === page) {
+    addToHistory = false;
+  }
+  
   if (addToHistory) {
     hasNavigated = true; 
   }
 
+  // 🚀 PERMANENT FIX: ROOT-RESET THE TAB 
+  // If the user clicks the Study Hub tab while already inside it, reset back to the main overview!
+  if (currentPage === 'study' && page === 'study') {
+    if (typeof backToNotesMain === 'function') backToNotesMain();
+    if (typeof backToVideosMain === 'function') backToVideosMain();
+  }
+
   // 🚨 PERMANENT FIX: CLOSE ALL OVERLAYS ON TAB SWITCH 🚨
-  // If a user clicks a nav link while looking at Sets or Results, instantly hide the overlays!
+  // If a user clicks a nav link while a modal or overlay is open, instantly hide them!
+  document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
 
   // 🚀 NEW: Close the mobile drawer and student dropdown if they are open!
   const drawer = document.getElementById('mobileDrawer');
@@ -1533,7 +1552,7 @@ async function openFreeSets(mode) {
     
     // 🚀 BUG FIX: Merge local storage history so Free Tests get their green checkmarks!
     try {
-      const localHistory = JSON.parse(localStorage.getItem('vartika_free_history') || '[]');
+      const localHistory = JSON.parse(safeGetLocal('vartika_free_history') || '[]');
       history = history.concat(localHistory);
     } catch(e) {}
 
@@ -2171,11 +2190,11 @@ function updateAIBoosterLimitsUI() {
   
   // 🚀 FIX: Automatically grab the student's Core Subject
   ['paper1', currentCoreSubject].forEach(type => {
-    let limitData = JSON.parse(localStorage.getItem(`ai_booster_limit_${type}`) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
+    let limitData = JSON.parse(safeGetLocal(`ai_booster_limit_${type}`) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
     
     if (limitData.date !== today) {
       limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT }; 
-      localStorage.setItem(`ai_booster_limit_${type}`, JSON.stringify(limitData));
+      safeSetLocal(`ai_booster_limit_${type}`, JSON.stringify(limitData));
     }
     
     // 🚀 FIX: Route the ID properly because the HTML ID is 'ai-limit-core'
@@ -2265,7 +2284,7 @@ async function generateAIBooster(paperType) {
   const today = new Date().toLocaleDateString('en-IN');
   const storageKeyType = paperType === 'paper1' ? 'paper1' : currentCoreSubject;
   const limitKey = `ai_booster_limit_${storageKeyType}`;
-  let limitData = JSON.parse(localStorage.getItem(limitKey) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
+  let limitData = JSON.parse(safeGetLocal(limitKey) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
 
   if (limitData.date !== today) limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT };
   if (limitData.count <= 0) {
@@ -2368,7 +2387,7 @@ async function generateAIBooster(paperType) {
 
   // H. Deduct Local Limit
   limitData.count -= 1;
-  localStorage.setItem(limitKey, JSON.stringify(limitData));
+  safeSetLocal(limitKey, JSON.stringify(limitData));
   updateAIBoosterLimitsUI();
 
   // I. Launch Test
@@ -2439,8 +2458,6 @@ async function loadNotesFromSheet() {
         noteCount++;
       }
     });
-    
-    console.log(`Successfully loaded ${noteCount} notes from Google Sheets!`);
     
   } catch (error) { 
   console.error("Could not load study notes:", error); 
@@ -2710,10 +2727,10 @@ async function saveTestResult(name, correct, total) {
 
   // === NEW: OFFLINE STORAGE FOR FREE TESTS ===
   if (isFreeTest) {
-    let localHistory = JSON.parse(localStorage.getItem('vartika_free_history') || '[]');
+    let localHistory = JSON.parse(safeGetLocal('vartika_free_history') || '[]');
     localHistory.unshift(resultObj);
     if (localHistory.length > 50) localHistory.pop(); // Keep max 50 free tests in local storage
-    localStorage.setItem('vartika_free_history', JSON.stringify(localHistory));
+    safeSetLocal('vartika_free_history', JSON.stringify(localHistory));
     
     // Refresh the Free UI quietly
     const setsView = document.getElementById('test-sets-view');
@@ -3719,12 +3736,12 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'NEW_VERSION_ACTIVATED') {
         // Get the student's current version (default to 0 if brand new)
-        const studentVersion = parseInt(localStorage.getItem('vartika_app_version') || '0');
+        const studentVersion = parseInt(safeGetLocal('vartika_app_version') || '0');
         const criticalVersion = event.data.criticalVersion;
         const latestVersion = event.data.latestVersion;
 
         // Upgrade the student's tracker to the newest version
-        localStorage.setItem('vartika_app_version', latestVersion.toString());
+        safeSetLocal('vartika_app_version', latestVersion.toString());
 
         // The Engine Check
         if (studentVersion > 0 && studentVersion < criticalVersion) {
@@ -3803,29 +3820,7 @@ async function submitReport() {
 const GITHUB_NOTIFICATIONS_URL = "https://raw.githubusercontent.com/sanskrit-vartika/net/main/notifications.json";
 let globalAnnouncements = [];
 
-// Advanced Relative Time Calculator (e.g., "5 mins ago", "Yesterday")
-function timeAgo(dateString) {
-  const now = new Date();
-  const past = new Date(dateString);
-  if (isNaN(past.getTime())) return dateString; // Fallback for bad data
-
-  const diffInSeconds = Math.floor((now - past) / 1000);
-  if (diffInSeconds < 60) return "Just now";
-  
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes} min${diffInMinutes > 1 ? 's' : ''} ago`;
-  
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} hr${diffInHours > 1 ? 's' : ''} ago`;
-  
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-  
-  // Older than a week? Show the exact date
-  return past.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-// 1. Fetch & Auto-Expire Logic (Run when dashboard loads)
+// Advanced Relative Time Calculator (e.g., "5 mins ago", "Yesterday")// 1. Fetch & Auto-Expire Logic (Run when dashboard loads)
 async function initializeNotifications() {
   try {
     // ?t=time bypasses the browser cache so students always see immediate updates
@@ -3859,7 +3854,7 @@ function checkRedDot() {
   
   // Use the exact timestamp of the newest post as the Unique ID
   const newestNotifTime = globalAnnouncements[0].id; 
-  const lastReadTimestamp = localStorage.getItem('vartika_last_read_notif') || "1970-01-01T00:00:00.000Z";
+  const lastReadTimestamp = safeGetLocal('vartika_last_read_notif') || "1970-01-01T00:00:00.000Z";
   
   // If the newest post is newer than the last time they opened the bell, show the dot!
   if (new Date(newestNotifTime) > new Date(lastReadTimestamp)) {
@@ -3882,7 +3877,7 @@ function openNotifications() {
 
   // Hide the red dot and save the timestamp so it stays hidden
   const newestNotifTime = globalAnnouncements[0].id;
-  localStorage.setItem('vartika_last_read_notif', newestNotifTime);
+  safeSetLocal('vartika_last_read_notif', newestNotifTime);
   document.getElementById('bell-dot').style.display = 'none';
 
   // Priority color tags
@@ -4112,7 +4107,6 @@ async function installApp() {
     
     // Wait for the user to accept or dismiss
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User installation response: ${outcome}`);
     
     // We've used the prompt, it cannot be used again
     deferredPrompt = null;
@@ -4533,7 +4527,7 @@ async function updateCoreSubject() {
     currentUser.dbData.core_subject_last_updated = updates.core_subject_last_updated;
 
     currentCoreSubject = newSubject;
-    localStorage.setItem('vartika_core_subject', newSubject);
+    safeSetLocal('vartika_core_subject', newSubject);
     
     applyCoreSubjectUI(newSubject); // Instantly rebuild website UI!
     
@@ -4552,10 +4546,10 @@ async function updateCoreSubject() {
 // ==========================================
 
 function getDeviceUUID() {
-  let uuid = localStorage.getItem('vartika_device_uuid');
+  let uuid = safeGetLocal('vartika_device_uuid');
   if (!uuid) {
     uuid = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
-    localStorage.setItem('vartika_device_uuid', uuid);
+    safeSetLocal('vartika_device_uuid', uuid);
   }
   return uuid;
 }
