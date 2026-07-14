@@ -1659,3 +1659,36 @@ body.test-mode-active .test-overlay-system {
   background: var(--white); color: var(--saffron); 
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+
+/* ==========================================
+   === MOBILE HERO SHRINK (APPROACH 1) ===
+   ========================================== */
+@media (max-width: 600px) {
+  /* 1. Reduce the padding inside the banner */
+  .hero-content {
+    padding: 20px 16px 24px;
+  }
+  
+  /* 2. Shrink the Lamp Logo using CSS (overrides the HTML size) */
+  .hero-lamp {
+    margin-bottom: 12px;
+  }
+  .hero-lamp svg {
+    width: 90px;
+    height: 90px;
+  }
+  
+  /* 3. Shrink the minimum font sizes and margins between texts */
+  .hero-heading {
+    font-size: clamp(2rem, 8vw, 2.5rem);
+    margin-bottom: 8px;
+  }
+  .hero-tagline {
+    font-size: clamp(1rem, 4vw, 1.1rem);
+    margin-bottom: 8px;
+  }
+  .hero-sub {
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+  }
+}

@@ -1211,6 +1211,9 @@ function openPremiumSubView(type) {
   void subView.offsetWidth; 
   subView.classList.add('fade-in-up');
 
+  // 🚀 NEW: Trap the back button for Study Hub!
+  history.pushState({ page: 'study' }, '', '#study');
+
   const grid = document.getElementById('study-sub-grid');
   const title = document.getElementById('study-sub-title');
   
@@ -1288,6 +1291,9 @@ async function showSets(cat) {
   window.scrollTo(0, 0);
   setsView.scrollTop = 0; // 🚀 UX FIX: Always start grid at the top!
 
+  // 🚀 NEW: Trap the back button for Mock Tests!
+  history.pushState({ page: 'mocktest' }, '', '#mocktest');
+
   // 🚀 FIX: Ensure the descriptive text is visible for normal tests!
   const setsDesc = document.querySelector('#test-sets-view p');
   if (setsDesc) setsDesc.style.display = 'block';
@@ -1330,6 +1336,9 @@ async function openFreeSets(mode) {
 
   document.getElementById('page-free').classList.remove('active');
   document.getElementById('test-sets-view').style.display = 'block';
+
+  // 🚀 NEW: Trap the back button for Free Tests!
+  history.pushState({ page: 'free' }, '', '#free');
    
   // 🚀 SKELETON UI PREP
   document.getElementById('sets-filter').style.display = 'none'; 
@@ -2400,6 +2409,10 @@ async function showNotesTopic(subjectKey) {
   document.getElementById('notes-main-grid').style.display = 'none';
   document.getElementById('notes-topic-view').style.display = 'block';
   window.scrollTo(0, 0);
+
+  // 🚀 NEW: Trap the back button!
+  history.pushState({ page: 'free' }, '', '#free');
+
   document.getElementById('notes-topic-title').textContent = (notesSubjectNames[subjectKey] || subjectKey) + " — Study Notes";
 
   const grid = document.getElementById('notes-links-grid');
@@ -2495,6 +2508,10 @@ async function showVideosTopic(subjectKey) {
   document.getElementById('videos-main-grid').style.display = 'none';
   document.getElementById('videos-topic-view').style.display = 'block';
   window.scrollTo(0, 0);
+
+  // 🚀 NEW: Trap the back button!
+  history.pushState({ page: 'free' }, '', '#free');
+  
   document.getElementById('videos-topic-title').textContent = (notesSubjectNames[subjectKey] || subjectKey) + " — Video Lectures";
 
   const grid = document.getElementById('videos-links-grid');
