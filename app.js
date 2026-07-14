@@ -698,12 +698,13 @@ function navigate(page, addToHistory = true, keepFreeMode = false) {
   if (drawer && drawer.classList.contains('open')) {
     drawer.classList.remove('open');
     document.getElementById('mobileDrawerOverlay').classList.remove('open');
+    document.body.style.overflow = ''; // 🚀 NEW: Unlock scrolling!
   }
   const dropdown = document.getElementById('user-dropdown');
   if (dropdown && dropdown.classList.contains('show')) {
     dropdown.classList.remove('show');
   }
-  
+
   const setsView = document.getElementById('test-sets-view');
   const testInterface = document.getElementById('test-interface');
   const testResults = document.getElementById('test-results');
@@ -954,6 +955,9 @@ function toggleMobileDrawer() {
   
   drawer.classList.toggle('open');
   document.getElementById('mobileDrawerOverlay').classList.toggle('open');
+
+  // 🚀 NEW: Lock the background page from scrolling while the drawer is open!
+  document.body.style.overflow = isOpening ? 'hidden' : '';
 
   // 🚀 NEW: If it's opening on the very first page, trap the back button!
   if (isOpening && !hasNavigated) {
