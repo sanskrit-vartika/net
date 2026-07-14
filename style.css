@@ -1024,6 +1024,9 @@ footer {
     display: block; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
     z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s;
   }
+
+  /* 🚀 NEW: Add this missing line back! It makes the overlay clickable */
+  .drawer-overlay.open { opacity: 1; pointer-events: all; }
   /* Update bottom and padding */
   .more-drawer {
     display: block; position: fixed; left: 0; right: 0;
