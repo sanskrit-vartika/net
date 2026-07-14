@@ -19,6 +19,33 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// ==========================================
+// 🛡️ ANTI-TAMPER SECURITY ENGINE
+// ==========================================
+setTimeout(() => {
+  console.log("%cSTOP!", "color: red; font-family: sans-serif; font-size: 4em; font-weight: bolder; text-shadow: #000 1px 1px;");
+  console.log("%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable a feature or 'hack' someone's account, it is a scam and will give them access to your Sanskrit Vartika account.", "font-family: sans-serif; font-size: 1.5em;");
+}, 1000);
+
+const FirebaseRateLimiter = {
+  writes: [],
+  maxWritesPerMinute: 15,
+  check: function(actionName = 'write') {
+    const now = Date.now();
+    this.writes = this.writes.filter(timestamp => now - timestamp < 60000);
+    if (this.writes.length >= this.maxWritesPerMinute) {
+      console.warn(`[SECURITY] Firebase Rate Limit Exceeded for action: ${actionName}`);
+      if (typeof showToast === 'function') {
+        showToast("⚠️ Security System triggered. You are doing this too fast! Please wait a minute.", 4000, "#d32f2f");
+      }
+      return false; // BLOCKED
+    }
+    this.writes.push(now);
+    return true; // ALLOWED
+  }
+};
+// ==========================================
+
 // 3. Global App Data & Subject Engine
 const CORE_SUBJECTS = {
   'sanskrit': { name: 'Sanskrit', code: '25', icon: '🪷', badge: 'Sanskrit Pass' },
@@ -453,6 +480,11 @@ auth.onAuthStateChanged(async (user) => {
     db.collection("users").doc(user.uid).get().then((doc) => {
       if (doc.exists) {
         currentUser.dbData = doc.data();
+
+        // 🛡️ ANTI-TAMPER: Freeze the passes object so it cannot be hacked via DevTools
+        if (currentUser.dbData.passes) {
+          Object.freeze(currentUser.dbData.passes);
+        }
 
         // 🛡️ SECURITY GATEKEEPER 1: SUSPENSION CHECK
         const susp = currentUser.dbData.suspension;
@@ -1534,6 +1566,7 @@ async function openFreeSets(mode) {
       }
     }
 
+    let htmlOutput = '';
     Object.keys(availableSets).forEach(setKey => {
       const setObj = availableSets[setKey];
       
@@ -1549,7 +1582,7 @@ async function openFreeSets(mode) {
 
       let topic = setKey.includes(' - Set') ? setKey.split(' - Set')[0] : 'General';
 
-      grid.innerHTML += `
+      htmlOutput += `
         <div class="test-cat-card" data-topic="${escapeHTML(topic)}" style="border: ${isCompleted ? '2px solid #4CAF50' : '2px solid transparent'}" onclick="promptStartTest('${mode}', '${setKey}')">
           ${checkmark}
           <div class="test-cat-icon">🎁</div>
@@ -1559,6 +1592,7 @@ async function openFreeSets(mode) {
         </div>
       `;
     });
+    grid.innerHTML = htmlOutput;
 
   } catch(err) {
     console.error(err);
@@ -1624,6 +1658,7 @@ if(document.getElementById('back-to-cat-btn')) {
     filterEl.style.display = 'none';
   }
 
+  let gridHtml = '';
   Object.keys(categoryData).forEach(setKey => {
     const qCount = categoryData[setKey].length;
     const displayTitle = setKey;
@@ -1643,8 +1678,9 @@ if(document.getElementById('back-to-cat-btn')) {
         <span class="q-count">${qCount} Questions</span>
       </div>
     `;
-    grid.innerHTML += cardHTML;
+    gridHtml += cardHTML;
   });
+  grid.innerHTML = gridHtml;
 }
 
 // --- UPGRADED SMART LOGIC: The "Lock-in-Place" Shuffler ---
@@ -2454,12 +2490,15 @@ async function showNotesTopic(subjectKey) {
   }
 
   const uniqueTopics = [...new Set(topics.map(item => item.topic))];
+  let selectHtml = '<option value="all">All Topics</option>';
   uniqueTopics.forEach(t => {
-    filterSelect.innerHTML += `<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`;
+    selectHtml += `<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`;
   });
+  filterSelect.innerHTML = selectHtml;
 
+  let gridHtml = '';
   topics.forEach(note => {
-    grid.innerHTML += `
+    gridHtml += `
       <div class="note-card" data-topic="${escapeHTML(note.topic)}">
         <h4>${escapeHTML(note.title)}</h4>
         <p>${escapeHTML(note.desc)}</p>
@@ -2467,6 +2506,7 @@ async function showNotesTopic(subjectKey) {
       </div>
     `;
   });
+  grid.innerHTML = gridHtml;
 }
 
 function backToNotesMain() {
@@ -2553,16 +2593,19 @@ async function showVideosTopic(subjectKey) {
   }
 
   const uniqueTopics = [...new Set(topics.map(item => item.topic))];
+  let selectHtml = '<option value="all">All Topics</option>';
   uniqueTopics.forEach(t => {
-    filterSelect.innerHTML += `<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`;
+    selectHtml += `<option value="${escapeHTML(t)}">${escapeHTML(t)}</option>`;
   });
+  filterSelect.innerHTML = selectHtml;
 
+  let gridHtml = '';
   topics.forEach(vid => {
     const videoId = getYouTubeID(vid.link);
     const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '';
     const bgStyle = thumbUrl ? `background-image: url('${thumbUrl}'); background-size: cover; background-position: center;` : '';
 
-    grid.innerHTML += `
+    gridHtml += `
       <div class="video-card" data-topic="${escapeHTML(vid.topic)}">
         <div class="video-thumb" style="${bgStyle}" onclick="window.open('${encodeURI(vid.link)}','_blank')">
           <div class="play-btn">▶</div>
@@ -2574,6 +2617,7 @@ async function showVideosTopic(subjectKey) {
       </div>
     `;
   });
+  grid.innerHTML = gridHtml;
 }
 
 function backToVideosMain() {
@@ -2612,6 +2656,7 @@ async function loadPYQsFromSheet() {
       return;
     }
 
+    let gridHtml = '';
     data.forEach(row => {
       const year = row.year || row.Year || "";
       const desc = row.description || row.Description || row.desc || "";
@@ -2626,7 +2671,7 @@ async function loadPYQsFromSheet() {
                            ? '' 
                            : `data-subject-group="${subject}"`;
 
-        grid.innerHTML += `
+        gridHtml += `
           <div class="pyq-card" ${subjectTag}>
             <span class="year" style="font-family: var(--font-sans);">${escapeHTML(year)}</span>
             <p>${escapeHTML(desc)}</p>
@@ -2635,6 +2680,7 @@ async function loadPYQsFromSheet() {
         `;
       }
     });
+    grid.innerHTML = gridHtml;
 
     // 🚀 NEW: Instantly hide any PYQs that don't belong to the student's active workspace!
     applyCoreSubjectUI(currentCoreSubject);
@@ -2653,6 +2699,9 @@ async function loadPYQsFromSheet() {
 // ==========================================
 
 async function saveTestResult(name, correct, total) {
+  // 🛡️ SECURITY: Rate Limit Check
+  if (!FirebaseRateLimiter.check('saveTestResult')) return;
+
   // Automatically detects ANY test that has "Free" in its official category name
   const isFreeTest = name.includes('Free');
   const today = new Date().toLocaleDateString('en-IN');
@@ -2731,6 +2780,9 @@ function switchSavedQsTab(tab) {
 }
 
 async function toggleSaveQuestion(qIndex) {
+  // 🛡️ SECURITY: Rate Limit Check
+  if (!FirebaseRateLimiter.check('saveQuestion')) return;
+
   if (!currentUser || !currentUser.dbData) {
     showToast("Please Log In to save questions!");
     showAuthModal();
@@ -2831,6 +2883,9 @@ function renderSavedQuestions() {
 }
 
 async function removeSavedQuestion(index) {
+  // 🛡️ SECURITY: Rate Limit Check
+  if (!FirebaseRateLimiter.check('removeQuestion')) return;
+
   if (!currentUser || !currentUser.dbData) return;
   let saved = currentUser.dbData.saved_qs || [];
   saved.splice(index, 1);
@@ -3559,14 +3614,16 @@ function showCourseDetails(index) {
   const featuresList = document.getElementById('cd-features');
   featuresList.innerHTML = '';
   if (course.features && course.features.length > 0) {
+    let featuresHtml = '';
     course.features.forEach(f => {
       // Split the emoji from the text for a cleaner layout
-      featuresList.innerHTML += `
+      featuresHtml += `
         <li style="font-size: 0.9rem; color: var(--brown); display: flex; gap: 10px; align-items: flex-start;">
           <span style="flex-shrink:0;">${f.substring(0,2)}</span>
           <span style="line-height: 1.5;">${f.substring(2)}</span>
         </li>`;
     });
+    featuresList.innerHTML = featuresHtml;
   }
 
   // 4. Build the Dynamic Pricing UI for the Sticky Footer
@@ -3597,7 +3654,7 @@ function showCourseDetails(index) {
 }
 
 // ==========================================
-// === EXAM SAFETY NET (PREVENT REFRESH) ====
+// === EXAM SAFETY NET (PREVENT REFRESH & OFFLINE) ====
 // ==========================================
 window.addEventListener('beforeunload', function (e) {
   // If a test is actively running (timer exists, not finished, and test screen is visible)
@@ -3605,6 +3662,24 @@ window.addEventListener('beforeunload', function (e) {
     // This triggers the browser's standard "Changes you made may not be saved" warning
     e.preventDefault();
     e.returnValue = ''; 
+  }
+});
+
+// Detect when the user loses internet connection during a test
+window.addEventListener('offline', function () {
+  if (testState.timerInterval && !testState.finished && document.getElementById('test-interface').style.display === 'block') {
+    if (typeof showToast === "function") {
+      showToast("⚠️ YOU ARE OFFLINE! Do not close this browser or your test score will be lost. Reconnect to WiFi/Data.", 15000, "#d32f2f");
+    }
+  }
+});
+
+// Detect when internet comes back
+window.addEventListener('online', function () {
+  if (testState.timerInterval && !testState.finished && document.getElementById('test-interface').style.display === 'block') {
+    if (typeof showToast === "function") {
+      showToast("🟢 Internet Restored! Your score is safe to submit.", 4000, "#2E7D32");
+    }
   }
 });
 
@@ -3681,6 +3756,12 @@ function openReportModal(qIndex) {
 }
 
 async function submitReport() {
+  // 🛡️ SECURITY: Rate Limit Check
+  if (!FirebaseRateLimiter.check('submitReport')) {
+    closeReportModal();
+    return;
+  }
+
   if (!currentUser || reportingQuestionIndex === null) return;
   const btn = document.getElementById('submit-report-btn');
   btn.textContent = "Sending...";
@@ -3812,6 +3893,7 @@ function openNotifications() {
   };
 
   // Build the beautiful UI feed
+  let feedHtml = '';
   globalAnnouncements.forEach(notif => {
     const style = tagStyles[notif.type] || tagStyles['update'];
     const displayTime = timeAgo(notif.id);
@@ -3825,7 +3907,7 @@ function openNotifications() {
     // 🎨 Template 1: Modern Minimalist
   let accentColor = notif.type === 'alert' ? '#D32F2F' : (notif.type === 'offer' ? '#E65100' : '#2E7D32');
   
-  feed.innerHTML += `
+  feedHtml += `
     <div style="padding: 16px 20px; background: #fff; border-radius: 8px; margin-bottom: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border-left: 5px solid ${accentColor}; position: relative;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <span style="font-size:0.7rem; color: ${accentColor}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">${notif.type || 'Update'}</span>
@@ -3837,6 +3919,7 @@ function openNotifications() {
     </div>
   `;
   });
+  feed.innerHTML = feedHtml;
 }
 
 // ==========================================
@@ -3872,6 +3955,10 @@ async function refreshStudentProfile() {
     const doc = await db.collection("users").doc(currentUser.uid).get();
     if (doc.exists) {
       currentUser.dbData = doc.data();
+      // 🛡️ ANTI-TAMPER: Freeze the passes object
+      if (currentUser.dbData.passes) {
+        Object.freeze(currentUser.dbData.passes);
+      }
       loadDashboard(); // Redraw the UI with the fresh data
     }
   } catch (error) {
