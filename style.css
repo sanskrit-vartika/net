@@ -1664,12 +1664,12 @@ body.test-mode-active .test-overlay-system {
    === MOBILE HERO SHRINK (APPROACH 1) ===
    ========================================== */
 @media (max-width: 600px) {
-  /* 1. Reduce the padding inside the banner */
+  /* 1. Reduce the padding inside the banner (crushed the bottom padding to 12px) */
   .hero-content {
-    padding: 20px 16px 24px;
+    padding: 20px 16px 12px;
   }
   
-  /* 2. Shrink the Lamp Logo using CSS (overrides the HTML size) */
+  /* 2. Shrink the Lamp Logo using CSS */
   .hero-lamp {
     margin-bottom: 12px;
   }
@@ -1688,7 +1688,15 @@ body.test-mode-active .test-overlay-system {
     margin-bottom: 8px;
   }
   .hero-sub {
-    margin-bottom: 20px;
+    margin-bottom: 8px; /* Reduced from 20px */
     font-size: 0.9rem;
+  }
+  .hero-sub br {
+    display: none; /* Hides the invisible line break you had in HTML */
+  }
+
+  /* 4. Cut the huge 48px gap above the "Quick Access" title */
+  #page-home .section {
+    padding-top: 16px; 
   }
 }
