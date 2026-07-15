@@ -4090,16 +4090,22 @@ window.addEventListener('beforeinstallprompt', (e) => {
   // Stash the event so we can trigger it later
   deferredPrompt = e;
   
-  // Show our custom "Install App" button in the dropdown
-  const installBtn = document.getElementById('install-app-btn');
-  if (installBtn) {
-    installBtn.style.display = 'block';
-  }
+  // Show our custom "Install App" button in the dropdown and mobile drawer
+  const installBtn1 = document.getElementById('install-app-btn');
+  const installBtn2 = document.getElementById('install-app-btn-mobile');
+  if (installBtn1) installBtn1.style.display = 'block';
+  if (installBtn2) installBtn2.style.display = 'flex'; // Mobile drawer uses flex layout
 });
 
 // 2. The function that runs when they click our custom button
 async function installApp() {
   document.getElementById("user-dropdown").classList.remove("show"); // Close dropdown
+  
+  // Close the mobile drawer if open
+  const drawer = document.getElementById('mobileDrawer');
+  if (drawer && drawer.classList.contains('open')) {
+    toggleMobileDrawer();
+  }
 
   if (deferredPrompt) {
     // Show the native browser install prompt
@@ -4111,17 +4117,21 @@ async function installApp() {
     // We've used the prompt, it cannot be used again
     deferredPrompt = null;
     
-    // Hide our custom button since they made a choice
-    const installBtn = document.getElementById('install-app-btn');
-    if (installBtn) installBtn.style.display = 'none';
+    // Hide our custom buttons since they made a choice
+    const installBtn1 = document.getElementById('install-app-btn');
+    const installBtn2 = document.getElementById('install-app-btn-mobile');
+    if (installBtn1) installBtn1.style.display = 'none';
+    if (installBtn2) installBtn2.style.display = 'none';
   }
 }
 
 // 3. Listen for successful installation to clean up
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
-  const installBtn = document.getElementById('install-app-btn');
-  if (installBtn) installBtn.style.display = 'none';
+  const installBtn1 = document.getElementById('install-app-btn');
+  const installBtn2 = document.getElementById('install-app-btn-mobile');
+  if (installBtn1) installBtn1.style.display = 'none';
+  if (installBtn2) installBtn2.style.display = 'none';
   showToast("✅ App installed successfully!");
 });
 
