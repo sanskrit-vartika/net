@@ -667,10 +667,10 @@ auth.onAuthStateChanged(async (user) => {
     // FIX: This must be OUTSIDE the if-statement so it runs for brand new guests!
     updateTestCardLocks(); 
 
-        // 🚀 NEW: The "Polite" 20-Second Guest Promo Engine
+        // 🚀 NEW: The "Polite" 8-Second Guest Promo Engine myswitch
     // (SMART FIX: It will completely disable itself if FREE_TRIAL_DAYS is 0!)
     if (!sessionStorage.getItem('guest_promo_shown') && FREE_TRIAL_DAYS > 0) {
-      // Wait the initial 20 seconds...
+      // Wait the initial 8 seconds...
       setTimeout(() => {
         
         // Now, check the screen every 2 seconds until it's clear
@@ -698,7 +698,7 @@ auth.onAuthStateChanged(async (user) => {
           }
         }, 2000); // Checks every 2 seconds
 
-      }, 20000); // 20000 milliseconds = 20 seconds
+      }, 8000); // 8000 milliseconds = 8 seconds
     }
   }
 });
