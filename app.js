@@ -48,9 +48,18 @@ const FirebaseRateLimiter = {
 
 // 3. Global App Data & Subject Engine
 const CORE_SUBJECTS = {
-  'sanskrit': { name: 'Sanskrit', code: '25', icon: '🪷', badge: 'Sanskrit Pass' },
-  'bengali': { name: 'Bengali', code: '19', icon: '📖', badge: 'Bengali Pass' },
-  'philosophy': { name: 'Philosophy', code: '03', icon: '🧘', badge: 'Philosophy Pass' }
+  'sanskrit': { 
+    name: 'Sanskrit', code: '25', badge: 'Sanskrit Pass',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 40px; height: 40px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#1565C0"></path><path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" stroke="#00BCD4" fill="#00BCD4" fill-opacity="0.2"></path><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#1565C0" stroke-width="1"></path></svg>` 
+  },
+  'bengali': { 
+    name: 'Bengali', code: '19', badge: 'Bengali Pass',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 40px; height: 40px;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" stroke="#4CAF50"></path><path d="M8 7h6" stroke="#FF9800" stroke-width="2"></path><path d="M8 11h8" stroke="#FF9800" stroke-width="2"></path></svg>` 
+  },
+  'philosophy': { 
+    name: 'Philosophy', code: '03', badge: 'Philosophy Pass',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 40px; height: 40px;"><circle cx="12" cy="12" r="5" stroke="#D32F2F"></circle><line x1="12" y1="1" x2="12" y2="3" stroke="#FF9800"></line><line x1="12" y1="21" x2="12" y2="23" stroke="#FF9800"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="#FF9800"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="#FF9800"></line><line x1="1" y1="12" x2="3" y2="12" stroke="#FF9800"></line><line x1="21" y1="12" x2="23" y2="12" stroke="#FF9800"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="#FF9800"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="#FF9800"></line></svg>` 
+  }
 };
 
 // Change this to show all or only sanskrit in guest mode switch
@@ -61,6 +70,8 @@ function safeGetLocal(key) {
 function safeSetLocal(key, value) {
   try { localStorage.setItem(key, value); } catch (e) { console.warn("Storage blocked by browser security settings."); }
 }
+
+// Change this to show all or only sanskrit in guest mode switch
 let currentCoreSubject = safeGetLocal('vartika_core_subject') || 'sanskrit';
 
 let currentUser = null;
@@ -81,8 +92,8 @@ function filterGuestMocks(subject) {
   if (CORE_SUBJECTS[subject]) {
      const aiTitle = document.getElementById('ai-title-core');
      const aiIcon = document.getElementById('ai-icon-core');
-     if (aiTitle) aiTitle.textContent = `AI Booster: ${CORE_SUBJECTS[subject].name}`;
-     if (aiIcon) aiIcon.textContent = CORE_SUBJECTS[subject].icon;
+       if (aiTitle) aiTitle.textContent = `AI Booster: ${CORE_SUBJECTS[subject].name}`;
+      if (aiIcon) aiIcon.innerHTML = CORE_SUBJECTS[subject].icon;
   }
 }
 
@@ -133,12 +144,12 @@ function applyCoreSubjectUI(subjectKey) {
   const hubIcon = document.querySelector('#hub-core-card .test-cat-icon');
   if (hubTitle) hubTitle.textContent = `${subjData.name} Tests`;
   if (hubBadge) hubBadge.textContent = subjData.badge;
-  if (hubIcon) hubIcon.textContent = subjData.icon;
+  if (hubIcon) hubIcon.innerHTML = subjData.icon;
 
   const aiTitle = document.getElementById('ai-title-core');
   const aiIcon = document.getElementById('ai-icon-core');
   if (aiTitle) aiTitle.textContent = `AI Booster: ${subjData.name}`;
-  if (aiIcon) aiIcon.textContent = subjData.icon;
+  if (aiIcon) aiIcon.innerHTML = subjData.icon;
 
   const tabCore = document.getElementById('tab-btn-core');
   const sqTabCore = document.getElementById('sq-tab-core');
