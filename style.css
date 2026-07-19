@@ -771,7 +771,10 @@ footer {
 .footer-inner { max-width: 1200px; margin: 0 auto; }
 .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
 @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 540px) { .footer-grid { grid-template-columns: 1fr; } }
+@media (max-width: 540px) { 
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; } 
+  .footer-brand { grid-column: 1 / -1; }
+}
 .footer-brand .site-name { font-family: var(--font-skt); font-size: 1.3rem; color: var(--gold); margin-bottom: 6px; }
 .footer-brand .tagline { font-size: 0.8rem; color: rgba(255,248,231,0.6); margin-bottom: 12px; font-style: italic; }
 .footer-brand p { font-size: 0.82rem; color: rgba(255,248,231,0.55); line-height: 1.7; }
