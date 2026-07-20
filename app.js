@@ -448,7 +448,8 @@ function updateNavUI(user, nameStr) {
     
     // 2. Show the new Bell and Dropdown
     if (userMenuBtn) userMenuBtn.style.display = 'inline-block';
-    if (bellBtn) bellBtn.style.display = 'inline-block';
+    // 🚀 UI FIX: 'flex' perfectly centers the SVG icon instead of pushing it up like text!
+    if (bellBtn) bellBtn.style.display = 'flex';
     
     // 3. Truncate long names (Max 10 chars)
     let firstName = (nameStr || "Student").split(' ')[0];
@@ -2168,6 +2169,39 @@ function showCategories() {
 let pendingAITestType = null; 
 
 function showAIBoosterPopup(paperType) {
+  // 1. Check Login
+  if (!currentUser) {
+    if (typeof showAuthModal === 'function') showAuthModal('login');
+    return;
+  }
+
+  // 2. Check dynamic Core Pass Access
+  const reqPass = paperType === 'paper1' ? 'general' : 'core';
+  if (!hasAccess(reqPass)) {
+    document.getElementById('premium-lock-modal').style.display = 'flex';
+    return;
+  }
+
+  // 3. Check Daily Limits
+  const today = new Date().toLocaleDateString('en-IN');
+  const storageKeyType = paperType === 'paper1' ? 'paper1' : currentCoreSubject;
+  const limitKey = `ai_booster_limit_${storageKeyType}`;
+  let limitData = JSON.parse(safeGetLocal(limitKey) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
+
+  if (limitData.date !== today) limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT };
+  if (limitData.count <= 0) {
+    showToast(`⏳ Daily limit reached! You can generate ${AI_BOOSTER_DAILY_LIMIT} AI tests per day.`);
+    return;
+  }
+
+  // 4. Find Weak Topics & Enforce Prerequisites (Data Check)
+  const analysis = getWeakTopics(paperType);
+  if (analysis.error) {
+     showToast(analysis.error);
+     return;
+  }
+
+  // ALL CHECKS PASSED: Show "Ready to Begin?" Modal
   pendingAITestType = paperType; 
   document.getElementById('ai-booster-modal').style.display = 'flex'; 
 }
@@ -2284,32 +2318,18 @@ function getWeakTopics(paperType) {
 
 // 3. The Master Generator (PHASE 2: Dynamic Pool Assembly)
 async function generateAIBooster(paperType) {
-  // 🚀 FIX: Check dynamic Core Pass Access
-  const reqPass = paperType === 'paper1' ? 'general' : 'core';
-  if (!hasAccess(reqPass)) {
-    document.getElementById('premium-lock-modal').style.display = 'flex';
-    return;
-  }
+  // We already checked access, limits, and data in showAIBoosterPopup()!
+  
+  // A. Re-fetch weak topics to build the test
+  const analysis = getWeakTopics(paperType);
+  const weakTopics = analysis.topics;
 
-  // 🚀 FIX: Check Daily Limits using the actual Subject Name
+  // B. Re-fetch limitData so we can decrement it at the end of the test
   const today = new Date().toLocaleDateString('en-IN');
   const storageKeyType = paperType === 'paper1' ? 'paper1' : currentCoreSubject;
   const limitKey = `ai_booster_limit_${storageKeyType}`;
   let limitData = JSON.parse(safeGetLocal(limitKey) || `{"date": "${today}", "count": ${AI_BOOSTER_DAILY_LIMIT}}`);
-
   if (limitData.date !== today) limitData = { date: today, count: AI_BOOSTER_DAILY_LIMIT };
-  if (limitData.count <= 0) {
-    showToast(`⏳ Daily limit reached! You can generate ${AI_BOOSTER_DAILY_LIMIT} AI tests per day.`);
-    return;
-  }
-
-  // C. Find Weak Topics & Enforce Prerequisites
-  const analysis = getWeakTopics(paperType);
-  if (analysis.error) {
-     showToast(analysis.error);
-     return;
-  }
-  const weakTopics = analysis.topics;
 
   document.getElementById('loading-overlay').style.display = 'none';
 

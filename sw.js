@@ -1,4 +1,4 @@
-const CURRENT_VERSION = 5.1;  // Bump this every time you make ANY change.
+const CURRENT_VERSION = 5.2;  // Bump this every time you make ANY change.
 const CRITICAL_VERSION = 5; // Bump this ONLY for massive changes to force a reload.
 const CACHE_NAME = `sanskrit-vartika-v${CURRENT_VERSION}`; // 🚀 DYNAMIC: Automatically cleans old caches!
 const ASSETS_TO_CACHE = [

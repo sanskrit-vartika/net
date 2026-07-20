@@ -1146,6 +1146,10 @@ footer {
   padding: 8px;
   margin-right: 12px;
   transition: transform 0.2s;
+  /* 🚀 UI FIX: Forces the SVG to perfectly center vertically and horizontally! */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .nav-bell-btn:hover {
   transform: scale(1.1);
@@ -1831,4 +1835,9 @@ body.test-mode-active .test-overlay-system {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* 🎨 Make the Premium Gold Bell glow when the red dot is visible! */
+#nav-bell-btn:has(#bell-dot:not([style*="display: none"])) svg path {
+  fill: rgba(255, 215, 0, 0.3);
 }

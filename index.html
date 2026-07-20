@@ -200,7 +200,11 @@
 <!-- Login Button -->
     <div style="display: flex; align-items: center;">
       <button id="nav-bell-btn" class="nav-bell-btn" style="display: none;" onclick="openNotifications()">
-        🔔
+        <!-- 🎨 UI Tweak: Premium Gold SVG replacing the old bell emoji -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 28px; height: 28px;">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
         <div id="bell-dot" class="notification-dot"></div>
       </button>
 
